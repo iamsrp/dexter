@@ -5,8 +5,7 @@ Each service provides something which responds to given input commands, and
 possibly has some output too.
 '''
 
-from __future__ import (absolute_import, division, print_function,
-                        with_statement)
+from __future__ import (absolute_import, division, print_function, with_statement)
 
 from ..input import Token
 

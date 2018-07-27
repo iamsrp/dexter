@@ -1,8 +1,8 @@
+'''
+A simple service which echoes back the input,
+'''
 
-
-
-from __future__ import (absolute_import, division, print_function,
-                        with_statement)
+from __future__ import (absolute_import, division, print_function, with_statement)
 
 from . import Service, Handler
 
@@ -12,7 +12,9 @@ class _EchoHandler(Handler):
 
 
     def handle(self):
-        return "You said: %s" % [str(token) for token in self._tokens]
+        return "You said: %s" % ' '.join([token.element
+                                          for token in self._tokens
+                                          if token.verbal])
 
 
 class EchoService(Service):

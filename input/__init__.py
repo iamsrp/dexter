@@ -4,42 +4,61 @@ How Dexter gets instructions from outside world.
 This might be via speech recognition, a network connection, etc.
 '''
 
-from __future__ import (absolute_import, division, print_function,
-                        with_statement)
+from __future__ import (absolute_import, division, print_function, with_statement)
 
 # ------------------------------------------------------------------------------
 
 class Token(object):
     '''
-    A non-verbal part of the input.
+    Part of the input.
     '''
-    def __init__(self, token, description):
+    def __init__(self, element, probability, verbal):
         '''
         '''
-        self._token = token
-        self._desc  = description
+        self._element     = element
+        self._probability = description
+        self._verbal      = verbal
 
 
     @property
-    def description(self):
-        return self._desc
+    def element(self):
+        return self._element
+
+
+    @property
+    def probability(self):
+        return self._probability
+
+
+    @property
+    def verbal(self):
+        return self._verbal
 
 
     def __str__(self):
-        return '[%s]' % (self._token,)
+        string = "[%s](%0.2f)" % (self._element, self._probability)
+        if self._non_verbal:
+            return "[%s]" % string
+        else:
+            return string
 
 
 class Input(object):
     '''
     A way to get text from the outside world.
     '''
-    PAUSE = Token("pause", "A pause in then spoken input")
+    def start(self):
+        '''
+        Start this input going.
+        '''
+        pass
 
-    def __init__(self):
+
+    def stop(self):
         '''
-        CTOR
+        Stop this input.
         '''
-        super(Input, self).__init__()
+        pass
 
 
     def read(self):
