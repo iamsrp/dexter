@@ -13,9 +13,8 @@ import time
 from collections               import deque
 from dexter.input              import Input, Token
 from dexter.core               import LOG
-from pocketsphinx.pocketsphinx import Decocder
+from pocketsphinx.pocketsphinx import *
 from threading                 import Thread
-#from sphinxbase.sphinxbase     import *
 
 # ------------------------------------------------------------------------------
 
@@ -115,7 +114,7 @@ class PocketSphinxInput(Input):
                   for x in range(num_samples)]
         values = sorted(values, reverse=True)
         r = sum(values[:int(num_samples * 0.2)]) // int(num_samples * 0.2)
-        LOG.info("Average audio intensity is ", r)
+        LOG.info("Average audio intensity is %d" % r)
 
         # Set the threshold to just above the limit
         self._threshold = int(max(r, 500) * 1.5)
@@ -211,6 +210,13 @@ class PocketSphinxInput(Input):
 
                 # Reset to no audio and back to listening
                 audio = None
+
+                # Flush anything accumulated while we were parsing the phrase,
+                # so that we don't fall behind
+                available = stream.get_read_available()
+                while (available > self._chunk):
+                    stream.read(available)
+                    available = stream.get_read_available()
 
                 # And we're back to listening
                 LOG.info("Listening ...")

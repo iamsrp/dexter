@@ -13,15 +13,18 @@ from dexter.core import LOG, Dexter
 
 # WIP
 CONFIG = {
-    'inputs' : (
-        ('dexter.input.socket.SocketInput', {'port' : '8008'}),
-    ),
-    'outputs' : (
-        ('dexter.output.io.LogOutput', {'level' : 'INFO'}),
-    ),
-    'services' : (
-        ('dexter.service.echo.EchoService', {}),
-    )
+    'key_phrase' : "Hey Computer",
+    'components' : {
+        'inputs' : (
+            ('dexter.input.socket.SocketInput', {'port' : '8008'}),
+        ),
+        'outputs' : (
+            ('dexter.output.io.LogOutput', {'level' : 'INFO'}),
+        ),
+        'services' : (
+            ('dexter.service.echo.EchoService', {}),
+        ),
+    }
 }
 
 # ------------------------------------------------------------------------------
@@ -46,12 +49,16 @@ LOG.basicConfig(
     level=logging.INFO
 )
 
-inputs   = [get_component(classname, kwargs)
-            for (classname, kwargs) in CONFIG['inputs']]
-outputs  = [get_component(classname, kwargs)
-            for (classname, kwargs) in CONFIG['outputs']]
-services = [get_component(classname, kwargs)
-            for (classname, kwargs) in CONFIG['services']]
+components = CONFIG['components']
 
-dexter = Dexter(inputs, outputs, services)
+inputs   = [get_component(classname, kwargs)
+            for (classname, kwargs) in components.get('inputs', [])]
+outputs  = [get_component(classname, kwargs)
+            for (classname, kwargs) in components.get('outputs', [])]
+services = [get_component(classname, kwargs)
+            for (classname, kwargs) in components.get('services', [])]
+
+key_phrase = CONFIG.get('key_phrase', "Hey Computer")
+
+dexter = Dexter(key_phrase, inputs, outputs, services)
 dexter.run()

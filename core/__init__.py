@@ -39,8 +39,72 @@ class Dexter(object):
     '''
     The main class which drives the system.
     '''
-    def __init__(self, inputs, outputs, services):
+    @staticmethod
+    def _to_letters(word):
         '''
+        Remove non-letters from a word.
+        '''
+        return ''.join(char 
+                       for char in word
+                       if 'a' <= char.lower() <= 'z')
+        
+
+    @staticmethod
+    def _parse_key_phrase(phrase):
+        '''
+        Turn a string into a tuple, without punctuation, as lowercase.
+        '''
+        result = []
+        for word in phrase.split(' '):
+            # Strip to non-letters and only append if it's not the empty string
+            word = Dexter._to_letters(word)
+            if word != '':
+                result.append(word.lower())
+
+        # Safe to append
+        return tuple(result)
+
+
+    @staticmethod
+    def _list_index(list, sublist, start=0):
+        '''
+        Find the index of of a sublist in a list.
+        '''
+        # The empty list can't be in anything
+        if len(sublist) == 0:
+            raise ValuError("Empty sublist not in list")
+
+        # Simple case
+        if len(sublist) == 1:
+            return list.index(sublist[0], start)
+
+        # Okay, we have multiple elements in our sublist. Look for the first
+        # one, and see that it's adjacent to the rest of the list. We 
+        offset = start
+        while True:
+            try:
+                first = Dexter._list_index(list, sublist[ :1], offset)
+                rest  = Dexter._list_index(list, sublist[1: ], first + 1)
+                if first + 1 == rest:
+                    return first
+
+            except ValueError:
+                raise ValueError('%s not in %s' % (sublist, list))
+
+            # Move the offset to be after the first instance of sublist[0], so
+            # that we may find the next one, if any
+            offset = first + 1
+
+
+    def __init__(self,
+                 key_phrase,
+                 inputs,
+                 outputs,
+                 services):
+        '''
+        @type  key_phrase: str
+        @param key_phrase:
+            The words which will cause the system to pick up a command.
         @type  inputs: tuple(L{Inputs})
         @param inputs:
             The L{Inputs}s to the system.
@@ -51,9 +115,11 @@ class Dexter(object):
         @param services:
             The L{Service}s which this instance will provide. 
         '''
-        self._inputs   = inputs
-        self._outputs  = outputs
-        self._services = services
+        self._key_phrase = Dexter._parse_key_phrase(key_phrase)
+        self._inputs     = inputs
+        self._outputs    = outputs
+        self._services   = services
+
         self._running  = True
 
 
@@ -112,6 +178,7 @@ class Dexter(object):
             try:
                 LOG.info("Stopping %s" % (component,))
                 component.stop()
+
             except Exception as e:
                 LOG.error("Failed to stop %s: %$s" % (component, e))
 
@@ -124,10 +191,22 @@ class Dexter(object):
         if tokens is None:
             return None
 
+        # See if the key-phrase is in the tokens and use it to determine the
+        # offset of the command.
+        try:
+            words = [Dexter._to_letters(token.element).lower()
+                     for token in tokens]
+            offset = (Dexter._list_index(words, self._key_phrase) +
+                      len(self._key_phrase))
+
+        except ValueError as e:
+            LOG.info("Key pharse not found: %s" % e)
+            return None
+
         # See which services want them
         handlers = []
         for service in self._services:
-            handler = service.evaluate(tokens)
+            handler = service.evaluate(tokens[offset:])
             if handler is not None:
                 handlers.append(handler)
 
