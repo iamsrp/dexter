@@ -17,7 +17,7 @@ CONFIG = {
         ('dexter.input.socket.SocketInput', {'port' : '8008'}),
     ),
     'outputs' : (
-        ('dexter.output.LogOutput', {'level' : 'INFO'}),
+        ('dexter.output.io.LogOutput', {'level' : 'INFO'}),
     ),
     'services' : (
         ('dexter.service.echo.EchoService', {}),
