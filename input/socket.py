@@ -15,7 +15,10 @@ from threading    import Thread
 
 class SocketInput(Input):
     '''
-    A way to get text from the outside world.
+    A way to get text from the outside world. 
+
+    This creates an unsecured socket which anyone can connect to. Useful for
+    testing but probably not advised for the real world.
     '''
     def __init__(self, port=8008):
         '''
@@ -41,7 +44,7 @@ class SocketInput(Input):
         LOG.info("Opening socket on port %d" % (self._port,))
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._socket.bind((socket.gethostname(), self._port))
+        self._socket.bind(('0.0.0.0', self._port))
         self._socket.listen(5)
 
         # Start the acceptor thread
