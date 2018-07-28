@@ -16,13 +16,26 @@ CONFIG = {
     'key_phrase' : "Hey Computer",
     'components' : {
         'inputs' : (
-            ('dexter.input.socket.SocketInput', {'port' : '8008'}),
+            (
+                'dexter.input.socket.SocketInput',
+                {'port' : '8008'}
+            ),
+            (
+                'dexter.input.pocketsphinx.PocketSphinxInput',
+                None
+            ),
         ),
         'outputs' : (
-            ('dexter.output.io.LogOutput', {'level' : 'INFO'}),
+            (
+                'dexter.output.io.LogOutput',
+                {'level' : 'INFO'}
+            ),
         ),
         'services' : (
-            ('dexter.service.echo.EchoService', {}),
+            (
+                'dexter.service.echo.EchoService',
+                None
+            ),
         ),
     }
 }
@@ -40,7 +53,10 @@ def get_component(full_classname, kwargs):
     (module, classname) = full_classname.rsplit('.', 1)
     exec ('from %s import %s'  % (module, classname,))
     exec ('klass = %s'         % (        classname,))
-    return klass(**kwargs)
+    if kwargs is None:
+        return klass()
+    else:
+        return klass(**kwargs)
 
 # ------------------------------------------------------------------------------
 

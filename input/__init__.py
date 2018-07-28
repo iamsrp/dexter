@@ -38,11 +38,10 @@ class Token(object):
 
 
     def __str__(self):
-        string = "[%s](%0.2f)" % (self._element, self._probability)
-        if self._non_verbal:
-            return "[%s]" % string
+        if self._verbal:
+            return "\"%s\"(%0.2f)" % (self._element, self._probability)
         else:
-            return string
+            return "[%s](%0.2f)" % (self._element, self._probability)
 
 
 class Input(Component):
