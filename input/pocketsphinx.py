@@ -10,9 +10,9 @@ import os
 import pyaudio
 import time
 
-from .                         import Input, Token
-from ..core                    import LOG
 from collections               import deque
+from dexter.input              import Input, Token
+from dexter.core               import LOG
 from pocketsphinx.pocketsphinx import Decocder
 from threading                 import Thread
 #from sphinxbase.sphinxbase     import *
@@ -69,7 +69,7 @@ class PocketSphinxInput(Input):
 
     def start(self):
         '''
-        @see Input.start
+        @see Component.start
         '''
         if not self._running:
             self._running = True
@@ -80,7 +80,7 @@ class PocketSphinxInput(Input):
 
     def stop(self):
         '''
-        @see Input.stop
+        @see Component.stop
         '''
         self._running = False
 
@@ -89,13 +89,12 @@ class PocketSphinxInput(Input):
         '''
         @see Input.read
         '''
-        while True:
-            if len(self._output) > 0:
-                try:
-                    return self._output.pop()
-                except:
-                    pass
-            time.sleep(0.1)
+        if len(self._output) > 0:
+            try:
+                return self._output.pop()
+            except:
+                pass
+        return None
 
 
     def _init_mic(self, num_samples=50):

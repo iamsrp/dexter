@@ -5,9 +5,11 @@ An input which listens from a socket.
 from __future__ import (absolute_import, division, print_function, with_statement)
 
 import socket
+import time
 
-from .      import Input, Token
-from ..core import LOG
+from dexter.input import Input, Token
+from dexter.core  import LOG
+from threading    import Thread
 
 # ------------------------------------------------------------------------------
 
@@ -48,16 +50,16 @@ class SocketInput(Input):
                 thread = Thread(lambda: self._handle(sckt))
                 thread.daemon = True
                 thread.start()
-         thread = Thread(acceptor)
-         thread.daemon = True
-         thread.start()
+        thread = Thread(target=acceptor)
+        thread.daemon = True
+        thread.start()
 
 
-     def stop(self):
-        '''
-        @see Input.stop
-        '''
-        self._running = False
+    def stop(self):
+       '''
+       @see Input.stop
+       '''
+       self._running = False
 
 
     def read(self):
@@ -73,21 +75,21 @@ class SocketInput(Input):
             time.sleep(0.1)
 
 
-     def _handle(self, sckt):
-         '''
-         Handle reading from a socket
-         '''
-         while True:
-             tokens = []
-             cur = ''
-             c = sckt.recv(1)
-             if c is None or c == '':
-                 return
-             elif c == '\n':
-                 self._output.append(tokens)
-                 tokens = []
-             elif c in ' \t':
-                 if len(cur) > 0:
-                     tokens.append(Token(cur, 1.0, True))
-             else:
-                 cur += c
+    def _handle(self, sckt):
+        '''
+        Handle reading from a socket
+        '''
+        while True:
+            tokens = []
+            cur = ''
+            c = sckt.recv(1)
+            if c is None or c == '':
+                return
+            elif c == '\n':
+                self._output.append(tokens)
+                tokens = []
+            elif c in ' \t':
+                if len(cur) > 0:
+                    tokens.append(Token(cur, 1.0, True))
+            else:
+                cur += c

@@ -6,6 +6,8 @@ This might be via speech recognition, a network connection, etc.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
+from dexter.core  import Component
+
 # ------------------------------------------------------------------------------
 
 class Token(object):
@@ -43,37 +45,24 @@ class Token(object):
             return string
 
 
-class Input(object):
+class Input(Component):
     '''
     A way to get text from the outside world.
     '''
-    def start(self):
-        '''
-        Start this input going.
-        '''
-        pass
-
-
-    def stop(self):
-        '''
-        Stop this input.
-        '''
-        pass
+    def __init__(self):
+        super(Input, self).__init__()
 
 
     def read(self):
         '''
-        A blocking call to get a list of C{element}s from the outside world. This
-        will wait until a block of input has been received.
+        A non-blocking call to get a list of C{element}s from the outside world.
 
         Each C{element} is either a L{str} representing a word or a L{Token}.
         
         @rtype: tuple(C{element})
         @return:
-            The list of elements received from the outside world.
+            The list of elements received from the outside world, or None if
+            nothing was available.
         '''
         # Subclasses should implement this
         raise NotImplementedError("Abstract method called")
-
-
-    

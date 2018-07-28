@@ -4,17 +4,22 @@ A simple service which echoes back the input,
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
-from . import Service, Handler
+from dexter.service import Service, Handler, Result
 
 class _EchoHandler(Handler):
     def __init__(self, service, tokens):
-        super(EchoService, self).__init__(service, tokens, 1.0, False)
+        super(EchoService, self).__init__(service, tokens, 1.0)
 
 
     def handle(self):
-        return "You said: %s" % ' '.join([token.element
-                                          for token in self._tokens
-                                          if token.verbal])
+        return Result(
+            self,
+            "You said: %s" % ' '.join([token.element
+                                       for token in self._tokens
+                                       if token.verbal]),
+            False,
+            False
+        )
 
 
 class EchoService(Service):

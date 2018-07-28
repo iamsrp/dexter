@@ -7,69 +7,12 @@ possibly has some output too.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
-from ..input import Token
+from dexter.core  import Component
+from dexter.input import Token
 
 # ------------------------------------------------------------------------------
 
-class Handler(object):
-    '''
-    A handler from a L{Service}. This corresponds to a particular set of input
-    tokens.
-    '''
-    def __init__(self, service, tokens, belief, exclusive):
-        '''
-        @type  service: L{Service}
-        @param service:
-            The L{Service} instance which generated this L{Handler}.
-        @type  tokens: tuple(L{Token})
-        @param tokens:
-            The tokens for which this handler was generated.
-        @type  belief: float
-        @param belief:
-            How much the service believes that it can handle the given input. A
-            value between 0 and 1.
-        @type  exclusive: bool
-        @param exclusive:
-            Whether the service believes that it should be the only handler for
-            the input.
-        '''
-        super(Handler, self).__init__()
-        self._service   = service
-        self._tokens    = tokens
-        self._belief    = belief
-        self._exclusive = exclusive
-        self._handler   = handler
-
-
-    @property
-    def service(self):
-        return self._service
-
-
-    @property
-    def belief(self):
-        return self._belief
-
-
-    @property
-    def exclusive(self):
-        return self._exclusive
-
-
-    def handle(self):
-        '''
-        Handle the input.
-
-        @rtype: str or None
-        @return:
-            A string which will be passed to the system's outputs, or None if
-            no response.
-        '''
-        # To be implemented by subclasses
-        raise NotImplementedError("Abstract method called")
-
-
-class Service(object):
+class Service(Component):
     '''
     A service which responds to input.
     '''
@@ -99,3 +42,123 @@ class Service(object):
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
+
+class Handler(object):
+    '''
+    A handler from a L{Service}. This corresponds to a particular set of input
+    tokens.
+
+    The belief of the handler is how well the service thinks it matched the
+    query defined by the tokens. For example:
+      User:     Hey Computer, what's the grime?
+      Computer: The time is six forty eight PM.
+    might result in a belief of 0.8 since only two thirds of the words were
+    matched but the final word was _almost_ matched.
+    '''
+    def __init__(self, service, tokens, belief):
+        '''
+        @type  service: L{Service}
+        @param service:
+            The L{Service} instance which generated this L{Handler}.
+        @type  tokens: tuple(L{Token})
+        @param tokens:
+            The tokens for which this handler was generated.
+        @type  belief: float
+        @param belief:
+            How much the service believes that it can handle the given input. A
+            value between 0 and 1.
+        @type  exclusive: bool
+        @param exclusive:
+            Whether the service believes that it should be the only handler for
+            the input.
+        '''
+        super(Handler, self).__init__()
+        self._service   = service
+        self._tokens    = tokens
+        self._belief    = belief
+        self._handler   = handler
+
+
+    @property
+    def service(self):
+        return self._service
+
+
+    @property
+    def belief(self):
+        return self._belief
+
+
+    def handle(self):
+        '''
+        Handle the input. This will be called on the main thread.
+
+        @rtype: L{Result} or C{None}
+        @return:
+            The result of responding to the query, or None if no response.
+        '''
+        # To be implemented by subclasses
+        raise NotImplementedError("Abstract method called")
+
+
+class Result(object):
+    '''
+    The result of caling L{Handler.handle()}.
+
+    This might be a simple response, for example:
+      User:     Hey Computer, what's the capital of France.
+      Computer: Paris.
+    Or it might be something which requires more input from the user:
+      User:     Hey Computer, tell me a joke.
+      Computer: Knock, knock...
+      ...
+
+    Some results of a query might be considered canonical for a particular
+    service. For example:
+      User:    Hey Computer, play Captain Underpants by Weird Al.
+      Computer: Okay, playing Captain Underpants Theme Song by Weird Al 
+                Yankovic.
+    Here you would not want another service to also play Captain Underpants at
+    the same time that the responding one does.
+    '''
+    def __init__(self, handler, text, is_query, is_exclusive):
+        '''
+        @type  handler: L{Handler}
+        @param handler
+            The L{Handler} instance which generated this L{Response}.
+        @type  text: str
+        @param text:
+            The text of the response.
+        @type  is_query: bool
+        @param is_query:
+            Whether or not this result is a query and expects the user to 
+            respond.
+        @type  is_exclusive: bool
+        @param is_exclusive:
+            Whether this response should be exclusive to any further ones.
+        '''
+        super(Handler, self).__init__()
+        self._handler      = handler
+        self._text         = text
+        self._is_query     = is_query
+        self._is_exclusive = is_exclusive
+
+
+    @property
+    def handler(self):
+        return self._handler
+
+
+    @property
+    def text(self):
+        return self._text
+
+
+    @property
+    def is_query(self):
+        return self._is_query
+
+
+    @property
+    def is_exclusive(self):
+        return self._is_exclusive

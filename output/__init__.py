@@ -8,11 +8,11 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 
 import logging
 
-from ..core import LOG
+from   dexter.core import LOG, Component
 
 # ------------------------------------------------------------------------------
 
-class Output(object):
+class Output(Component):
     '''
     A way to get information to the outside world.
     '''
@@ -82,12 +82,18 @@ class LogOutput(Output):
     '''
     def __init__(self, level=logging.INFO):
         '''
-        @type  level: int
+        @type  level: int or str
         @param level:
             The level to log at.
         '''
         super(LogOutput, self).__init__()
-        self._level = int(level)
+        try:
+            self._level = int(level)
+        except:
+            try:
+                self._level = getattr(logging, level)
+            except:
+                raise ValueError("Bad log level: '%s'" % (level,))
 
 
     def write(self, text):
