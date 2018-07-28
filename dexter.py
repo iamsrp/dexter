@@ -41,8 +41,10 @@ def get_component(full_classname, kwargs):
 
 # ------------------------------------------------------------------------------
 
-LOG.basicConfig(format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
-                level=logging.INFO)
+LOG.basicConfig(
+    format='[%(asctime)s %(threadName)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
+    level=logging.INFO
+)
 
 inputs   = [get_component(classname, kwargs)
             for (classname, kwargs) in CONFIG['inputs']]
