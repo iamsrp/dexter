@@ -81,13 +81,25 @@ class SocketInput(Input):
         '''
         Handle reading from a socket
         '''
+        LOG.info("Started new socket handler")
+
         # We'll build these up
         tokens = []
         cur = ''
 
+        # Loop until they go away
         while True:
             c = sckt.recv(1)
             if c is None or c == '':
+                LOG.info("Peer closed connection")
+                return
+
+            if cur == '' and ord(c) == 4:
+                LOG.info("Got EOT")
+                try:
+                    sckt.close()
+                except:
+                    pass
                 return
 
             if c in ' \t\n':
