@@ -29,7 +29,7 @@ class SocketInput(Input):
         super(Input, self).__init__()
         self._port    = int(port)
         self._socket  = None
-        self._running = None
+        self._running = False
         self._output  = []
 
 
@@ -40,6 +40,9 @@ class SocketInput(Input):
         if self._running:
             return
 
+        # We're now running
+        self._running = True
+
         # Create the socket 
         LOG.info("Opening socket on port %d" % (self._port,))
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,7 +52,7 @@ class SocketInput(Input):
 
         # Start the acceptor thread
         def acceptor():
-            while True:
+            while self._running:
                 (sckt, addr) = self._socket.accept()
                 LOG.info("Got connection from %s" % (addr,))
                 thread = Thread(target=lambda: self._handle(sckt))
@@ -64,6 +67,10 @@ class SocketInput(Input):
        '''
        @see Input.stop
        '''
+       try:
+           self._socket.close()
+       except:
+           pass
        self._running = False
 
 
@@ -115,3 +122,10 @@ class SocketInput(Input):
 
             else:
                 cur += c
+
+
+    def __str__(self):
+        return "%s[Listening on *:%d]" % (
+            super(SocketInput, self).__str__(),
+            self._port
+        )

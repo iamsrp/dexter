@@ -30,6 +30,9 @@ class Component(object):
         pass
 
 
+    def __str__(self):
+        return type(self).__name__
+
 # ------------------------------------------------------------------------------
 
 class Dexter(object):
