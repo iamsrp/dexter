@@ -73,7 +73,7 @@ class PocketSphinxInput(Input):
         '''
         if not self._running:
             self._running = True
-            thread = Thread(run=self._run)
+            thread = Thread(target=self._run)
             thread.daemon = True
             thread.start()
 

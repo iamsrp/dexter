@@ -38,7 +38,9 @@ class SocketInput(Input):
             return
 
         # Create the socket 
+        LOG.info("Opening socket on port %d" % (self._port,))
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._socket.bind((socket.gethostname(), self._port))
         self._socket.listen(5)
 
@@ -47,7 +49,7 @@ class SocketInput(Input):
             while True:
                 (sckt, addr) = self._socket.accept()
                 LOG.info("Got connection from %s" % (addr,))
-                thread = Thread(lambda: self._handle(sckt))
+                thread = Thread(target=lambda: self._handle(sckt))
                 thread.daemon = True
                 thread.start()
         thread = Thread(target=acceptor)
@@ -79,17 +81,22 @@ class SocketInput(Input):
         '''
         Handle reading from a socket
         '''
+        # We'll build these up
+        tokens = []
+        cur = ''
+
         while True:
-            tokens = []
-            cur = ''
             c = sckt.recv(1)
             if c is None or c == '':
                 return
-            elif c == '\n':
-                self._output.append(tokens)
-                tokens = []
-            elif c in ' \t':
+
+            if c in ' \t\n':
                 if len(cur) > 0:
                     tokens.append(Token(cur, 1.0, True))
+                    cur = ''
+                if c == '\n':
+                    self._output.append(tokens)
+                    tokens = []
+
             else:
                 cur += c

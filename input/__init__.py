@@ -18,7 +18,7 @@ class Token(object):
         '''
         '''
         self._element     = element
-        self._probability = description
+        self._probability = probability
         self._verbal      = verbal
 
 

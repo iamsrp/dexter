@@ -8,7 +8,7 @@ from dexter.service import Service, Handler, Result
 
 class _EchoHandler(Handler):
     def __init__(self, service, tokens):
-        super(EchoService, self).__init__(service, tokens, 1.0)
+        super(_EchoHandler, self).__init__(service, tokens, 1.0)
 
 
     def handle(self):

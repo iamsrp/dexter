@@ -1,6 +1,7 @@
 from __future__ import (absolute_import, division, print_function, with_statement)
 
 import logging
+import time
 
 # The log used by all of the system
 LOG = logging
@@ -63,14 +64,28 @@ class Dexter(object):
         LOG.info("Entering main loop")
         while self._running:
             try:
+                # Loop over all the inputs and see if they have anything pending
                 for input in self._inputs:
-                    result = self._handle(input.read())
-                    self._respond(result)
+                    # Attempt a read, this will return None if there's nothing
+                    # available
+                    tokens = input.read()
+                    if tokens is not None:
+                        # Okay, we read something, attempt to handle it
+                        LOG.info("Read from %s: %s" % (input, tokens))
+                        result = self._handle(tokens)
+
+                        # If we got something back then give it back to the user
+                        if result is not None:
+                            self._respond(result)
+
+                # Wait for a bit before going around again
                 time.sleep(0.1)
+
             except KeyboardInterrupt:
                 LOG.warning("KeyboardInterrupt received")
                 break
 
+        # We're out of the main loop, shut things down
         LOG.info("Stopping the system")
         self._stop()
 
@@ -132,11 +147,11 @@ class Dexter(object):
                     continue
 
                 # Accumulate into the resultant text
-                if resultant.text is not None:
-                    response += text
+                if result.text is not None:
+                    response += result.text
 
                 # Stop here?
-                if response.is_exclusive:
+                if result.is_exclusive:
                     break
                 
             except Exception as e:
@@ -151,3 +166,20 @@ class Dexter(object):
             return response
         else:
             return None
+
+
+    def _respond(self, response):
+        '''
+        Given back the response to the user via the outputs.
+        '''
+        # Give back nothing if we have no response
+        if response is None:
+            return None
+
+        # Simply hand it to all the outputs
+        for output in self._outputs:
+            try:
+                output.write(response)
+            except Exception as e:
+                LOG.error("Failed to respond with %s: %s" % (output, e))
+        

@@ -14,7 +14,7 @@ from dexter.core import LOG, Dexter
 # WIP
 CONFIG = {
     'inputs' : (
-        ('dexter.input.socket.SocketInput', {}),
+        ('dexter.input.socket.SocketInput', {'port' : '8008'}),
     ),
     'outputs' : (
         ('dexter.output.LogOutput', {'level' : 'INFO'}),
@@ -41,7 +41,8 @@ def get_component(full_classname, kwargs):
 
 # ------------------------------------------------------------------------------
 
-LOG.basicConfig(level=logging.INFO)
+LOG.basicConfig(format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
+                level=logging.INFO)
 
 inputs   = [get_component(classname, kwargs)
             for (classname, kwargs) in CONFIG['inputs']]

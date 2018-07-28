@@ -67,21 +67,21 @@ class Handler(object):
         @param belief:
             How much the service believes that it can handle the given input. A
             value between 0 and 1.
-        @type  exclusive: bool
-        @param exclusive:
-            Whether the service believes that it should be the only handler for
-            the input.
         '''
         super(Handler, self).__init__()
-        self._service   = service
-        self._tokens    = tokens
-        self._belief    = belief
-        self._handler   = handler
+        self._service = service
+        self._tokens  = tokens
+        self._belief  = belief
 
 
     @property
     def service(self):
         return self._service
+
+
+    @property
+    def tokens(self):
+        return self._tokens
 
 
     @property
@@ -137,7 +137,7 @@ class Result(object):
         @param is_exclusive:
             Whether this response should be exclusive to any further ones.
         '''
-        super(Handler, self).__init__()
+        super(Result, self).__init__()
         self._handler      = handler
         self._text         = text
         self._is_query     = is_query
