@@ -11,7 +11,7 @@ import pyaudio
 from deepspeech.model          import Model
 from dexter.input              import Token
 from dexter.input.audio        import AudioInput
-from dexter.core               import LOG, Notifier
+from dexter.core               import LOG
 from threading                 import Thread
 
 # ------------------------------------------------------------------------------
@@ -115,12 +115,8 @@ class DeepSpeechInput(AudioInput):
         '''
         @see L{AudioInput._decode_raw()}
         '''
-        LOG.info("Decoding phrase")
-
         audio = numpy.frombuffer(data, numpy.int16)
         words = self._model.stt(audio, self._rate)
         tokens = [Token(word, 1.0, True)
                   for word in words.split(' ')]
-
-        LOG.info("Decoded: %s" % ([str(x) for x in tokens],))
         return tokens

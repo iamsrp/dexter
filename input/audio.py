@@ -207,7 +207,15 @@ class AudioInput(Input):
 
                 # Turn the audio data into text (hopefully!)
                 self._notify(Notifier.WORKING)
-                self._output.append(self._decode_raw(''.join(audio)))
+                start = time.time()
+                LOG.info("Decoding %0.2fs seconds of audio" %
+                         (len(audio) / 2.0 / self._rate))
+                tokens = self._decode_raw(''.join(audio))                
+                LOG.info("Decoded audio in %0.2fs: %s" %
+                         (time.time() - start, ([str(x) for x in tokens])))
+
+                # Add then to the output
+                self._output.append(tokens)
 
                 # Reset to no audio and back to listening
                 audio = None

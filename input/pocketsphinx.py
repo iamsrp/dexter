@@ -8,7 +8,6 @@ import os
 
 from dexter.input              import Token
 from dexter.input.audio        import AudioInput
-from dexter.core               import LOG, Notifier
 from pocketsphinx.pocketsphinx import *
 
 # ------------------------------------------------------------------------------
@@ -43,7 +42,6 @@ class PocketSphinxInput(AudioInput):
         @see L{AudioInput._decode_raw()}
         '''
         # Decode the raw bytes
-        LOG.info("Decoding phrase")
         self._decoder.start_utt()
         self._decoder.process_raw(data, False, True)
         self._decoder.end_utt()
@@ -73,5 +71,4 @@ class PocketSphinxInput(AudioInput):
             tokens.append(Token(word, prob, vrbl))
 
         # We're done!
-        LOG.info("Decoded: %s" % ([str(x) for x in tokens],))
         return tokens
