@@ -13,7 +13,7 @@ from dexter.core import LOG, Dexter
 
 # WIP
 CONFIG = {
-    'key_phrase' : "Hey Computer",
+    'key_phrase' : "Hello Computer",
     'components' : {
         'inputs' : (
             (
