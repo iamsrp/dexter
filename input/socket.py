@@ -78,13 +78,11 @@ class SocketInput(Input):
         '''
         @see Input.read
         '''
-        while True:
-            if len(self._output) > 0:
-                try:
-                    return self._output.pop()
-                except:
-                    pass
-            time.sleep(0.1)
+        if len(self._output) > 0:
+            try:
+                return self._output.pop()
+            except:
+                pass
 
 
     def _handle(self, sckt):
