@@ -29,17 +29,21 @@ class PocketSphinxInput(Input):
     Heavily adapted from::
       http://blog.justsophie.com/python-speech-to-text-with-pocketsphinx/
     '''
-    def __init__(self, silence_limit=1.0, prev_audio=0.5):
+    def __init__(self,
+                 pre_silence_limit=2.0,
+                 mid_silence_limit=1.0,
+                 prev_audio=1.5):
         # Microphone stream config
         self._chunk    = 1024  # Chunks of bytes to read each time from mic
         self._format   = pyaudio.paInt16
         self._channels = 1
         self._rate     = 16000
 
-        # Silence limit in seconds. The max ammount of seconds where
-        # only silence is recorded. When this time passes the
-        # recording finishes and the file is decoded
-        self._silence_limit = silence_limit
+        # Silence limits in seconds. The pre limit is the window where we look
+        # for the start of speech. The mid limit is how long we keep recording
+        # through silence, assuming that the speech is still going on.
+        self._pre_silence_limit = pre_silence_limit
+        self._mid_silence_limit = mid_silence_limit
 
         # Previous audio (in seconds) to prepend. When noise
         # is detected, how much of previously recorded audio is
@@ -134,7 +138,7 @@ class PocketSphinxInput(Input):
         rel = self._rate / self._chunk
 
         # How we keep track of the average sound level
-        slide_size  = int(self._silence_limit * rel)
+        slide_size  = int(self._pre_silence_limit * rel)
         window_size = int(3 * slide_size)
         average_win = deque(maxlen=window_size)
 
@@ -220,7 +224,7 @@ class PocketSphinxInput(Input):
 
             # We deem that talking is still happening if it started only a
             # little while ago
-            elif ((now - talking_start) > self._silence_limit and
+            elif ((now - talking_start) > self._mid_silence_limit and
                   audio is not None):
                 # There's no talking but there us recorded audio. That means
                 # someone just stopped talking.
