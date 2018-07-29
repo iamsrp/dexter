@@ -4,6 +4,7 @@ Input using DeepSpeech.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
+import numpy
 import os
 import pyaudio
 
@@ -104,7 +105,8 @@ class DeepSpeechInput(AudioInput):
         '''
         LOG.info("Decoding phrase")
 
-        words = self._model.stt(data, self._rate)
+        audio = numpy.frombuffer(data, numpy.int16)
+        words = self._model.stt(audio, self._rate)
         tokens = [Token(word, 1.0, True)
                   for word in words.split(' ')]
 
