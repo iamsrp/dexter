@@ -30,7 +30,13 @@ CONFIG = {
         'outputs' : (
             (
                 'dexter.output.io.LogOutput',
-                {'level' : 'INFO'}
+                {
+                    'level' : 'INFO'
+                }
+            ),
+            (
+                'dexter.output.espeak.EspeakOutput',
+                None
             ),
         ),
         'services' : (
