@@ -10,6 +10,7 @@ import numpy
 import os
 import pyaudio
 import time
+import wave
 
 from   collections  import deque
 from   dexter.input import Input, Token
@@ -32,12 +33,19 @@ class AudioInput(Input):
                  chunk=1024,
                  format=pyaudio.paInt16,
                  channels=1,
-                 rate=16000):
+                 rate=16000,
+                 wav_dir=None):
         # Microphone stream config
         self._chunk    = chunk  # Chunks of bytes to read each time from mic
         self._format   = format
+        self._width    = p.get_sample_size(pyaudio.paInt16)
         self._channels = channels
         self._rate     = rate
+
+        # Where to save the wav files, if anywhere. This should already exist.
+        if wav_dir is not None:
+            if not os.path.isdir("Not a directory: %s" % wav_dir)
+        self._wav_dir = wav_dir
 
         # Silence limits in seconds. The pre limit is the window where we look
         # for the start of speech. The mid limit is how long we keep recording
@@ -86,6 +94,23 @@ class AudioInput(Input):
             except:
                 pass
         return None
+
+
+    def _save_bytes(self, data):
+        """
+        Save the raw bytes to a wav file.
+        """
+        if self._wav_dir is None:
+            return
+
+        filename = os.path.join(self._wav_dir, "%d.wav" % time.time())
+        LOG.info("Saving data as %s" % filename)
+        with wave.open(filename, 'wb') as wf:
+            wf.setnchannels(self._channels)
+            wf.setsampwidth(self._width)
+            wf.setframerate(self._rate)
+            wf.writeframes(data)
+            wf.close()
 
 
     def _decode_raw(self, data):
@@ -208,9 +233,17 @@ class AudioInput(Input):
                 # Turn the audio data into text (hopefully!)
                 self._notify(Notifier.WORKING)
                 start = time.time()
+
+                # Turn the stream into a list of bytes
                 data = ''.join(audio)
+
+                # Maybe save then as a wav file
+                self._save_bytes(data)
+
+                # Now decode
+                tokens = self._decode_raw(data)                
                 LOG.info("Decoding %0.2fs seconds of audio" %
-                         (len(data) / 2 / self._rate))
+                         (len(data) / self._width / self._rate))
                 tokens = self._decode_raw(data)                
                 LOG.info("Decoded audio in %0.2fs: %s" %
                          (time.time() - start, ([str(x) for x in tokens])))
