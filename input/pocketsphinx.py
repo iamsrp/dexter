@@ -13,7 +13,7 @@ import time
 
 from collections               import deque
 from dexter.input              import Input, Token
-from dexter.core               import LOG
+from dexter.core               import LOG, Notifier
 from pocketsphinx.pocketsphinx import *
 from threading                 import Thread
 
@@ -134,6 +134,9 @@ class PocketSphinxInput(Input):
         Reads from the audio input stream, extracts phrases from it and calls
         pocketsphinx to decode the sound.
         '''
+        # This takes a while so tell the system what we're doing.
+        self._notify(Notifier.INIT)
+
         # Ummm...
         rel = self._rate / self._chunk
 
@@ -180,6 +183,7 @@ class PocketSphinxInput(Input):
                 # active.
                 if threshold is None:
                     LOG.info("Listening")
+                    self._notify(Notifier.IDLE)
                 
                 # Get the averaging window, with the sliding window removed from
                 # the end
@@ -216,6 +220,7 @@ class PocketSphinxInput(Input):
                     # Move the rolling window of recording to be the start of
                     # the audio
                     LOG.info("Starting recording")
+                    self._notify(Notifier.ACTIVE)
                     audio = list(prev_audio)
                     prev_audio.clear()
 
@@ -230,7 +235,8 @@ class PocketSphinxInput(Input):
                 # someone just stopped talking.
                 LOG.info("Finished recording")
 
-                # Queue it for handling
+                # Turn the audio data into text (hopefully!)
+                self._notify(Notifier.WORKING)
                 self._output.append(self._decode_raw(''.join(audio)))
 
                 # Reset to no audio and back to listening
@@ -246,6 +252,7 @@ class PocketSphinxInput(Input):
 
                 # And we're back to listening
                 LOG.info("Listening")
+                self._notify(Notifier.IDLE)
 
             else:
                 # Update the rolling pre-talking buffer with what we just

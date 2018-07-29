@@ -14,6 +14,7 @@ class Component(object):
     '''
     def __init__(self):
         super(Component, self).__init__()
+        self._notifier = None
 
 
     def start(self):
@@ -30,8 +31,47 @@ class Component(object):
         pass
 
 
+    def set_notifier(self, notifier):
+        '''
+        Set the notifier for this component.
+        '''
+        self._notifier = notifier
+
+
+    def _notify(self, status):
+        '''
+        Notify of a status change.
+        '''
+        if self._notifier is not None:
+            self._notifier.update_status(self, status)
+
+
     def __str__(self):
         return type(self).__name__
+
+
+class Notifier(object):
+    '''
+    How a Component tells the system about its status changes.
+    '''
+    class _Status(object):
+        def __init__(self, name):
+            self._name = name
+
+        def __str__(self):
+            return self._name
+
+    INIT    = _Status("<INITIALISING>")
+    IDLE    = _Status("<IDLE>")
+    ACTIVE  = _Status("<ACTIVE>")
+    WORKING = _Status("<WORKING>")
+    
+    def update_status(self, component, status):
+        '''
+        Tell the system of a status change for a component.
+        '''
+        # Subclasses should implement this
+        raise NotImplementedError("Abstract method called")
 
 # ------------------------------------------------------------------------------
 
@@ -39,6 +79,19 @@ class Dexter(object):
     '''
     The main class which drives the system.
     '''
+    class _MainNotifier(Notifier):
+        '''
+        Tell the system overall that we're busy.
+        '''
+
+        def update_status(self, component, status):
+            '''
+            @see L{Notifier.update_status()}
+            '''
+            LOG.info("Component %s is now %s",
+                     component, status)
+
+
     @staticmethod
     def _to_letters(word):
         '''
@@ -116,9 +169,13 @@ class Dexter(object):
             The L{Service}s which this instance will provide. 
         '''
         self._key_phrase = Dexter._parse_key_phrase(key_phrase)
+        self._notifier   = Dexter._MainNotifier()
         self._inputs     = inputs
         self._outputs    = outputs
         self._services   = services
+
+        for component in self._inputs + self._outputs + self._services:
+            component.set_notifier(self._notifier)
 
         self._running  = True
 
