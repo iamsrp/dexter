@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 
 import os
 
+from dexter.input              import Token
 from dexter.input.audio        import AudioInput
 from dexter.core               import LOG, Notifier
 from pocketsphinx.pocketsphinx import *

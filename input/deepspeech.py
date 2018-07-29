@@ -9,6 +9,7 @@ import os
 import pyaudio
 
 from deepspeech.model          import Model
+from dexter.input              import Token
 from dexter.input.audio        import AudioInput
 from dexter.core               import LOG, Notifier
 from threading                 import Thread
@@ -27,7 +28,7 @@ from threading                 import Thread
 # ------------------------------------------------------------------------------
 
 # Typical installation location for deepspeech data
-_MODEL_DIR = "/usr/share/deepspeech/models"
+_MODEL_DIR = "/usr/local/share/deepspeech/models"
 
 # Beam width used in the CTC decoder when building candidate transcriptions
 _BEAM_WIDTH = 500
@@ -74,10 +75,16 @@ class DeepSpeechInput(AudioInput):
         )
 
         # The files which we'll need from the model directory
-        model    = os.path.join(_MODEL_DIR, 'output_graph.pb')
         alphabet = os.path.join(_MODEL_DIR, 'alphabet.txt')
+        model    = os.path.join(_MODEL_DIR, 'output_graph.pb')
         lm       = os.path.join(_MODEL_DIR, 'lm.binary')
         trie     = os.path.join(_MODEL_DIR, 'trie')
+
+        # If these don't exist then DeepSpeech will segfault when inferring!
+        if not os.path.exists(alphabet):
+            raise IOError("Not found: %s" % alphabet)
+        if not os.path.exists(model):
+            raise IOError("Not found: %s" % model)
 
         # Load in the model.
         LOG.info("Loading %s" % model)
@@ -90,6 +97,11 @@ class DeepSpeechInput(AudioInput):
         # If we're using a language model then pull that in too. This requires a
         # decent chunk of memory.
         if use_lm:
+            if not os.path.exists(lm):
+                raise IOError("Not found: %s" % lm)
+            if not os.path.exists(trie):
+                raise IOError("Not found: %s" % trie)
+
             LOG.info("Loading %s" % lm)
             self._model.enableDecoderWithLM(alphabet,
                                             lm,
