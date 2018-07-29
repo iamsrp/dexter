@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 
 import audioop
 import math
+import numpy
 import os
 import pyaudio
 import time
@@ -25,7 +26,7 @@ class PocketSphinxInput(Input):
     '''
     Input from PocketSphinx.
 
-    Adapted from::
+    Heavily adapted from::
       http://blog.justsophie.com/python-speech-to-text-with-pocketsphinx/
     '''
     def __init__(self, silence_limit=1.0, prev_audio=0.5):
@@ -45,10 +46,6 @@ class PocketSphinxInput(Input):
         # prepended. This helps to prevent chopping the beginning
         # of the phrase.
         self._prev_audio = prev_audio
-
-        # The threshold of sound level at which we start recording. Computed
-        # dynamically when the system is started.
-        self._threshold = None
 
         # Create a decoder with certain model.
         config = Decoder.default_config()
@@ -96,33 +93,6 @@ class PocketSphinxInput(Input):
         return None
 
 
-    def _init_mic(self, num_samples=50):
-        '''
-        Gets average audio intensity of your mic sound. You can use it to get
-        average intensities while you're talking and/or silent. The average is
-        the avg of the .2 of the largest intensities recorded.
-        '''
-        LOG.info("Getting intensity values from microphone")
-        p = pyaudio.PyAudio()
-        stream = p.open(format          =self._format,
-                        channels        =self._channels,
-                        rate            =self._rate,
-                        input           =True,
-                        frames_per_buffer=self._chunk)
-
-        values = [math.sqrt(abs(audioop.avg(stream.read(self._chunk), 4)))
-                  for x in range(num_samples)]
-        values = sorted(values, reverse=True)
-        r = sum(values[:int(num_samples * 0.2)]) // int(num_samples * 0.2)
-        LOG.info("Average audio intensity is %d" % r)
-
-        # Set the threshold to just above the limit
-        self._threshold = int(max(r, 500) * 1.5)
-
-        # And give back the audio
-        return (p, stream)
-
-
     def _decode_raw(self, data):
         # Decode the raw bytes
         LOG.info("Decoding phrase")
@@ -150,7 +120,7 @@ class PocketSphinxInput(Input):
 
             tokens.append(Token(word, prob, vrbl))
 
-        LOG.info("Decoded: %s" % (tokens,))
+        LOG.info("Decoded: %s" % ([str(x) for x in tokens],))
 
         return tokens
 
@@ -163,44 +133,95 @@ class PocketSphinxInput(Input):
         # Ummm...
         rel = self._rate / self._chunk
 
+        # How we keep track of the average sound level
+        slide_size  = int(self._silence_limit * rel)
+        window_size = int(3 * slide_size)
+        average_win = deque(maxlen=window_size)
+
         # How we detect if the noise level is high enough to warrant recording
-        slid_win = deque(maxlen=int(self._silence_limit * rel))
+        slid_win = deque(maxlen=slide_size)
 
         # Prepend audio from X seconds before noise was detected
         prev_audio = deque(maxlen=int(self._prev_audio * rel))
 
-        # Calibrate the audio and get our handle on it
-        (p, stream) = self._init_mic()
-        LOG.info("Mic set up and listening")
+        # Start pulling in the audio stream
+        p      = pyaudio.PyAudio()
+        stream = p.open(format          =self._format,
+                        channels        =self._channels,
+                        rate            =self._rate,
+                        input           =True,
+                        frames_per_buffer=self._chunk)
+
+        # Things which we'll use in the loop below
+        audio         = None
+        threshold     = None
+        talking_start = 0
 
         # Keep listening until we are stopped
-        audio = None
         while self._running:
             # Read in the next lump of data
             cur_data = stream.read(self._chunk)
 
-            # Appending it to our sliding window so that we may see if we have
-            # silence or talking.
-            slid_win.append(math.sqrt(abs(audioop.avg(cur_data, 4))))
+            # Appending it to our sliding windows so that we may see if we have
+            # silence or talking and can keep track of the averge.
+            level = math.sqrt(abs(audioop.avg(cur_data, 4)))
+            average_win.append(level)
+            slid_win   .append(level)
 
-            # Whether someone is likely talking.
-            talking = sum([x > self._threshold for x in slid_win]) > 0
+            # Figure out the threshold given the last N seconds of audio,
+            # leading up to our sample period.
+            if len(average_win) == window_size:
+                # If the threshold is None then we are entering this block for
+                # the first time. That means we can tell the user that we're
+                # active.
+                if threshold is None:
+                    LOG.info("Listening")
+                
+                # Get the averaging window, with the sliding window removed from
+                # the end
+                values = numpy.array(average_win)[:slide_size]
+
+                # See what the top 20% of that looks like.
+                count   = int((window_size - slide_size) * 0.2) + 1
+                average = numpy.mean(sorted(values, reverse=True)[:count])
+
+                # The threshold should be somwhere about this. The multiplier is
+                # chosen by vague trial and error here.
+                threshold = average * 2.5
+
+                # Whether someone is likely talking.
+                max_level = max(slid_win)
+                talking = max_level > threshold
+                LOG.debug("Max level and threshold are: %d %d",
+                          max_level, threshold)
+
+            else:
+                # No-one is talking until we have enough data to compute the
+                # average noise level.
+                talking = False
 
             # If we think someone is talking then
+            now = time.time()
             if talking:
+                # Remember the last time that we heard someone talking
+                talking_start = now
+
                 # If we don't yet have any audio then we're starting the
                 # recording
                 if audio is None:
-                    LOG.info("Starting recording of phrase")
                     # Move the rolling window of recording to be the start of
                     # the audio
+                    LOG.info("Starting recording")
                     audio = list(prev_audio)
                     prev_audio.clear()
 
                 # Add on what we just recorded
                 audio.append(cur_data)
 
-            elif audio is not None:
+            # We deem that talking is still happening if it started only a
+            # little while ago
+            elif ((now - talking_start) > self._silence_limit and
+                  audio is not None):
                 # There's no talking but there us recorded audio. That means
                 # someone just stopped talking.
                 LOG.info("Finished recording")
@@ -215,11 +236,12 @@ class PocketSphinxInput(Input):
                 # so that we don't fall behind
                 available = stream.get_read_available()
                 while (available > self._chunk):
+                    LOG.debug("Junking backlog of %d", available)
                     stream.read(available)
                     available = stream.get_read_available()
 
                 # And we're back to listening
-                LOG.info("Listening ...")
+                LOG.info("Listening")
 
             else:
                 # Update the rolling pre-talking buffer with what we just
