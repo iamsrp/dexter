@@ -173,36 +173,29 @@ class Dexter(object):
 
     def __init__(self, config):
         '''
-        @type  key_phrase: str
-        @param key_phrase:
-            The words which will cause the system to pick up a command.
-        @type  inputs: tuple(L{Inputs})
-        @param inputs:
-            The L{Inputs}s to the system.
-        @type  outputs: tuple(L{Outputs})
-        @param outputs:
-            The L{Outputs}s from the system.
-        @type  services: tuple(L{Service})
-        @param services:
-            The L{Service}s which this instance will provide. 
+        @type  config: configuration file
+        @param config:
+            The configuration for the system.
         '''
-
-
+        # Create the components
         components = config['components']
-
         inputs   = [Dexter._get_component(classname, kwargs)
                     for (classname, kwargs) in components.get('inputs', [])]
         outputs  = [Dexter._get_component(classname, kwargs)
                     for (classname, kwargs) in components.get('outputs', [])]
         services = [Dexter._get_component(classname, kwargs)
                     for (classname, kwargs) in components.get('services', [])]
-    
+
+        # Remember the various key phrases
         self._key_phrases = tuple(Dexter._parse_key_phrase(p)
                                   for p in config['key_phrases'])
+
+        # Set up the components
         self._inputs   = inputs
         self._outputs  = outputs
         self._services = services
 
+        # Make sure that they have a notifier
         self._notifier = Dexter._MainNotifier()
         for component in self._inputs + self._outputs + self._services:
             component.set_notifier(self._notifier)
@@ -281,14 +274,20 @@ class Dexter(object):
 
         # See if the key-phrase is in the tokens and use it to determine the
         # offset of the command.
-        try:
-            words = [Dexter._to_letters(token.element).lower()
-                     for token in tokens]
-            offset = (Dexter._list_index(words, self._key_phrase) +
-                      len(self._key_phrase))
+        words = [Dexter._to_letters(token.element).lower()
+                 for token in tokens]
+        offset = None
+        for key_phrase in self._key_phrases:
+            try:
+                offset = (Dexter._list_index(words, key_phrase) +
+                          len(key_phrase))
+            except ValueError:
+                pass
 
-        except ValueError as e:
-            LOG.info("Key pharse not found: %s" % e)
+        # If we have an offset then we found a key-phrase
+        if offset is None:
+            LOG.info("Key pharses %s not found in %s" %
+                     (self._key_phrases, words))
             return None
 
         # See which services want them
