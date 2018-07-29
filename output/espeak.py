@@ -29,7 +29,7 @@ class EspeakOutput(Output):
         super(EspeakOutput, self).__init__()
 
         if rate is not None:
-            espeak.set_parameter(espeak.Parameter.Rate, int(100))
+            espeak.set_parameter(espeak.Parameter.Rate, int(rate))
         if voice is not None:
             espeak.set_voice(str(voice))
 
