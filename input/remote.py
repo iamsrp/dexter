@@ -75,7 +75,7 @@ class RemoteInput(AudioInput):
             result = ''
             while len(result) < count:
                 result += sckt.recv(count - len(result))
-            LOG.info("Result is: %s" % (result,))
+            LOG.info("Result is: '%s'" % (result,))
 
         except Exception as e:
             # Don't kill the thread by throwing an exception, just grumble
