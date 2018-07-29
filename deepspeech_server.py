@@ -5,6 +5,7 @@ Listen for incoing data and give back parsed results.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
+import logging
 import numpy
 import os
 import socket
@@ -42,6 +43,12 @@ _VALID_WORD_COUNT_WEIGHT = 1.00
 
 # ------------------------------------------------------------------------------
 
+# Set up the logger
+LOG.basicConfig(
+    format='[%(asctime)s %(lineno)d %(levelname)s] %(message)s',
+    level=logging.INFO
+)
+
 # The files which we'll need from the model directory
 alphabet = os.path.join(_MODEL_DIR, 'alphabet.txt')
 model    = os.path.join(_MODEL_DIR, 'output_graph.pb')
@@ -59,7 +66,7 @@ if not os.path.exists(trie):
     raise IOError("Not found: %s" % trie)
 
 # Load in the model
-print("Loading %s" % model)
+LOG.info("Loading %s" % model)
 model = Model(model,
               _NUM_FEATURES,
               _NUM_CONTEXT,
@@ -67,7 +74,7 @@ model = Model(model,
               _BEAM_WIDTH)
 
 # Add the language model
-print("Loading %s" % lm)
+LOG.info("Loading %s" % lm)
 model.enableDecoderWithLM(alphabet,
                           lm,
                           trie,
@@ -77,7 +84,7 @@ model.enableDecoderWithLM(alphabet,
 
 # Set up the server socket
 port = 8008
-print("Opening socket on port %d" % (port,))
+LOG.info("Opening socket on port %d" % (port,))
 sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sckt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sckt.bind(('0.0.0.0', port))
@@ -87,12 +94,12 @@ sckt.listen(5)
 while True:
     try:
         # Get a connection
-        print("Waiting for a connection")
+        LOG.info("Waiting for a connection")
         (conn, addr) = sckt.accept()
-        print("Got connection from %s" % (addr,))
+        LOG.info("Got connection from %s" % (addr,))
 
         # Read in the header data
-        print("Reading header")
+        LOG.info("Reading header")
         header = ''
         while len(header) < (4 * 8):
             header += conn.recv((4 * 8) - len(header))
@@ -101,16 +108,16 @@ while True:
         (channels, width, rate, length) = struct.unpack('!qqqq', header)
 
         # Pull in the data
-        print("Reading %d bytes of data" % (length,))
+        LOG.info("Reading %d bytes of data" % (length,))
         data = ''
         while len(data) < length:
             data += conn.recv(length - len(data))
 
         # Actually decode it
-        print("Decoding")
+        LOG.info("Decoding")
         audio = numpy.frombuffer(data, numpy.int16)
         words = model.stt(audio, rate)
-        print("Got: %s" % (words,))
+        LOG.info("Got: '%s'" % (words,))
 
         # Send back the length (as a long) and the string
         conn.sendall(struct.pack('!q', len(words)))
@@ -118,12 +125,12 @@ while True:
 
     except Exception as e:
         # Tell the user at least
-        print("Error handling incoming data: %s" % e)
+        LOG.error("Error handling incoming data: %s" % e)
 
     finally:
         # We're done with this connection now, close in a best-effort fashion
         try:
-            print("Closing connection")
+            LOG.info("Closing connection")
             conn.shutdown(socket.SHUT_RDWR)
             conn.close()
         except:
