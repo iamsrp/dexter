@@ -13,12 +13,14 @@ from dexter.core import LOG, Dexter
 
 # WIP
 CONFIG = {
-    'key_phrase' : "Hello Computer",
+    'key_phrase' : "Hey Computer",
     'components' : {
         'inputs' : (
             (
                 'dexter.input.socket.SocketInput',
-                {'port' : '8008'}
+                {
+                    'port' : '8008'
+                }
             ),
             (
                 'dexter.input.pocketsphinx.PocketSphinxInput',

@@ -44,8 +44,8 @@ _VALID_WORD_COUNT_WEIGHT = 1.00
 # ------------------------------------------------------------------------------
 
 # Set up the logger
-LOG.basicConfig(
-    format='[%(asctime)s %(lineno)d %(levelname)s] %(message)s',
+logging.basicConfig(
+    format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
     level=logging.INFO
 )
 
@@ -66,7 +66,7 @@ if not os.path.exists(trie):
     raise IOError("Not found: %s" % trie)
 
 # Load in the model
-LOG.info("Loading %s" % model)
+logging.info("Loading %s" % model)
 model = Model(model,
               _NUM_FEATURES,
               _NUM_CONTEXT,
@@ -74,7 +74,7 @@ model = Model(model,
               _BEAM_WIDTH)
 
 # Add the language model
-LOG.info("Loading %s" % lm)
+logging.info("Loading %s" % lm)
 model.enableDecoderWithLM(alphabet,
                           lm,
                           trie,
@@ -84,7 +84,7 @@ model.enableDecoderWithLM(alphabet,
 
 # Set up the server socket
 port = 8008
-LOG.info("Opening socket on port %d" % (port,))
+logging.info("Opening socket on port %d" % (port,))
 sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sckt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sckt.bind(('0.0.0.0', port))
@@ -94,12 +94,12 @@ sckt.listen(5)
 while True:
     try:
         # Get a connection
-        LOG.info("Waiting for a connection")
+        logging.info("Waiting for a connection")
         (conn, addr) = sckt.accept()
-        LOG.info("Got connection from %s" % (addr,))
+        logging.info("Got connection from %s" % (addr,))
 
         # Read in the header data
-        LOG.info("Reading header")
+        logging.info("Reading header")
         header = ''
         while len(header) < (4 * 8):
             header += conn.recv((4 * 8) - len(header))
@@ -108,16 +108,16 @@ while True:
         (channels, width, rate, length) = struct.unpack('!qqqq', header)
 
         # Pull in the data
-        LOG.info("Reading %d bytes of data" % (length,))
+        logging.info("Reading %d bytes of data" % (length,))
         data = ''
         while len(data) < length:
             data += conn.recv(length - len(data))
 
         # Actually decode it
-        LOG.info("Decoding")
+        logging.info("Decoding")
         audio = numpy.frombuffer(data, numpy.int16)
         words = model.stt(audio, rate)
-        LOG.info("Got: '%s'" % (words,))
+        logging.info("Got: '%s'" % (words,))
 
         # Send back the length (as a long) and the string
         conn.sendall(struct.pack('!q', len(words)))
@@ -125,12 +125,12 @@ while True:
 
     except Exception as e:
         # Tell the user at least
-        LOG.error("Error handling incoming data: %s" % e)
+        logging.error("Error handling incoming data: %s" % e)
 
     finally:
         # We're done with this connection now, close in a best-effort fashion
         try:
-            LOG.info("Closing connection")
+            logging.info("Closing connection")
             conn.shutdown(socket.SHUT_RDWR)
             conn.close()
         except:
