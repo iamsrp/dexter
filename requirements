@@ -1,5 +1,5 @@
 What you will need to make all of this work. Some things are optional, depending
 on whether you don't care about certain modules.
 
-  sudo apt install python-pip python-numpy python-scipy python-pyaudio python-espeak python-pocketsphinx pocketsphinx-en-us
+  sudo apt install python-pip python-numpy python-scipy python-pyaudio python-argh python-espeak python-pocketsphinx pocketsphinx-en-us
   sudo pip install deepspeech

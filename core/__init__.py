@@ -93,6 +93,28 @@ class Dexter(object):
 
 
     @staticmethod
+    def _get_component(full_classname, kwargs):
+        '''
+        The the instance of the given L{Component}.
+    
+        @type  full_classname: str
+        @param full_classname:
+            The fully qualified classname, e.g. 'dexter,input.AnInput'
+        '''
+        try:
+            (module, classname) = full_classname.rsplit('.', 1)
+            exec ('from %s import %s'  % (module, classname,))
+            exec ('klass = %s'         % (        classname,))
+            if kwargs is None:
+                return klass()
+            else:
+                return klass(**kwargs)
+        except Exception as e:
+            raise ValueError("Failed to load component %s with args %s: %s" %
+                             (full_classname, kwargs, e))
+
+
+    @staticmethod
     def _to_letters(word):
         '''
         Remove non-letters from a word.
@@ -149,11 +171,7 @@ class Dexter(object):
             offset = first + 1
 
 
-    def __init__(self,
-                 key_phrase,
-                 inputs,
-                 outputs,
-                 services):
+    def __init__(self, config):
         '''
         @type  key_phrase: str
         @param key_phrase:
@@ -168,10 +186,22 @@ class Dexter(object):
         @param services:
             The L{Service}s which this instance will provide. 
         '''
-        self._key_phrase = Dexter._parse_key_phrase(key_phrase)
-        self._inputs     = inputs
-        self._outputs    = outputs
-        self._services   = services
+
+
+        components = config['components']
+
+        inputs   = [Dexter._get_component(classname, kwargs)
+                    for (classname, kwargs) in components.get('inputs', [])]
+        outputs  = [Dexter._get_component(classname, kwargs)
+                    for (classname, kwargs) in components.get('outputs', [])]
+        services = [Dexter._get_component(classname, kwargs)
+                    for (classname, kwargs) in components.get('services', [])]
+    
+        self._key_phrases = tuple(Dexter._parse_key_phrase(p)
+                                  for p in config['key_phrases'])
+        self._inputs   = inputs
+        self._outputs  = outputs
+        self._services = services
 
         self._notifier = Dexter._MainNotifier()
         for component in self._inputs + self._outputs + self._services:

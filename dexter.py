@@ -2,7 +2,9 @@
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
+import argh
 import logging
+import json
 import sys
 
 sys.path[0] += '/..'
@@ -13,7 +15,10 @@ from dexter.core import LOG, Dexter
 
 # WIP
 CONFIG = {
-    'key_phrase' : "Hey Computer",
+    'key_phrases' : (
+        "Hey Computer",
+        "Hey Dexter",
+    ),
     'components' : {
         'inputs' : (
             (
@@ -50,21 +55,26 @@ CONFIG = {
 
 # ------------------------------------------------------------------------------
 
-def get_component(full_classname, kwargs):
+@argh.arg('--config', '-c',
+          help="The JSON configuration file to use")
+def main(config=None):
     '''
-    The the instance of the given L{Component}.
-
-    @type  full_classname: str
-    @param full_classname:
-        The fully qualified classname, e.g. 'dexter,input.AnInput'
+    Main entry point.
     '''
-    (module, classname) = full_classname.rsplit('.', 1)
-    exec ('from %s import %s'  % (module, classname,))
-    exec ('klass = %s'         % (        classname,))
-    if kwargs is None:
-        return klass()
+    if config is not None:
+        try:
+            with open(config) as fh:
+                configuration = json.load(fh)
+        except Exception as e:
+            LOG.fatal("Failed to parse config file '%s': %s" % (config, e))
+            sys.exit(1)
     else:
-        return klass(**kwargs)
+        configuration = _DEFAULT_CONFIG
+
+    # And spawn it
+    dexter = Dexter(configuration)
+    dexter.run()
+
 
 # ------------------------------------------------------------------------------
 
@@ -73,16 +83,9 @@ LOG.basicConfig(
     level=logging.INFO
 )
 
-components = CONFIG['components']
-
-inputs   = [get_component(classname, kwargs)
-            for (classname, kwargs) in components.get('inputs', [])]
-outputs  = [get_component(classname, kwargs)
-            for (classname, kwargs) in components.get('outputs', [])]
-services = [get_component(classname, kwargs)
-            for (classname, kwargs) in components.get('services', [])]
-
-key_phrase = CONFIG.get('key_phrase', "Hey Computer")
-
-dexter = Dexter(key_phrase, inputs, outputs, services)
-dexter.run()
+if __name__ == "__main__":
+    try:
+        argh.dispatch_command(main)
+    except Exception as e:
+        print("%s" % e)
+    
