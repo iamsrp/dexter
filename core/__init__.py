@@ -169,11 +169,11 @@ class Dexter(object):
             The L{Service}s which this instance will provide. 
         '''
         self._key_phrase = Dexter._parse_key_phrase(key_phrase)
-        self._notifier   = Dexter._MainNotifier()
         self._inputs     = inputs
         self._outputs    = outputs
         self._services   = services
 
+        self._notifier = Dexter._MainNotifier()
         for component in self._inputs + self._outputs + self._services:
             component.set_notifier(self._notifier)
 
