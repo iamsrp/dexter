@@ -197,7 +197,8 @@ class Dexter(object):
                     tokens = input.read()
                     if tokens is not None:
                         # Okay, we read something, attempt to handle it
-                        LOG.info("Read from %s: %s" % (input, tokens))
+                        LOG.info("Read from %s: %s" %
+                                 (input, [str(t) for t in tokens]))
                         result = self._handle(tokens)
 
                         # If we got something back then give it back to the user
