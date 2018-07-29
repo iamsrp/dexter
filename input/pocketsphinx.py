@@ -20,10 +20,15 @@ class PocketSphinxInput(AudioInput):
     Input from PocketSphinx using the US English language model.
     '''
     def __init__(self,
+                 notifier,
                  pre_silence_limit=2.0,
                  mid_silence_limit=1.0,
                  prev_audio=1.5):
+        '''
+        @see AudioInput.__init__()
+        '''
         super(PocketSphinxInput, self).__init__(
+            notifier,
             pre_silence_limit=pre_silence_limit,
             mid_silence_limit=mid_silence_limit,
             prev_audio=prev_audio

@@ -20,13 +20,16 @@ class SocketInput(Input):
     This creates an unsecured socket which anyone can connect to. Useful for
     testing but probably not advised for the real world.
     '''
-    def __init__(self, port=8008):
+    def __init__(self, notifier, port=8008):
         '''
+        @type  notifier: L{Notifier}
+        @param notifier:
+            The Notifier instance.
         @type  port: int
         @param port:
             The port to listen on.
         '''
-        super(Input, self).__init__()
+        super(SocketInput, self).__init__(notifier)
         self._port    = int(port)
         self._socket  = None
         self._running = False

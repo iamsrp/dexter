@@ -16,8 +16,9 @@ class EspeakOutput(Output):
     '''
     An output which logs as a particular level to the system's log.
     '''
-    def __init__(self, rate=None, voice=None):
+    def __init__(self, notifier, rate=None, voice=None):
         '''
+        @see Output.__init__()
         @type  rate: int
         @param rate:
             The speed at which to speek. An integer value between 0 and 450. The
@@ -26,7 +27,7 @@ class EspeakOutput(Output):
         @param voice:
             The voice to use. See C{espeak.list_voices()}.
         '''
-        super(EspeakOutput, self).__init__()
+        super(EspeakOutput, self).__init__(notifier)
 
         if rate is not None:
             espeak.set_parameter(espeak.Parameter.Rate, int(rate))

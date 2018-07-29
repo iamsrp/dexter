@@ -1,0 +1,25 @@
+{
+    "key_phrases" : [
+        "Hey Dexter",
+        "Hey Computer"
+    ],
+
+    "components" : {
+        "inputs" : [
+            [ "dexter.input.socket.SocketInput", {
+                "port" : "8008"
+            }]
+        ],
+
+        "outputs" : [
+            [ "dexter.output.io.LogOutput", {
+                "level" : "INFO"
+            }]
+        ],
+
+        "services" : [
+            [ "dexter.service.echo.EchoService", {
+            }]
+        ]
+    }
+}

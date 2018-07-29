@@ -59,11 +59,20 @@ class DeepSpeechInput(AudioInput):
     Input from DeepSpeech using the US English language model.
     '''
     def __init__(self,
+                 notifier,
                  use_lm=False,
                  pre_silence_limit=2.0,
                  mid_silence_limit=1.0,
                  prev_audio=1.5):
+        '''
+        @see AudioInput.__init__()
+
+        @type  use_lm: bool
+        @param use_lm:
+            Whether to use the DeepSpeech language model for better predictions.
+        '''
         super(DeepSpeechInput, self).__init__(
+            notifier,
             pre_silence_limit=pre_silence_limit,
             mid_silence_limit=mid_silence_limit,
             prev_audio=prev_audio,

@@ -27,6 +27,7 @@ class AudioInput(Input):
       http://blog.justsophie.com/python-speech-to-text-with-pocketsphinx/
     '''
     def __init__(self,
+                 notifier,
                  pre_silence_limit=2.0,
                  mid_silence_limit=1.0,
                  prev_audio=1.5,
@@ -35,6 +36,39 @@ class AudioInput(Input):
                  channels=1,
                  rate=16000,
                  wav_dir=None):
+        '''
+        @type  notifier: L{Notifier}
+        @param notifier:
+            The Notifier instance.
+        @type  pre_silence_limit: float
+        @param pre_silence_limit:
+            Number of seconds to look for sound in before a command.
+        @type  mid_silence_limit: float
+        @param mid_silence_limit:
+            Number of seconds in a command before we consider it done.
+        @type  prev_audio: float
+        @param prev_audio:
+            Number of seconds of leading audio to use before we started 
+            recording.
+        @type  chunk: int
+        @param chunk:
+            The number of things to read from the stream at once.
+        @type  format: int
+        @param format:
+            The pyaudio format.
+        @type  channels: int
+        @param channels:
+            The number of audio channels (typically 1).
+        @type  rate: int
+        @param rate:
+            The sample rate. This is usually 16,000 for many speech to text
+            systems.
+        @type  wav_dir: str
+        @param wav_dir:
+            Where to save WAV files to, if we are doing so.
+        '''
+        super(AudioInput, self).__init__(notifier)
+
         # Microphone stream config
         self._chunk    = chunk  # Chunks of bytes to read each time from mic
         self._format   = format

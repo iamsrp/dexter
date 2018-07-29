@@ -48,8 +48,8 @@ class Input(Component):
     '''
     A way to get text from the outside world.
     '''
-    def __init__(self):
-        super(Input, self).__init__()
+    def __init__(self, notifier):
+        super(Input, self).__init__(notifier)
 
 
     def read(self):

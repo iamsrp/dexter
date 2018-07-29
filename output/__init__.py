@@ -14,8 +14,13 @@ class Output(Component):
     '''
     A way to get information to the outside world.
     '''
-    def __init__(self):
-        super(Output, self).__init__()
+    def __init__(self, notifier):
+        '''
+        @type  notifier: L{Notifier}
+        @param notifier:
+            The Notifier instance.
+        '''
+        super(Output, self).__init__(notifier)
 
 
     def write(self, text):

@@ -12,9 +12,9 @@ class Component(object):
     '''
     A part of the system.
     '''
-    def __init__(self):
+    def __init__(self, notifier):
         super(Component, self).__init__()
-        self._notifier = None
+        self._notifier = notifier
 
 
     def start(self):
@@ -29,13 +29,6 @@ class Component(object):
         Stop this component.
         '''
         pass
-
-
-    def set_notifier(self, notifier):
-        '''
-        Set the notifier for this component.
-        '''
-        self._notifier = notifier
 
 
     def _notify(self, status):
@@ -93,7 +86,7 @@ class Dexter(object):
 
 
     @staticmethod
-    def _get_component(full_classname, kwargs):
+    def _get_component(full_classname, kwargs, notifier):
         '''
         The the instance of the given L{Component}.
     
@@ -106,11 +99,11 @@ class Dexter(object):
             exec ('from %s import %s'  % (module, classname,))
             exec ('klass = %s'         % (        classname,))
             if kwargs is None:
-                return klass()
+                return klass(notifier)
             else:
-                return klass(**kwargs)
+                return klass(notifier, **kwargs)
         except Exception as e:
-            raise ValueError("Failed to load component %s with args %s: %s" %
+            raise ValueError("Failed to load component %s with kwargs %s: %s" %
                              (full_classname, kwargs, e))
 
 
@@ -177,29 +170,27 @@ class Dexter(object):
         @param config:
             The configuration for the system.
         '''
-        # Create the components
-        components = config['components']
-        inputs   = [Dexter._get_component(classname, kwargs)
-                    for (classname, kwargs) in components.get('inputs', [])]
-        outputs  = [Dexter._get_component(classname, kwargs)
-                    for (classname, kwargs) in components.get('outputs', [])]
-        services = [Dexter._get_component(classname, kwargs)
-                    for (classname, kwargs) in components.get('services', [])]
-
-        # Remember the various key phrases
+        # Set up the key-phrases, sanitising them
         self._key_phrases = tuple(Dexter._parse_key_phrase(p)
                                   for p in config['key_phrases'])
 
-        # Set up the components
-        self._inputs   = inputs
-        self._outputs  = outputs
-        self._services = services
-
-        # Make sure that they have a notifier
+        # Create the components, using our notifier
         self._notifier = Dexter._MainNotifier()
-        for component in self._inputs + self._outputs + self._services:
-            component.set_notifier(self._notifier)
+        components = config.get('components', {})
+        self._inputs = [
+            Dexter._get_component(classname, kwargs, self._notifier)
+            for (classname, kwargs) in components.get('inputs', [])
+        ]
+        self._outputs = [
+            Dexter._get_component(classname, kwargs, self._notifier)
+            for (classname, kwargs) in components.get('outputs', [])
+        ]
+        self._services = [
+            Dexter._get_component(classname, kwargs, self._notifier)
+            for (classname, kwargs) in components.get('services', [])
+        ]
 
+        # And we're off!
         self._running  = True
 
 
