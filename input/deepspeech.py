@@ -8,11 +8,10 @@ import numpy
 import os
 import pyaudio
 
-from deepspeech.model          import Model
-from dexter.input              import Token
-from dexter.input.audio        import AudioInput
-from dexter.core               import LOG
-from threading                 import Thread
+from deepspeech.model   import Model
+from dexter.input       import Token
+from dexter.input.audio import AudioInput
+from dexter.core        import LOG
 
 # ------------------------------------------------------------------------------
 
@@ -57,7 +56,7 @@ _VALID_WORD_COUNT_WEIGHT = 1.00
 
 class DeepSpeechInput(AudioInput):
     '''
-    Input from PocketSphinx using the US English language model.
+    Input from DeepSpeech using the US English language model.
     '''
     def __init__(self,
                  use_lm=False,
@@ -117,6 +116,7 @@ class DeepSpeechInput(AudioInput):
         '''
         audio = numpy.frombuffer(data, numpy.int16)
         words = self._model.stt(audio, self._rate)
+        LOG.info("Got: %s" % (words,))
         tokens = [Token(word, 1.0, True)
                   for word in words.split(' ')]
         return tokens

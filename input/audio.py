@@ -38,13 +38,13 @@ class AudioInput(Input):
         # Microphone stream config
         self._chunk    = chunk  # Chunks of bytes to read each time from mic
         self._format   = format
-        self._width    = p.get_sample_size(pyaudio.paInt16)
+        self._width    = pyaudio.get_sample_size(pyaudio.paInt16)
         self._channels = channels
         self._rate     = rate
 
         # Where to save the wav files, if anywhere. This should already exist.
-        if wav_dir is not None:
-            if not os.path.isdir("Not a directory: %s" % wav_dir)
+        if wav_dir is not None and not os.path.isdir(wav_dir):
+            raise IOError("Not a directory: %s" % wav_dir)
         self._wav_dir = wav_dir
 
         # Silence limits in seconds. The pre limit is the window where we look
@@ -241,7 +241,6 @@ class AudioInput(Input):
                 self._save_bytes(data)
 
                 # Now decode
-                tokens = self._decode_raw(data)                
                 LOG.info("Decoding %0.2fs seconds of audio" %
                          (len(data) / self._width / self._rate))
                 tokens = self._decode_raw(data)                
