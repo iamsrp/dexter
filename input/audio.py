@@ -133,6 +133,10 @@ class AudioInput(Input):
     def _save_bytes(self, data):
         """
         Save the raw bytes to a wav file.
+
+        @type  data: str
+        @param data:
+            The bytes to save out.
         """
         if self._wav_dir is None:
             return
@@ -150,6 +154,10 @@ class AudioInput(Input):
     def _decode_raw(self, data):
         '''
         Decode the raw data.
+
+        @type  data: str
+        @param data:
+            The bytes to save decode.
 
         @rtype: tuple(L{Token})
         @return:

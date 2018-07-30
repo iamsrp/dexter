@@ -1,5 +1,8 @@
 '''
 Input using a remote server to to the decoding.
+
+This can be used in conjunction with something like the C{deepspeech_server.py}
+script in order to have a fast machine do the actual speech-to-text decoding.
 '''
 
 from __future__ import (absolute_import, division, print_function, with_statement)
@@ -18,7 +21,7 @@ from dexter.core               import LOG
 
 class RemoteInput(AudioInput):
     '''
-    Input from a remote server which will do the decoding for us.
+    Use a remote server to do the audio decoding for us.
     '''
     def __init__(self,
                  notifier,

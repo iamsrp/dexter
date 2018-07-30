@@ -93,6 +93,12 @@ class Dexter(object):
         @type  full_classname: str
         @param full_classname:
             The fully qualified classname, e.g. 'dexter,input.AnInput'
+        @type  kwargs: dict
+        @param kwargs:
+            The keyword arguments to use when calling the constructor.
+        @type  notifier: L{Notifier}
+        @param notifier:
+            The notifier for the L{Component}.
         '''
         try:
             (module, classname) = full_classname.rsplit('.', 1)
@@ -102,6 +108,7 @@ class Dexter(object):
                 return klass(notifier)
             else:
                 return klass(notifier, **kwargs)
+
         except Exception as e:
             raise ValueError("Failed to load component %s with kwargs %s: %s" %
                              (full_classname, kwargs, e))
@@ -121,6 +128,10 @@ class Dexter(object):
     def _parse_key_phrase(phrase):
         '''
         Turn a string into a tuple, without punctuation, as lowercase.
+
+        @type  phrase: str
+        @param phrase:
+            The key-phrase to sanitise.
         '''
         result = []
         for word in phrase.split(' '):
@@ -137,6 +148,16 @@ class Dexter(object):
     def _list_index(list, sublist, start=0):
         '''
         Find the index of of a sublist in a list.
+
+        @type  list: list
+        @param list:
+            The list to look in.
+        @type  sublist: list
+        @param sublist:
+            The list to look for.
+        @type  start: int
+        @param start:
+            Where to start looking in the C{list}.
         '''
         # The empty list can't be in anything
         if len(sublist) == 0:
@@ -166,7 +187,7 @@ class Dexter(object):
 
     def __init__(self, config):
         '''
-        @type  config: configuration file
+        @type  config: configuration
         @param config:
             The configuration for the system.
         '''
@@ -258,6 +279,14 @@ class Dexter(object):
     def _handle(self, tokens):
         '''
         Handle a list of L{Token}s from the input.
+
+        @type  tokens: list(L{Token})
+        @param tokens:
+            The tokens to handle.
+
+        @rtype: str
+        @return:
+            The textual response, if any.
         '''
         # Give back nothing if we have no tokens
         if tokens is None:
@@ -331,6 +360,10 @@ class Dexter(object):
     def _respond(self, response):
         '''
         Given back the response to the user via the outputs.
+
+        @type  response: str
+        @param response:
+            The text to send off to the user in the real world.
         '''
         # Give back nothing if we have no response
         if response is None:

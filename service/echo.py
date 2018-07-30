@@ -8,10 +8,16 @@ from dexter.service import Service, Handler, Result
 
 class _EchoHandler(Handler):
     def __init__(self, service, tokens):
+        '''
+        @see Handler.__init__()
+        '''
         super(_EchoHandler, self).__init__(service, tokens, 1.0)
 
 
     def handle(self):
+        '''
+        @see Handler.handle()
+        '''
         return Result(
             self,
             "You said: %s" % ' '.join([token.element

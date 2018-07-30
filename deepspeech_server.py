@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 '''
-Listen for incoing data and give back parsed results.
+Listen for incoming data and give back parsed results.
+
+This can be run a machine with a decent amount of oomph and the L{RemoteService}
+can talk to it instead of doing the speech-to-text locally. Thias is handy for
+when your client machine is just a Raspberry Pi.
+
+And, if Google can ship audio off from its Home device to the cloud to process,
+then it seems only fair that we can do something like that too.
 '''
 
 from __future__ import (absolute_import, division, print_function, with_statement)
