@@ -1,6 +1,6 @@
 # Dexter
 
-A voice controlled assistant, akin to Google Home and Alexa.
+A voice controlled assistant, akin to Google Home and Alexa. Dexter's your right hand man (in theory).
 
 This is very much a toy project and should be considered work in progress right now. It kinda works for me; it might for you too.
 
