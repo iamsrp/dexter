@@ -2,6 +2,8 @@
 
 A voice controlled assistant, akin to Google Home and Alexa.
 
+This is very much a toy project and work in progress right now.
+
 **Table of Contents**
 
 - [Prerequisites](#prerequisites)
