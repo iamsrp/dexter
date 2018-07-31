@@ -1,7 +1,13 @@
+'''
+The heart of the system.
+'''
+
 from __future__ import (absolute_import, division, print_function, with_statement)
 
 import logging
 import time
+
+from dexter.core.util import to_letters, list_index
 
 # The log used by all of the system
 LOG = logging
@@ -115,16 +121,6 @@ class Dexter(object):
 
 
     @staticmethod
-    def _to_letters(word):
-        '''
-        Remove non-letters from a word.
-        '''
-        return ''.join(char 
-                       for char in word
-                       if 'a' <= char.lower() <= 'z')
-        
-
-    @staticmethod
     def _parse_key_phrase(phrase):
         '''
         Turn a string into a tuple, without punctuation, as lowercase.
@@ -136,53 +132,12 @@ class Dexter(object):
         result = []
         for word in phrase.split(' '):
             # Strip to non-letters and only append if it's not the empty string
-            word = Dexter._to_letters(word)
+            word = to_letters(word)
             if word != '':
                 result.append(word.lower())
 
         # Safe to append
         return tuple(result)
-
-
-    @staticmethod
-    def _list_index(list, sublist, start=0):
-        '''
-        Find the index of of a sublist in a list.
-
-        @type  list: list
-        @param list:
-            The list to look in.
-        @type  sublist: list
-        @param sublist:
-            The list to look for.
-        @type  start: int
-        @param start:
-            Where to start looking in the C{list}.
-        '''
-        # The empty list can't be in anything
-        if len(sublist) == 0:
-            raise ValuError("Empty sublist not in list")
-
-        # Simple case
-        if len(sublist) == 1:
-            return list.index(sublist[0], start)
-
-        # Okay, we have multiple elements in our sublist. Look for the first
-        # one, and see that it's adjacent to the rest of the list. We 
-        offset = start
-        while True:
-            try:
-                first = Dexter._list_index(list, sublist[ :1], offset)
-                rest  = Dexter._list_index(list, sublist[1: ], first + 1)
-                if first + 1 == rest:
-                    return first
-
-            except ValueError:
-                raise ValueError('%s not in %s' % (sublist, list))
-
-            # Move the offset to be after the first instance of sublist[0], so
-            # that we may find the next one, if any
-            offset = first + 1
 
 
     def __init__(self, config):
@@ -294,12 +249,12 @@ class Dexter(object):
 
         # See if the key-phrase is in the tokens and use it to determine the
         # offset of the command.
-        words = [Dexter._to_letters(token.element).lower()
+        words = [to_letters(token.element).lower()
                  for token in tokens]
         offset = None
         for key_phrase in self._key_phrases:
             try:
-                offset = (Dexter._list_index(words, key_phrase) +
+                offset = (list_index(words, key_phrase) +
                           len(key_phrase))
             except ValueError:
                 pass
@@ -313,9 +268,14 @@ class Dexter(object):
         # See which services want them
         handlers = []
         for service in self._services:
-            handler = service.evaluate(tokens[offset:])
-            if handler is not None:
-                handlers.append(handler)
+            try:
+                handler = service.evaluate(tokens[offset:])
+                if handler is not None:
+                    handlers.append(handler)
+            except Exception as e:
+                LOG.error("Failed to evaluate %s with %s: %s" %
+                          ([str(token) for token in tokens], service, e))
+                return "Sorry, there was a problem"
 
         # Anything?
         if len(handlers) == 0:
@@ -326,7 +286,7 @@ class Dexter(object):
         handlers = sorted(handlers, cmp=lambda a, b: cmp(b.belief, a.belief))
 
         # Now try each of the handlers
-        response = ''
+        response = []
         error    = False
         for handler in handlers:
             try:
@@ -337,7 +297,7 @@ class Dexter(object):
 
                 # Accumulate into the resultant text
                 if result.text is not None:
-                    response += result.text
+                    response.append(result.text)
 
                 # Stop here?
                 if result.is_exclusive:
@@ -351,8 +311,10 @@ class Dexter(object):
                 )
 
         # Give back whatever we had, if anything
-        if len(response) > 0:
-            return response
+        if error:
+            return "Sorry, there was a problem"
+        elif len(response) > 0:
+            return '\n'.join(response)
         else:
             return None
 

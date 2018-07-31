@@ -115,7 +115,7 @@ class SocketInput(Input):
 
             if c in ' \t\n':
                 if len(cur) > 0:
-                    tokens.append(Token(cur, 1.0, True))
+                    tokens.append(Token(cur.strip(), 1.0, True))
                     cur = ''
                 if c == '\n':
                     self._output.append(tokens)
