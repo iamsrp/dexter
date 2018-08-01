@@ -13,9 +13,9 @@ import pyaudio
 import socket
 import struct
 
-from dexter.input              import Token
-from dexter.input.audio        import AudioInput
-from dexter.core               import LOG
+from dexter.input       import Token
+from dexter.input.audio import AudioInput
+from dexter.core.log    import LOG
 
 # ------------------------------------------------------------------------------
 

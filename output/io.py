@@ -6,8 +6,8 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 
 import logging
 
-from   dexter.core   import LOG
-from   dexter.output import Output
+from   dexter.core.log import LOG
+from   dexter.output   import Output
 
 # ------------------------------------------------------------------------------
 

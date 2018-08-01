@@ -4,11 +4,9 @@ Speech synthesis output using espeak.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
-import logging
-
-from   dexter.core   import LOG
-from   dexter.output import Output
-from   espeak        import espeak
+from   dexter.core.log import LOG
+from   dexter.output   import Output
+from   espeak          import espeak
 
 # ------------------------------------------------------------------------------
 

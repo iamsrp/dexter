@@ -7,9 +7,9 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 import socket
 import time
 
-from dexter.input import Input, Token
-from dexter.core  import LOG
-from threading    import Thread
+from   dexter.input    import Input, Token
+from   dexter.core.log import LOG
+from   threading       import Thread
 
 # ------------------------------------------------------------------------------
 

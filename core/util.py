@@ -8,6 +8,8 @@ import alsaaudio
 import re
 import sys
 
+from   dexter.core.log import LOG
+
 # ------------------------------------------------------------------------------
 
 class _WordsToNumbers():
@@ -348,5 +350,5 @@ def set_volume(value):
 
     # Set as a percentage
     pct = int((volume / 11) * 100)
-    #LOG.info("Setting volume to %d" % pct)
+    LOG.info("Setting volume to %d%%" % pct)
     m.setvolume(pct)

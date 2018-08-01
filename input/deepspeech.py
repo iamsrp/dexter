@@ -8,10 +8,10 @@ import numpy
 import os
 import pyaudio
 
-from deepspeech.model   import Model
-from dexter.input       import Token
-from dexter.input.audio import AudioInput
-from dexter.core        import LOG
+from   deepspeech.model   import Model
+from   dexter.input       import Token
+from   dexter.input.audio import AudioInput
+from   dexter.core.log    import LOG
 
 # ------------------------------------------------------------------------------
 

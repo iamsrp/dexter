@@ -9,7 +9,8 @@ import sys
 
 sys.path[0] += '/..'
 
-from dexter.core import LOG, Dexter
+from dexter.core     import Dexter
+from dexter.core.log import LOG
 
 # ------------------------------------------------------------------------------
 
@@ -77,11 +78,6 @@ def main(config=None):
 
 
 # ------------------------------------------------------------------------------
-
-LOG.basicConfig(
-    format='[%(asctime)s %(threadName)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
-    level=logging.INFO
-)
 
 if __name__ == "__main__":
     try:

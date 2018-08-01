@@ -12,10 +12,10 @@ import pyaudio
 import time
 import wave
 
-from   collections  import deque
-from   dexter.input import Input, Token
-from   dexter.core  import LOG, Notifier
-from   threading    import Thread
+from   collections     import deque
+from   dexter.input    import Input, Token
+from   dexter.core.log import LOG, Notifier
+from   threading       import Thread
 
 # ------------------------------------------------------------------------------
 
