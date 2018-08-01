@@ -17,14 +17,9 @@ This is very much a toy project and should be considered work in progress right 
 
 ## Prerequisites
 
-* [Python 2.7](https://www.python.org/)
+* [Python 2.7](https://www.python.org/).
 * Around 4G of space, if you want to use PocketSphinx, DeepSpeech and so forth.
-
-You'll probably need some of these.
-```bash
-sudo apt install python-pip python-numpy python-scipy python-pyaudio python-argh python-espeak python-pocketsphinx pocketsphinx-en-us
-sudo pip install deepspeech
-```
+* What is listed in the `requirements` file.
 
 You'll also need the trained data from [DeepSpeech](https://github.com/mozilla/DeepSpeech), which you should probably untar into `/usr/local/share/deepspeech`. (If you don't have root access then anywhere is fine really; this is just where I put it and so that's what the vanilla code expects.) This is only the barest of information; read their [project page](https://github.com/mozilla/DeepSpeech) for more information.
 
