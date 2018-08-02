@@ -1,5 +1,5 @@
 What you will need to make all of this work. Some things are optional, depending
 on whether you don't care about certain modules.
 
-  sudo apt install python-pip python-numpy python-scipy python-pyaudio python-argh python-espeak python-pocketsphinx pocketsphinx-en-us python-alsaaudio python-argh
-  sudo pip install deepspeech
+  sudo apt install swig python3-pip python3-numpy python3-scipy python3-pyaudio python3-argh python3-espeak libpocketsphinx3 pocketsphinx-en-us python3-argh libpulse-dev libasound2-dev
+  sudo pip3 install deepspeech pocketsphinx pyalsaaudio

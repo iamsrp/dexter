@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
 Listen for incoming data and give back parsed results.
 
@@ -107,7 +107,7 @@ while True:
 
         # Read in the header data
         logging.info("Reading header")
-        header = ''
+        header = b''
         while len(header) < (4 * 8):
             header += conn.recv((4 * 8) - len(header))
 
@@ -116,7 +116,7 @@ while True:
 
         # Pull in the data
         logging.info("Reading %d bytes of data" % (length,))
-        data = ''
+        data = b''
         while len(data) < length:
             data += conn.recv(length - len(data))
 
@@ -127,6 +127,7 @@ while True:
         logging.info("Got: '%s'" % (words,))
 
         # Send back the length (as a long) and the string
+        words = words.encode()
         conn.sendall(struct.pack('!q', len(words)))
         conn.sendall(words)
 

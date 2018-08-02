@@ -80,16 +80,17 @@ class RemoteInput(AudioInput):
             #   8 bytes for the length
             #   data...
             LOG.info("Waiting for result...")
-            length = ''
+            length = b''
             while len(length) < 8:
                 length += sckt.recv(8 - len(length))
             (count,) = struct.unpack("!q", length)
 
             # Read in the string
             LOG.info("Reading %d chars" % (count,))
-            result = ''
+            result = b''
             while len(result) < count:
                 result += sckt.recv(count - len(result))
+            result = result.decode()
             LOG.info("Result is: '%s'" % (result,))
 
         except Exception as e:

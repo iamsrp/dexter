@@ -96,16 +96,16 @@ class SocketInput(Input):
 
         # We'll build these up
         tokens = []
-        cur = ''
+        cur = b''
 
         # Loop until they go away
         while True:
             c = sckt.recv(1)
-            if c is None or c == '':
+            if c is None or len(c) == 0:
                 LOG.info("Peer closed connection")
                 return
 
-            if cur == '' and ord(c) == 4:
+            if len(cur) == 0 and ord(c) == 4:
                 LOG.info("Got EOT")
                 try:
                     sckt.close()
@@ -113,11 +113,11 @@ class SocketInput(Input):
                     pass
                 return
 
-            if c in ' \t\n':
+            if c in b' \t\n':
                 if len(cur) > 0:
-                    tokens.append(Token(cur.strip(), 1.0, True))
-                    cur = ''
-                if c == '\n':
+                    tokens.append(Token(cur.strip().decode(), 1.0, True))
+                    cur = b''
+                if c == b'\n':
                     self._output.append(tokens)
                     tokens = []
 

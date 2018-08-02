@@ -277,7 +277,7 @@ class AudioInput(Input):
                 start = time.time()
 
                 # Turn the stream into a list of bytes
-                data = ''.join(audio)
+                data = b''.join(audio)
 
                 # Maybe save then as a wav file
                 self._save_bytes(data)

@@ -6,7 +6,6 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 
 import alsaaudio
 import re
-import sys
 
 from   dexter.core.log import LOG
 
@@ -53,7 +52,7 @@ class _WordsToNumbers():
                    'million':     1000000,
                    'billion':     1000000000,
                    'trillion':    1000000000000,
-                   'brazillion':  sys.maxint }
+                   'brazillion':  2**63 }
 
     # a regular expression that looks for number group names and captures:
     #     1-the string that preceeds the group name, and

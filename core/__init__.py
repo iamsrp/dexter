@@ -108,8 +108,10 @@ class Dexter(object):
         '''
         try:
             (module, classname) = full_classname.rsplit('.', 1)
-            exec ('from %s import %s'  % (module, classname,))
-            exec ('klass = %s'         % (        classname,))
+            globals = {}
+            exec('from %s import %s'  % (module, classname,), globals)
+            exec('klass = %s'         % (        classname,), globals)
+            klass = globals['klass']
             if kwargs is None:
                 return klass(notifier)
             else:
@@ -282,8 +284,8 @@ class Dexter(object):
             return "I'm sorry, I don't know how to help with that"
 
         # Okay, put the handlers into order of belief and try them. Notice that
-        # we want the higher beliefs first so we flip the pair in the cmp call.
-        handlers = sorted(handlers, cmp=lambda a, b: cmp(b.belief, a.belief))
+        # we want the higher beliefs first so we reverse the sign in the key.
+        handlers = sorted(handlers, key=lambda h: -h.belief)
 
         # Now try each of the handlers
         response = []
