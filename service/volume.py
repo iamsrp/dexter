@@ -47,7 +47,7 @@ class _VolumeHandler(Handler):
             return Result(
                 self,
                 "Sorry, I don't know how to set the volume to %s" %
-                (' '.join(self._volume),),
+                (self._volume,),
                 False,
                 True
             )
