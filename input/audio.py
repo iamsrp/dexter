@@ -14,7 +14,8 @@ import wave
 
 from   collections     import deque
 from   dexter.input    import Input, Token
-from   dexter.core.log import LOG, Notifier
+from   dexter.core     import Notifier
+from   dexter.core.log import LOG
 from   threading       import Thread
 
 # ------------------------------------------------------------------------------
