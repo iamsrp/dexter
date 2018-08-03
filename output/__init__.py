@@ -23,6 +23,14 @@ class Output(Component):
         super(Output, self).__init__(notifier)
 
 
+    @property
+    def is_output(self):
+        '''
+        Whether this component is an output.
+        '''
+        return True
+
+
     def write(self, text):
         '''
         Send the given text to the outside world.

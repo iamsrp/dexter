@@ -66,6 +66,14 @@ class Input(Component):
         super(Input, self).__init__(notifier)
 
 
+    @property
+    def is_input(self):
+        '''
+        Whether this component is an input.
+        '''
+        return True
+
+
     def read(self):
         '''
         A non-blocking call to get a list of C{element}s from the outside world.

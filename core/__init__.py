@@ -4,13 +4,10 @@ The heart of the system.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
-import logging
 import time
 
+from dexter.core.log  import LOG
 from dexter.core.util import to_letters, list_index
-
-# The log used by all of the system
-LOG = logging
 
 # ------------------------------------------------------------------------------
 
@@ -35,6 +32,30 @@ class Component(object):
         Stop this component.
         '''
         pass
+
+
+    @property
+    def is_input(self):
+        '''
+        Whether this component is an input.
+        '''
+        return False
+
+
+    @property
+    def is_output(self):
+        '''
+        Whether this component is an output.
+        '''
+        return False
+
+
+    @property
+    def is_service(self):
+        '''
+        Whether this component is a service.
+        '''
+        return False
 
 
     def _notify(self, status):
@@ -64,13 +85,32 @@ class Notifier(object):
     IDLE    = _Status("<IDLE>")
     ACTIVE  = _Status("<ACTIVE>")
     WORKING = _Status("<WORKING>")
-    
+
+
+    def start(self):
+        '''
+        Start this notifier going.
+        '''
+        pass
+
+
+    def stop(self):
+        '''
+        Stop this notifier.
+        '''
+        pass
+
+
     def update_status(self, component, status):
         '''
         Tell the system of a status change for a component.
         '''
         # Subclasses should implement this
         raise NotImplementedError("Abstract method called")
+
+
+    def __str__(self):
+        return type(self).__name__
 
 # ------------------------------------------------------------------------------
 
@@ -82,20 +122,84 @@ class Dexter(object):
         '''
         Tell the system overall that we're busy.
         '''
+        def __init__(self, notifiers):
+            '''
+            @type  notifiers: list(Notifier)
+            @param notifiers:
+                The other notifiers that we hold.
+            '''
+            self._notifiers = tuple(notifiers)
+
+
+        def start(self):
+            '''
+            Start all the notifiers going.
+            '''
+            for notifier in self._notifiers:
+                try:
+                    LOG.info("Starting %s" % notifier)
+                    notifier.start()
+                except Exception as e:
+                    LOG.error("Failed to start %s: %s" % (notifier, e))
+
+
+        def stop(self):
+            '''
+            Stop all the notifiers.
+            '''
+            for notifier in self._notifiers:
+                try:
+                    LOG.info("Stopping %s" % notifier)
+                    notifier.stop()
+                except Exception as e:
+                    LOG.error("Failed to stop %s: %s" % (notifier, e))
+
 
         def update_status(self, component, status):
             '''
             @see L{Notifier.update_status()}
             '''
-            LOG.info("Component %s is now %s",
-                     component, status)
+            for notifier in self._notifiers:
+                try:
+                    notifier.update_status(component, status)
+                except Exception as e:
+                    LOG.error("Failed to update %s with (%s,%s): %s" %
+                              (notifier, component, status, e))
+
+
+    @staticmethod
+    def _get_notifier(full_classname, kwargs):
+        '''
+        The the instance of the given L{Notifier}.
+
+        @type  full_classname: str
+        @param full_classname:
+            The fully qualified classname, e.g. 'dexter.notifier.TheNotifier'
+        @type  kwargs: dict
+        @param kwargs:
+            The keyword arguments to use when calling the constructor.
+        '''
+        try:
+            (module, classname) = full_classname.rsplit('.', 1)
+            globals = {}
+            exec('from %s import %s'  % (module, classname,), globals)
+            exec('klass = %s'         % (        classname,), globals)
+            klass = globals['klass']
+            if kwargs is None:
+                return klass()
+            else:
+                return klass(**kwargs)
+
+        except Exception as e:
+            raise ValueError("Failed to load notifier %s with kwargs %s: %s" %
+                             (full_classname, kwargs, e))
 
 
     @staticmethod
     def _get_component(full_classname, kwargs, notifier):
         '''
         The the instance of the given L{Component}.
-    
+
         @type  full_classname: str
         @param full_classname:
             The fully qualified classname, e.g. 'dexter,input.AnInput'
@@ -152,8 +256,14 @@ class Dexter(object):
         self._key_phrases = tuple(Dexter._parse_key_phrase(p)
                                   for p in config['key_phrases'])
 
+        # Create the notifiers
+        notifiers = config.get('notifiers', [])
+        self._notifier = Dexter._MainNotifier(
+            Dexter._get_notifier(classname, kwargs)
+            for (classname, kwargs) in notifiers
+        )
+
         # Create the components, using our notifier
-        self._notifier = Dexter._MainNotifier()
         components = config.get('components', {})
         self._inputs = [
             Dexter._get_component(classname, kwargs, self._notifier)
@@ -213,6 +323,10 @@ class Dexter(object):
         '''
         Start the system going.
         '''
+        # Start the notifiers
+        self._notifier.start()
+
+        # And the components
         for component in self._inputs + self._outputs + self._services:
             # If these throw then it's fatal
             LOG.info("Starting %s" % (component,))
@@ -223,6 +337,10 @@ class Dexter(object):
         '''
         Stop the system.
         '''
+        # Stop the notifiers
+        self._notifier.stop()
+
+        # And the components
         for component in self._inputs + self._outputs + self._services:
             # Best effort, since we're likely shutting down
             try:
@@ -304,7 +422,7 @@ class Dexter(object):
                 # Stop here?
                 if result.is_exclusive:
                     break
-                
+
             except Exception as e:
                 error = True
                 LOG.error(
@@ -339,4 +457,3 @@ class Dexter(object):
                 output.write(response)
             except Exception as e:
                 LOG.error("Failed to respond with %s: %s" % (output, e))
-        

@@ -29,6 +29,14 @@ class Service(Component):
         self._name = name
 
 
+    @property
+    def is_service(self):
+        '''
+        Whether this component is a service.
+        '''
+        return True
+
+
     def evaluate(self, tokens):
         '''
         Determine whether this service can handle the given C{tokens}. If the

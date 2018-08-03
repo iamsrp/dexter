@@ -4,6 +4,11 @@
         "Hey Computer"
     ],
 
+    "notifiers" : [
+        [ "dexter.notifier.logging.LogNotifier", {
+        }]
+    ],
+
     "components" : {
         "inputs" : [
             [ "dexter.input.socket.SocketInput", {
