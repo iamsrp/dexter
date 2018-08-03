@@ -43,10 +43,10 @@ class UnicornHatNotifier(ByComponentNotifier):
         self._service_time = 0
         self._output_time  = 0
 
-        # The intensities of each component's notification
-        self._input_mult   = 0.0
-        self._service_mult = 0.0
-        self._output_mult  = 0.0
+        # The direction of the swirl
+        self._input_dir   = 0
+        self._service_dir = 0
+        self._output_dir  = 0
 
         # The currently non-idle components
         self._inputs   = set()
@@ -91,33 +91,48 @@ class UnicornHatNotifier(ByComponentNotifier):
                     self._inputs.remove(component)
                 if len(self._inputs) == 0:
                     self._input_time = 0
+                    self._input_dir  = 0
             if self._is_service(component):
                 if component in self._services:
                     self._services.remove(component)
                 if len(self._services) == 0:
                     self._service_time = 0
+                    self._service_dir  = 0
             if self._is_output(component):
                 if component in self._outputs:
                     self._outputs.remove(component)
                 if len(self._outputs) == 0:
                     self._output_time = 0
+                    self._output_dir  = 0
         else:
             # Gone non-idle, add it to the appropriate group and reset the time
             if self._is_input(component):
                 self._inputs.add(component)
                 self._input_time = time.time()
+                self._input_dir  = 1 if status is Notifier.ACTIVE else -1
             if self._is_service(component):
                 self._services.add(component)
                 self._service_time = time.time()
+                self._service_dir  = 1 if status is Notifier.ACTIVE else -1
             if self._is_output(component):
                 self._outputs.add(component)
                 self._output_time = time.time()
+                self._output_dir  = 1 if status is Notifier.ACTIVE else -1
 
 
     def _updater(self):
         '''
         The method which will maintain the display.
         '''
+        # Some state variables
+        i_mult = 0.0
+        s_mult = 0.0
+        o_mult = 0.0
+        i_dir = 0.0
+        s_dir = 0.0
+        o_dir = 0.0
+
+        # And off we go!
         LOG.info("Started update thread")
         while self._running:
             # Don't busy-wait
@@ -143,24 +158,28 @@ class UnicornHatNotifier(ByComponentNotifier):
             s_state = 1.0 if s_since < 30.0 else 0.0
             o_state = 1.0 if o_since < 30.0 else 0.0
 
-            # Scale up the multiplier accordingly
+            # Slide the multiplier and direction accordingly
             f = 0.2
-            self._input_mult   = (1.0 - f) * self._input_mult   + f * i_state
-            self._service_mult = (1.0 - f) * self._service_mult + f * s_state
-            self._output_mult  = (1.0 - f) * self._output_mult  + f * o_state
+            i_mult = (1.0 - f) * i_mult + f * i_state
+            s_mult = (1.0 - f) * s_mult + f * s_state
+            o_mult = (1.0 - f) * o_mult + f * o_state
+            f = 0.01
+            i_dir  = (1.0 - f) * i_dir  + f * self._input_dir
+            s_dir  = (1.0 - f) * s_dir  + f * self._service_dir
+            o_dir  = (1.0 - f) * o_dir  + f * self._output_dir
 
             # And actually update the display
             for y in range(self._height):
                 for x in range(self._width):
                     # The pixel brightnesses, according to the pattern
-                    i_s = self._swirl(x, y, i_index)
-                    s_s = self._swirl(x, y, s_index)
-                    o_s = self._swirl(x, y, o_index)
+                    i_s = self._swirl(x, y, i_index, i_dir)
+                    s_s = self._swirl(x, y, s_index, s_dir)
+                    o_s = self._swirl(x, y, o_index, o_dir)
 
                     # The RGB values
-                    r = int(max(0, min(255, o_s * self._output_mult )))
-                    g = int(max(0, min(255, s_s * self._service_mult)))
-                    b = int(max(0, min(255, i_s * self._input_mult  )))
+                    r = int(max(0, min(255, o_s * o_mult)))
+                    g = int(max(0, min(255, s_s * s_mult)))
+                    b = int(max(0, min(255, i_s * i_mult)))
 
                     # And set them
                     unicornhathd.set_pixel(x, y, r, g, b)
@@ -172,7 +191,7 @@ class UnicornHatNotifier(ByComponentNotifier):
         LOG.info("Stopped update thread")
 
 
-    def _swirl(self, x, y, index):
+    def _swirl(self, x, y, index, direction):
         '''
         Get the intensity for the given coordinates at the given time index.
 
@@ -184,7 +203,7 @@ class UnicornHatNotifier(ByComponentNotifier):
         dist = math.sqrt(pow(x, 2) +
                          pow(y, 2)) / 2.0
 
-        angle = (-index / 10.0) + (dist * 1.5)
+        angle = (direction * index / 10.0) + (dist * 1.5)
 
         s = math.sin(angle);
         c = math.cos(angle);
