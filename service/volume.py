@@ -4,9 +4,10 @@ Set the audio output volume. It goes up to 11.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
-from dexter.core.log  import LOG
-from dexter.core.util import list_index, parse_number, set_volume
-from dexter.service   import Service, Handler, Result
+from dexter.core.audio import set_volume
+from dexter.core.log   import LOG
+from dexter.core.util  import list_index, parse_number
+from dexter.service    import Service, Handler, Result
 
 class _VolumeHandler(Handler):
     def __init__(self, service, tokens, volume):
