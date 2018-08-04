@@ -14,7 +14,7 @@ class _VolumeHandler(Handler):
         '''
         @see Handler.__init__()
         '''
-        super(_VolumeHandler, self).__init__(service, tokens, 1.0)
+        super(_VolumeHandler, self).__init__(service, tokens, 1.0, True)
         self._volume = volume
 
 

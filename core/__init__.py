@@ -405,6 +405,15 @@ class Dexter(object):
         # we want the higher beliefs first so we reverse the sign in the key.
         handlers = sorted(handlers, key=lambda h: -h.belief)
 
+        # If any of the handlers have marked themselves as exclusive then we
+        # restrict the list to just them. Hopefully there will be just one but,
+        # if there are more, then they should be in the order of belief so we'll
+        # pick the "best" exclusive one first.
+        if True in [h.exclusive for h in handlers]:
+            handlers = [h
+                        for h in handlers
+                        if h.exclusive]
+
         # Now try each of the handlers
         response = []
         error    = False
@@ -420,7 +429,7 @@ class Dexter(object):
                     response.append(result.text)
 
                 # Stop here?
-                if result.is_exclusive:
+                if handler.exclusive or result.exclusive:
                     break
 
             except Exception as e:

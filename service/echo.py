@@ -11,7 +11,7 @@ class _EchoHandler(Handler):
         '''
         @see Handler.__init__()
         '''
-        super(_EchoHandler, self).__init__(service, tokens, 1.0)
+        super(_EchoHandler, self).__init__(service, tokens, 1.0, False)
 
 
     def handle(self):

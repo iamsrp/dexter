@@ -66,7 +66,7 @@ class Handler(object):
     might result in a belief of 0.8 since only two thirds of the words were
     matched but the final word was _almost_ matched.
     '''
-    def __init__(self, service, tokens, belief):
+    def __init__(self, service, tokens, belief, exclusive):
         '''
         @type  service: L{Service}
         @param service:
@@ -78,11 +78,15 @@ class Handler(object):
         @param belief:
             How much the service believes that it can handle the given input. A
             value between 0 and 1.
+        @type  exclusive: bool
+        @param exclusive:
+            Whether this handler should be the only one to be called.
         '''
         super(Handler, self).__init__()
-        self._service = service
-        self._tokens  = tokens
-        self._belief  = belief
+        self._service   = service
+        self._tokens    = tokens
+        self._belief    = belief
+        self._exclusive = exclusive
 
 
     @property
@@ -98,6 +102,11 @@ class Handler(object):
     @property
     def belief(self):
         return self._belief
+
+
+    @property
+    def exclusive(self):
+        return self._exclusive
 
 
     def handle(self):
@@ -132,7 +141,7 @@ class Result(object):
     Here you would not want another service to also play Captain Underpants at
     the same time that the responding one does.
     '''
-    def __init__(self, handler, text, is_query, is_exclusive):
+    def __init__(self, handler, text, is_query, exclusive):
         '''
         @type  handler: L{Handler}
         @param handler
@@ -144,15 +153,16 @@ class Result(object):
         @param is_query:
             Whether or not this result is a query and expects the user to 
             respond.
-        @type  is_exclusive: bool
-        @param is_exclusive:
-            Whether this response should be exclusive to any further ones.
+        @type  exclusive: bool
+        @param exclusive:
+            Whether this response should prevent the processing of any further
+            ones.
         '''
         super(Result, self).__init__()
         self._handler      = handler
         self._text         = text
         self._is_query     = is_query
-        self._is_exclusive = is_exclusive
+        self._exclusive = exclusive
 
 
     @property
@@ -171,5 +181,5 @@ class Result(object):
 
 
     @property
-    def is_exclusive(self):
-        return self._is_exclusive
+    def exclusive(self):
+        return self._exclusive
