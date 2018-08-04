@@ -4,6 +4,7 @@ Various utility methods.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
+import numpy
 import re
 
 from   dexter.core.log import LOG
@@ -189,6 +190,11 @@ def to_letters(string):
     '''
     Remove non-letters from a string.
 
+    >>> to_letters('1a2b3c4d')
+    'abcd'
+    >>> to_letters(' a b c d ')
+    'abcd'
+
     @type   string: str
     @parses string:
        The string to strip the chars from.
@@ -203,6 +209,11 @@ def to_letters(string):
 def to_alphanumeric(string):
     '''
     Remove non-letters and non-numbers from a string.
+
+    >>> to_alphanumeric(' 1a2b3c4d ')
+    '1a2b3c4d'
+    >>> to_alphanumeric(' a b c d ')
+    'abcd'
 
     @type   string: str
     @parses string:
@@ -220,10 +231,14 @@ def parse_number(words):
     Turn a set of words into a number. These might be complex ("One thousand
     four hundred and eleven") or simple ("Seven").
 
-    >>> to_number('one')
+    >>> parse_number('one')
     1
-    >>> to_number('one point eight')
-    1
+    >>> parse_number('one point eight')
+    1.8
+    >>> parse_number('minus six')
+    -6
+    >>> parse_number('minus four point seven eight nine')
+    -4.789
 
     @type  words: str
     @parse words:
@@ -256,45 +271,77 @@ def parse_number(words):
 
     # Sanitise it since we're now going to attempt to parse it. Collapse
     # multiple spaces to one and strip out non-letters
-    words = to_letters(' '.join(re.split(r'\s+', words)))
+    words = ' '.join(to_letters(s) for s in re.split(r'\s+', words))
+    LOG.debug("Parsing '%s'" % (words,))
 
     # Recheck for empty
     if words == '':
         return None
+
+
+    # See if we have to negate the result
+    mult = 1
+    for neg in ("minus ", "negative "):
+        if words.startswith(neg):
+            words = words[len(neg):]
+            mult = -1
+            break
 
     # Look for "point" in the words since it might be "six point two" or
     # something
     if ' point ' in words:
         # Determine the integer and decimal portions
         (integer, decimal) = words.split(' point ', 1)
+        LOG.debug("'%s' becomes '%s' and '%s'" %
+                  (words, integer, decimal))
 
         # Parsing the whole number is easy enough
         whole = parse_number(integer)
         if whole is None:
             return None
 
-        # S;plit up the digits to parse them. This isn't entirely robust since
-        # someone might say "six point twenty nine" but we'll kinda ignore that
-        # and hope for the best.
-        digits = [parse_number(digit)
-                  for digit in decimal.split(' ')]
-        if None in digits:
+        # S;plit up the digits to parse them.
+        digits = numpy.array([parse_number(digit)
+                              for digit in decimal.split(' ')])
+        if None in digits        or \
+           numpy.any(digits < 0) or \
+           numpy.any(digits > 9):
+            LOG.error("'%s' was not a valid decimal" % (words,))
             return None
 
         # Okay, use some cheese to parse into a float
-        return float('%d.%s' % (whole, ''.join(str(d) for d in digits)))
+        return mult * float('%d.%s' % (whole, ''.join(str(d) for d in digits)))
 
     else:
         # No ' point ' in it, parse directly
-        return _WORDS_TO_NUMBERS.parse(words)
+        try:
+            return mult * _WORDS_TO_NUMBERS.parse(words)
+        except Exception as e:
+            LOG.error("Failed to parse '%s': %s" % (words, e))
+            return None
 
 
-def list_index(list, sublist, start=0):
+def list_index(list_, sublist, start=0):
     '''
     Find the index of of a sublist in a list.
 
-    @type  list: list
-    @param list:
+    >>> list_index(range(10), range(3, 5))
+    3
+    >>> list_index('hello', 'he')
+    0
+    >>> list_index('hello', 'l')
+    2
+    >>> list_index('hello', 'el')
+    1
+    >>> list_index('hello', 'lo')
+    3
+    >>> list_index('what is a fish'.split(' '), 'a fish'.split(' '))
+    2
+    >>> list_index(['what', 'is', 'a', 'fish'], ('what', 'is'))
+    0
+
+    @type  list_: list
+    @param list_:
         The list to look in.
     @type  sublist: list
     @param sublist:
@@ -303,26 +350,36 @@ def list_index(list, sublist, start=0):
     @param start:
         Where to start looking in the C{list}.
     '''
+    # Make sure these are lists
+    if list_ is None:
+        raise ValueError("list was None")
+    if sublist is None:
+        raise ValueError("sublist was None")
+    if not isinstance(list_, tuple):
+        list_ = tuple(list_)
+    if not isinstance(sublist, tuple):
+        sublist = tuple(sublist)
+
     # The empty list can't be in anything
     if len(sublist) == 0:
-        raise ValuError("Empty sublist not in list")
+        raise ValueError("Empty sublist not in list")
 
     # Simple case
     if len(sublist) == 1:
-        return list.index(sublist[0], start)
+        return list_.index(sublist[0], start)
 
     # Okay, we have multiple elements in our sublist. Look for the first
     # one, and see that it's adjacent to the rest of the list. We
     offset = start
     while True:
         try:
-            first = list_index(list, sublist[ :1], offset)
-            rest  = list_index(list, sublist[1: ], first + 1)
+            first = list_index(list_, sublist[ :1], offset)
+            rest  = list_index(list_, sublist[1: ], first + 1)
             if first + 1 == rest:
                 return first
 
         except ValueError:
-            raise ValueError('%s not in %s' % (sublist, list))
+            raise ValueError('%s not in %s' % (sublist, list_))
 
         # Move the offset to be after the first instance of sublist[0], so
         # that we may find the next one, if any
