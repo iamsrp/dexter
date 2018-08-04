@@ -70,7 +70,7 @@ class VolumeService(Service):
         @see Service.evaluate()
         '''
         try:
-            prefix = ['set', 'volume', 'to']
+            prefix = ('set', 'volume', 'to')
             words  = [token.element.lower()
                       for token in tokens
                       if token.verbal and token.element is not None]

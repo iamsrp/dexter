@@ -159,9 +159,9 @@ class Result(object):
             ones.
         '''
         super(Result, self).__init__()
-        self._handler      = handler
-        self._text         = text
-        self._is_query     = is_query
+        self._handler   = handler
+        self._text      = text
+        self._is_query  = is_query
         self._exclusive = exclusive
 
 
