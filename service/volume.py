@@ -9,12 +9,12 @@ from dexter.core.log   import LOG
 from dexter.core.util  import list_index, parse_number
 from dexter.service    import Service, Handler, Result
 
-class _VolumeHandler(Handler):
+class _Handler(Handler):
     def __init__(self, service, tokens, volume):
         '''
         @see Handler.__init__()
         '''
-        super(_VolumeHandler, self).__init__(service, tokens, 1.0, True)
+        super(_Handler, self).__init__(service, tokens, 1.0, True)
         self._volume = volume
 
 
@@ -43,6 +43,7 @@ class _VolumeHandler(Handler):
                     False,
                     True
                 )
+
         except Exception as e:
             LOG.error("Problem parsing volume '%s': %s" % (self._volume, e))
             return Result(
@@ -76,9 +77,8 @@ class VolumeService(Service):
                       if token.verbal and token.element is not None]
             index  = list_index(words, prefix)
 
-            return _VolumeHandler(self,
-                                  tokens,
-                                  ' '.join(words[index + len(prefix):]))
+            return _Handler(self, tokens, ' '.join(words[index + len(prefix):]))
+
         except:
             return None
 
