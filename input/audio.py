@@ -168,7 +168,7 @@ class AudioInput(Input):
 
         # How we keep track of the average sound level
         slide_size  = int(self._pre_silence_limit * rel)
-        window_size = int(3 * slide_size)
+        window_size = int(2 * slide_size)
         average_win = deque(maxlen=window_size)
 
         # How we detect if the noise level is high enough to warrant recording
@@ -186,12 +186,17 @@ class AudioInput(Input):
                         frames_per_buffer=self._chunk)
 
         # Things which we'll use in the loop below
-        audio         = None
-        threshold     = None
-        talking_start = 0
+        audio              = None
+        threshold          = None
+        log_threshold      = 0
+        log_threshold_time = 0
+        talking_start      = 0
 
         # Keep listening until we are stopped
         while self.is_running:
+            # We'll need this here and there below
+            now = time.time()
+
             # Read in the next lump of data
             cur_data = stream.read(self._chunk)
 
@@ -221,7 +226,25 @@ class AudioInput(Input):
 
                 # The threshold should be somwhere about this. The multiplier is
                 # chosen by vague trial and error here.
-                threshold = average * 2.5
+                threshold = average * 1.5
+
+                # See if it's changed enough lately that we should log it
+                if log_threshold <= 0 or \
+                   abs((log_threshold - threshold) / log_threshold) > 0.2:
+                    LOG.info(
+                        "Audio threshold change to %d from %d, "
+                        "with an average of %d" %
+                        (threshold, log_threshold, average)
+                    )
+                    log_threshold      = threshold
+                    log_threshold_time = now
+                elif now - log_threshold_time > 60:
+                    LOG.info(
+                        "Audio threshold is currently %d, with an average of %d" %
+                        (threshold, average)
+                    )
+                    log_threshold      = threshold
+                    log_threshold_time = now
 
                 # Whether someone is likely talking.
                 max_level = max(slid_win)
@@ -235,7 +258,6 @@ class AudioInput(Input):
                 talking = False
 
             # If we think someone is talking then
-            now = time.time()
             if talking:
                 # Remember the last time that we heard someone talking
                 talking_start = now
