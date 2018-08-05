@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 
 import wikipedia
 
+from   dexter.core      import Notifier
 from   dexter.core.log  import LOG
 from   dexter.core.util import list_index
 from   dexter.service   import Service, Handler, Result
@@ -101,6 +102,7 @@ class WikipediaService(Service):
                 # for this thing.
                 belief = 0.5
                 try:
+                    self._notify(Notifier.ACTIVE)
                     results = [result.lower().strip()
                                for result in wikipedia.search(thing)
                                if result is not None and len(result) > 0]
@@ -109,6 +111,8 @@ class WikipediaService(Service):
                 except Exception as e:
                     LOG.error("Failed to query Wikipedia for '%s': %s" %
                               (thing, e))
+                finally:
+                    self._notify(Notifier.IDLE)
 
                 # Turn the words into a string for the handler.
                 return _Handler(self, tokens, belief, thing)
