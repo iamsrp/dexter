@@ -412,13 +412,22 @@ class Dexter(object):
         handlers = []
         for service in self._services:
             try:
+                # This service is being woken to so update the status
+                self._notifier.update_status(service, Notifier.ACTIVE)
+
+                # Get any handler from the service for the given tokens
                 handler = service.evaluate(tokens[offset:])
                 if handler is not None:
                     handlers.append(handler)
+
             except Exception as e:
                 LOG.error("Failed to evaluate %s with %s: %s" %
                           ([str(token) for token in tokens], service, e))
                 return "Sorry, there was a problem"
+
+            finally:
+                # This service is done working now
+                self._notifier.update_status(service, Notifier.IDLE)
 
         # Anything?
         if len(handlers) == 0:
@@ -442,6 +451,11 @@ class Dexter(object):
         error    = False
         for handler in handlers:
             try:
+                # Update the status of this handler's service to "working" while
+                # we call it
+                self._notifier.update_status(handler.service,
+                                             Notifier.WORKING)
+
                 # Invoked the handler and see what we get back
                 result = handler.handle()
                 if result is None:
@@ -461,6 +475,11 @@ class Dexter(object):
                     "Handler %s with tokens %s for service %s yielded: %s" %
                     (handler, handler.tokens, handler.service, e)
                 )
+
+            finally:
+                # This service is done working now
+                self._notifier.update_status(handler.service,
+                                             Notifier.IDLE)
 
         # Give back whatever we had, if anything
         if error:
