@@ -29,7 +29,11 @@
         ],
 
         "services" : [
+            [ "dexter.service.chrono.ClockService", {
+            }],
             [ "dexter.service.echo.EchoService", {
+            }],
+            [ "dexter.service.volume.VolumeService", {
             }]
         ]
     }
