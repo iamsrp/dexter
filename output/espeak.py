@@ -4,9 +4,13 @@ Speech synthesis output using espeak.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
+import time
+
+from   dexter.core     import Notifier
 from   dexter.core.log import LOG
 from   dexter.output   import Output
 from   espeak          import espeak
+from   threading       import Thread
 
 # ------------------------------------------------------------------------------
 
@@ -32,14 +36,27 @@ class EspeakOutput(Output):
         if voice is not None:
             espeak.set_voice(str(voice))
 
+        self._running = False
+
 
     def write(self, text):
         '''
         @see Output.write
         '''
         # Simply pass it along to espeak
-        espeak.synth(text)        
-    
+        espeak.synth(text)
+
+
+    def start(self):
+        '''
+        @see Component.start
+        '''
+        if not self._running:
+            self._running = True
+            thread = Thread(target=self._do_notify)
+            thread.daemon = True
+            thread.start()
+
 
     def stop(self):
         '''
@@ -48,4 +65,27 @@ class EspeakOutput(Output):
         # Stop any pending speech
         espeak.cancel()
 
+        # And we're done
+        self._running = False
 
+
+    def _do_notify(self):
+        '''
+        Handle sending notifications to denote espeak's state.
+        '''
+        state = Notifier.IDLE
+        while self._running:
+            # If espeak is playing then we are working then so are we, else
+            # we're not
+            if espeak.is_playing():
+                new_state = Notifier.WORKING
+            else:
+                new_state = Notifier.IDLE
+
+            # Update the state if it has changed
+            if new_state != state:
+                state = new_state
+                self._notify(state)
+
+            # Don't busy-wait
+            time.sleep(0.1)
