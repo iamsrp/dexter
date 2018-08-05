@@ -30,22 +30,26 @@ class SocketInput(Input):
             The port to listen on.
         '''
         super(SocketInput, self).__init__(notifier)
-        self._port    = int(port)
-        self._socket  = None
-        self._running = False
-        self._output  = []
+        self._port   = int(port)
+        self._socket = None
+        self._output = []
 
 
-    def start(self):
+    def read(self):
         '''
-        @see Input.start
+        @see Input.read
         '''
-        if self._running:
-            return
+        if len(self._output) > 0:
+            try:
+                return self._output.pop()
+            except:
+                pass
 
-        # We're now running
-        self._running = True
 
+    def _start(self):
+        '''
+        @see Component.start()
+        '''
         # Create the socket 
         LOG.info("Opening socket on port %d" % (self._port,))
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,7 +70,7 @@ class SocketInput(Input):
         thread.start()
 
 
-    def stop(self):
+    def _stop(self):
        '''
        @see Input.stop
        '''
@@ -74,18 +78,6 @@ class SocketInput(Input):
            self._socket.close()
        except:
            pass
-       self._running = False
-
-
-    def read(self):
-        '''
-        @see Input.read
-        '''
-        if len(self._output) > 0:
-            try:
-                return self._output.pop()
-            except:
-                pass
 
 
     def _handle(self, sckt):

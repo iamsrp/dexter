@@ -36,8 +36,6 @@ class EspeakOutput(Output):
         if voice is not None:
             espeak.set_voice(str(voice))
 
-        self._running = False
-
 
     def write(self, text):
         '''
@@ -47,26 +45,21 @@ class EspeakOutput(Output):
         espeak.synth(text)
 
 
-    def start(self):
+    def _start(self):
         '''
-        @see Component.start
+        @see Component._start()
         '''
-        if not self._running:
-            self._running = True
-            thread = Thread(target=self._do_notify)
-            thread.daemon = True
-            thread.start()
+        thread = Thread(target=self._do_notify)
+        thread.daemon = True
+        thread.start()
 
 
-    def stop(self):
+    def _stop(self):
         '''
-        @see Component.stop
+        @see Component._stop()
         '''
         # Stop any pending speech
         espeak.cancel()
-
-        # And we're done
-        self._running = False
 
 
     def _do_notify(self):
@@ -74,7 +67,7 @@ class EspeakOutput(Output):
         Handle sending notifications to denote espeak's state.
         '''
         state = Notifier.IDLE
-        while self._running:
+        while self.is_running:
             # If espeak is playing then we are working then so are we, else
             # we're not
             if espeak.is_playing():

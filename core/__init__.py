@@ -11,27 +11,61 @@ from dexter.core.util import to_letters, list_index
 
 # ------------------------------------------------------------------------------
 
-class Component(object):
+class _Startable(object):
+    '''
+    A class which may be started and stopped.
+    '''
+    def __init__(self):
+        super(_Startable, self).__init__()
+        self._running  = False
+
+
+    def start(self):
+        '''
+        Start running.
+        '''
+        if not self._running:
+            self._running = True
+            self._start()
+
+
+    def stop(self):
+        '''
+        Stop running.
+        '''
+        self._running = False
+        self._stop()
+
+
+    @property
+    def is_running(self):
+        '''
+        Whether we are currently running (i.e. it's been started, and not stopped).
+        '''
+        return self._running
+
+
+    def _start(self):
+        '''
+        Start the subclass-specific parts.
+        '''
+        pass
+
+
+    def _stop(self):
+        '''
+        Stop the subclass-specific parts.
+        '''
+        pass
+
+
+class Component(_Startable):
     '''
     A part of the system.
     '''
     def __init__(self, notifier):
         super(Component, self).__init__()
         self._notifier = notifier
-
-
-    def start(self):
-        '''
-        Start this component going.
-        '''
-        pass
-
-
-    def stop(self):
-        '''
-        Stop this component.
-        '''
-        pass
 
 
     @property
@@ -70,7 +104,7 @@ class Component(object):
         return type(self).__name__
 
 
-class Notifier(object):
+class Notifier(_Startable):
     '''
     How a Component tells the system about its status changes.
     '''
@@ -81,24 +115,11 @@ class Notifier(object):
         def __str__(self):
             return self._name
 
+
     INIT    = _Status("<INITIALISING>")
     IDLE    = _Status("<IDLE>")
     ACTIVE  = _Status("<ACTIVE>")
     WORKING = _Status("<WORKING>")
-
-
-    def start(self):
-        '''
-        Start this notifier going.
-        '''
-        pass
-
-
-    def stop(self):
-        '''
-        Stop this notifier.
-        '''
-        pass
 
 
     def update_status(self, component, status):

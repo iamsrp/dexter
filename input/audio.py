@@ -94,29 +94,8 @@ class AudioInput(Input):
         # of the phrase.
         self._prev_audio = prev_audio
 
-        # Whether we are running or not
-        self._running = False
-
         # What we receive
         self._output = list()
-
-
-    def start(self):
-        '''
-        @see Component.start
-        '''
-        if not self._running:
-            self._running = True
-            thread = Thread(target=self._run)
-            thread.daemon = True
-            thread.start()
-
-
-    def stop(self):
-        '''
-        @see Component.stop
-        '''
-        self._running = False
 
 
     def read(self):
@@ -129,6 +108,15 @@ class AudioInput(Input):
             except:
                 pass
         return None
+
+
+    def _start(self):
+        '''
+        @see Component._start()
+        '''
+        thread = Thread(target=self._run)
+        thread.daemon = True
+        thread.start()
 
 
     def _save_bytes(self, data):
@@ -203,7 +191,7 @@ class AudioInput(Input):
         talking_start = 0
 
         # Keep listening until we are stopped
-        while self._running:
+        while self.is_running:
             # Read in the next lump of data
             cur_data = stream.read(self._chunk)
 

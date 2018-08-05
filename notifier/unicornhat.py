@@ -29,9 +29,6 @@ class UnicornHatNotifier(ByComponentNotifier):
         '''
         super(UnicornHatNotifier, self).__init__()
 
-        # True when we are running
-        self._running = False
-
         # Unicorn settings
         unicornhathd.rotation(0)
         (w, h) = unicornhathd.get_shape()
@@ -52,26 +49,6 @@ class UnicornHatNotifier(ByComponentNotifier):
         self._inputs   = set()
         self._services = set()
         self._outputs  = set()
-
-
-    def start(self):
-        '''
-        @see Notifier._start()
-        '''
-        # Let's go!
-        self._running = True
-
-        # The thread which will maintain the display
-        thread = Thread(target=self._updater)
-        thread.deamon = True
-        thread.start()
-
-
-    def stop(self):
-        '''
-        @see Notifier._stop()
-        '''
-        self._running = False
 
 
     def update_status(self, component, status):
@@ -120,6 +97,16 @@ class UnicornHatNotifier(ByComponentNotifier):
                 self._output_dir  = 1 if status is Notifier.ACTIVE else -1
 
 
+    def _start(self):
+        '''
+        @see Notifier._start()
+        '''
+        # The thread which will maintain the display
+        thread = Thread(target=self._updater)
+        thread.deamon = True
+        thread.start()
+
+
     def _updater(self):
         '''
         The method which will maintain the display.
@@ -134,7 +121,7 @@ class UnicornHatNotifier(ByComponentNotifier):
 
         # And off we go!
         LOG.info("Started update thread")
-        while self._running:
+        while self.is_running:
             # Don't busy-wait
             time.sleep(0.01)
 
