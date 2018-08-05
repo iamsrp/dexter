@@ -8,6 +8,7 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 
 import time
 
+from   dexter.core.log  import LOG
 from   dexter.core.util import to_letters
 from   dexter.service   import Service, Handler, Result
 
@@ -71,6 +72,7 @@ class ClockService(Service):
         for want in ('whats the time',
                      'what is the time'):
             if text == want:
+                LOG.info("Matched input on '%s'" % text)
                 return _ClockHandler(self, tokens)
 
         # If we got here, then we didn't get an exact match

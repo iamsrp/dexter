@@ -397,6 +397,8 @@ class Dexter(object):
             try:
                 offset = (list_index(words, key_phrase) +
                           len(key_phrase))
+                LOG.info("Found key-pharse %s at offset %d in '%s'" %
+                         (key_phrase, offset, words))
             except ValueError:
                 pass
 
