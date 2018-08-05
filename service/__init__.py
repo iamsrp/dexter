@@ -54,6 +54,15 @@ class Service(Component):
         raise NotImplementedError("Abstract method called")
 
 
+    def _words(self, tokens):
+        '''
+        Get only the words from the tokens, all as lowercase.
+        '''
+        return [token.element.lower()
+                for token in tokens
+                if token.verbal and token.element is not None]
+
+
 class Handler(object):
     '''
     A handler from a L{Service}. This corresponds to a particular set of input

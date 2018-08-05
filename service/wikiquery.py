@@ -83,9 +83,7 @@ class WikipediaService(Service):
         @see Service.evaluate()
         '''
         # Render to lower-case, for matching purposes.
-        words = [token.element.lower()
-                 for token in tokens
-                 if token.verbal and token.element is not None]
+        words = self._words(tokens)
 
         # Look for these types of queston
         prefices = (('what', 'is'),
