@@ -27,12 +27,18 @@ class _ClockHandler(Handler):
         @see Handler.handle()
         '''
         # Get the time in the local timezone and render the component parts that
-        # we care about. We strip leading zeroes, which you expect for a HH:MM
-        # format, so that it doesn't confuse the speech output.
+        # we care about
         now = time.localtime(time.time())
-        hh  = time.strftime("%I", now).lstrip('0')
-        mm  = time.strftime("%M", now).lstrip('0')
+        hh  = time.strftime("%I", now)
+        mm  = time.strftime("%M", now)
         p   = time.strftime("%p", now)
+
+        # We strip any leading zero from the HH, which you expect for a HH:MM
+        # format. For MM we replace it with 'oh' for a more natural response.
+        if hh.startswith('0'):
+            hh = hh.lstrip('0')
+        if mm.startswith('0'):
+            mm = 'oh %s' % mm.lstrip('0')
 
         # Now we can hand it back
         return Result(
