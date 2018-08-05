@@ -1,7 +1,5 @@
 '''
-A notifier which utilises the Unicorn Hat HD on a Raspberry Pi.
-
-@see https://github.com/pimoroni/unicorn-hat-hd
+A simple notifer which logs.
 '''
 
 from __future__ import (absolute_import, division, print_function, with_statement)
