@@ -190,6 +190,7 @@ class AudioInput(Input):
         threshold          = None
         log_threshold      = 0
         log_threshold_time = 0
+        talking            = False
         talking_start      = 0
 
         # Keep listening until we are stopped
@@ -200,11 +201,17 @@ class AudioInput(Input):
             # Read in the next lump of data
             cur_data = stream.read(self._chunk)
 
-            # Appending it to our sliding windows so that we may see if we have
-            # silence or talking and can keep track of the averge.
+            # Determine the average level of this chunk and append it to the
+            # sliding window which we use to detect elevated volumes.
             level = math.sqrt(abs(audioop.avg(cur_data, 4)))
-            average_win.append(level)
-            slid_win   .append(level)
+            slid_win.append(level)
+
+            # Only accumulate into the average if we don't believe that
+            # someone's talking. Otherwise them talking will push up the
+            # threshold and they will just have to keep talking louder and
+            # louder, else we'll stop recording.
+            if not talking:
+                average_win.append(level)            
 
             # Figure out the threshold given the last N seconds of audio,
             # leading up to our sample period.
@@ -226,7 +233,7 @@ class AudioInput(Input):
 
                 # The threshold should be somwhere about this. The multiplier is
                 # chosen by vague trial and error here.
-                threshold = average * 1.5
+                threshold = average * 2.5
 
                 # See if it's changed enough lately that we should log it
                 if log_threshold <= 0 or \
@@ -248,14 +255,12 @@ class AudioInput(Input):
 
                 # Whether someone is likely talking.
                 max_level = max(slid_win)
-                talking = max_level > threshold
-                LOG.debug("Max level and threshold are: %d %d",
-                          max_level, threshold)
-
-            else:
-                # No-one is talking until we have enough data to compute the
-                # average noise level.
-                talking = False
+                new_talking = max_level > threshold
+                if new_talking != talking:
+                    LOG.info("Detecting change in sound levels where "
+                             "max level and threshold are: %d %d" %
+                             (max_level, threshold))
+                    talking = new_talking
 
             # If we think someone is talking then
             if talking:
