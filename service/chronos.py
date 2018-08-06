@@ -76,7 +76,8 @@ class ClockService(Service):
 
         # See if it matches an expected string
         for want in ('whats the time',
-                     'what is the time'):
+                     'what is the time',
+                     'what time is it'):
             if text == want:
                 LOG.info("Matched input on '%s'" % text)
                 return _ClockHandler(self, tokens)
