@@ -35,11 +35,11 @@ class _Handler(Handler):
                     True
                 )
             else:
-                # No text, just do it
+                # Acknowledge that it happened
                 set_volume(value)
                 return Result(
                     self,
-                    None,
+                    "Okay, volume now %s" % (value,),
                     False,
                     True
                 )
@@ -70,15 +70,24 @@ class VolumeService(Service):
         '''
         @see Service.evaluate()
         '''
-        try:
-            prefix = ('set', 'volume', 'to')
-            words  = [token.element.lower()
-                      for token in tokens
-                      if token.verbal and token.element is not None]
-            index  = list_index(words, prefix)
+        # We use a number of different prefices here since the word "to" has a
+        # bunch of homonyms and "set" apparently sounds like "said"...
+        words    = self._words(tokens)
+        prefices = (('set',  'volume', 'to' ),
+                    ('set',  'volume', 'two'),
+                    ('set',  'volume', 'too'),
+                    ('said', 'volume', 'to' ),
+                    ('said', 'volume', 'two'),
+                    ('said', 'volume', 'too'),)
+        for prefix in prefices:
+            try:
+                index = list_index(words, prefix)
+                return _Handler(self,
+                                tokens,
+                                ' '.join(words[index + len(prefix):]))
+            except:
+                pass
 
-            return _Handler(self, tokens, ' '.join(words[index + len(prefix):]))
-
-        except:
-            return None
+        # Didn't find any of the prefices
+        return None
 
