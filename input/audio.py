@@ -185,6 +185,11 @@ class AudioInput(Input):
                         input           =True,
                         frames_per_buffer=self._chunk)
 
+        # Threshold multipliers for detecting the start of talking and the
+        # end. This is what we multiply the roling average sound levels by.
+        threshold_over  = 2.5
+        threshold_under = 1.5
+
         # Things which we'll use in the loop below
         audio              = None
         threshold          = None
@@ -231,17 +236,23 @@ class AudioInput(Input):
                 count   = int((window_size - slide_size) * 0.2) + 1
                 average = numpy.mean(sorted(values, reverse=True)[:count])
 
-                # The threshold should be somwhere about this. The multiplier is
-                # chosen by vague trial and error here.
-                threshold = average * 2.5
+                # The threshold at which we denote there to be elevated sound
+                # levels or not. If someone is currently talking then we use a
+                # lower multipler which they must drop below in order to spot
+                # the end of the speech. Detecting the start of the speech has a
+                # higher bar.
+                if talking:
+                    threshold = average * threshold_under
+                else:                
+                    threshold = average * threshold_over
 
                 # See if it's changed enough lately that we should log it
                 if log_threshold <= 0 or \
                    abs((log_threshold - threshold) / log_threshold) > 0.2:
                     LOG.info(
                         "Audio threshold change to %d from %d, "
-                        "with an average of %d" %
-                        (threshold, log_threshold, average)
+                        "with an average of %d with talking being %s" %
+                        (threshold, log_threshold, average, talking)
                     )
                     log_threshold      = threshold
                     log_threshold_time = now
