@@ -23,7 +23,8 @@ class PocketSphinxInput(AudioInput):
                  notifier,
                  pre_silence_limit=2.0,
                  mid_silence_limit=1.0,
-                 prev_audio=1.5):
+                 prev_audio=1.5,
+                 wav_dir=None):
         '''
         @see AudioInput.__init__()
         '''
@@ -31,7 +32,8 @@ class PocketSphinxInput(AudioInput):
             notifier,
             pre_silence_limit=pre_silence_limit,
             mid_silence_limit=mid_silence_limit,
-            prev_audio=prev_audio
+            prev_audio=prev_audio,
+            wav_dir=wav_dir
         )
 
         # Create a decoder with certain model.

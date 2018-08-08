@@ -63,7 +63,8 @@ class DeepSpeechInput(AudioInput):
                  use_lm=False,
                  pre_silence_limit=2.0,
                  mid_silence_limit=1.0,
-                 prev_audio=1.5):
+                 prev_audio=1.5,
+                 wav_dir=None):
         '''
         @see AudioInput.__init__()
 
@@ -79,7 +80,8 @@ class DeepSpeechInput(AudioInput):
             chunk=1024,
             format=pyaudio.paInt16,
             channels=1,
-            rate=16000
+            rate=16000,
+            wav_dir=wav_dir
         )
 
         # The files which we'll need from the model directory
