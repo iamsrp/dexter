@@ -4,6 +4,7 @@ The heart of the system.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
+import sys
 import time
 
 from dexter.core.log  import LOG
@@ -345,13 +346,21 @@ class Dexter(object):
         Start the system going.
         '''
         # Start the notifiers
-        self._notifier.start()
+        try:
+            self._notifier.start()
+        except Exception as e:
+            LOG.fatal("Failed to start notifiers: %s" % (e,))
+            sys.exit(1)
 
         # And the components
         for component in self._inputs + self._outputs + self._services:
             # If these throw then it's fatal
             LOG.info("Starting %s" % (component,))
-            component.start()
+            try:
+                component.start()
+            except Exception as e:
+                LOG.fatal("Failed to start %s: %s" % (component, e))
+                sys.exit(1)
 
 
     def _stop(self):
