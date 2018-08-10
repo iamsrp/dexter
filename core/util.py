@@ -321,6 +321,128 @@ def parse_number(words):
             return None
 
 
+def number_to_words(value):
+    '''
+    Turn a number into words.
+
+    >>> number_to_words(1)
+    'one'
+    >>> number_to_words(1.8)
+    'one point eight'
+    >>> number_to_words(-6)
+    'minus six'
+    >>> number_to_words(-4.789)
+    'minus four point seven eight nine'
+    >>> number_to_words(42.01234)
+    'forty two point zero one two three four'
+
+    @type  value: number
+    @parse value:
+        The value to convert to words.
+    '''
+    # First handle the integer part
+    if value < 0:
+        result = 'minus '
+        value = -value
+    else:
+        result = ''
+
+    int_value   = int(value)
+    float_value = float(value)
+
+    if int_value >= 1000000000:
+        billions = int_value // 1000000000
+        result += (number_to_words(billions) +
+                   " billion " +
+                   number_to_words(int_value - billions * 1000000000))
+    elif int_value >= 1000000:
+        millions = int_value // 1000000
+        result += (number_to_words(millions) +
+                   " million " +
+                   number_to_words(int_value - millions * 1000000))
+    elif int_value >= 1000:
+        thousands = int_value // 1000
+        result += (number_to_words(thousands) +
+                   " thousand " +
+                   number_to_words(int_value - thousands * 1000))
+    elif int_value >= 100:
+        hundreds = int_value // 100
+        result += (number_to_words(hundreds) +
+                   " thousand " +
+                   number_to_words(int_value - hundreds * 100))
+    elif int_value >= 90:
+        result += "ninety "  + number_to_words(int_value - 90)
+    elif int_value >= 80:
+        result += "eighty "  + number_to_words(int_value - 80)
+    elif int_value >= 70:
+        result += "seventy " + number_to_words(int_value - 70)
+    elif int_value >= 60:
+        result += "sixty "   + number_to_words(int_value - 60)
+    elif int_value >= 50:
+        result += "fifty "   + number_to_words(int_value - 50)
+    elif int_value >= 40:
+        result += "forty "   + number_to_words(int_value - 40)
+    elif int_value >= 30:
+        result += "thrity "  + number_to_words(int_value - 30)
+    elif int_value >= 20:
+        result += "twenty "  + number_to_words(int_value - 20)
+    elif int_value == 19:
+        result += "nineteen"
+    elif int_value == 18:
+        result += "eighteen"
+    elif int_value == 17:
+        result += "seventeen"
+    elif int_value == 16:
+        result += "sixteen"
+    elif int_value == 15:
+        result += "fifteen"
+    elif int_value == 14:
+        result += "fourteen"
+    elif int_value == 13:
+        result += "thirteen"
+    elif int_value == 12:
+        result += "twelve"
+    elif int_value == 11:
+        result += "eleven"
+    elif int_value == 10:
+        result += "ten"
+    elif int_value == 9:
+        result += "nine"
+    elif int_value == 8:
+        result += "eight"
+    elif int_value == 7:
+        result += "seven"
+    elif int_value == 6:
+        result += "six"
+    elif int_value == 5:
+        result += "five"
+    elif int_value == 4:
+        result += "four"
+    elif int_value == 3:
+        result += "three"
+    elif int_value == 2:
+        result += "two"
+    elif int_value == 1:
+        result += "one"
+    elif int_value == 0:
+        result += "zero"
+
+    # Now any decimal
+    if int_value != float_value:
+        # We're appending a decimal
+        result += " point"
+
+        # General significant figures of a double
+        for i in range(1, 16):
+            shifted = float_value * pow(10.0, i)
+            result += ' %s' % number_to_words(int(shifted) % 10)
+            if abs(shifted - int(shifted)) < 1e-10:
+                break
+
+    # And we're done!
+    return result
+
+
 def list_index(list_, sublist, start=0):
     '''
     Find the index of of a sublist in a list.

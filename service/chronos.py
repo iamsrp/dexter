@@ -9,7 +9,7 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 import time
 
 from   dexter.core.log  import LOG
-from   dexter.core.util import to_letters
+from   dexter.core.util import to_letters, number_to_words
 from   dexter.service   import Service, Handler, Result
 
 # ------------------------------------------------------------------------------
@@ -37,8 +37,13 @@ class _ClockHandler(Handler):
         # format. For MM we replace it with 'oh' for a more natural response.
         if hh.startswith('0'):
             hh = hh.lstrip('0')
-        if mm.startswith('0'):
-            mm = 'oh %s' % mm.lstrip('0')
+        hh = number_to_words(int(hh))
+        if mm == '00':
+            mm = ''
+        elif mm.startswith('0'):
+            mm = 'oh %s' % number_to_words(int(mm))
+        else:
+            mm = number_to_words(int(mm))
 
         # Now we can hand it back
         return Result(
