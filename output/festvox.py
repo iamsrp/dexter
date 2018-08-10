@@ -11,6 +11,7 @@ Speech synthesis output using festival.
 
 from __future__ import (absolute_import, division, print_function, with_statement)
 
+import select
 import subprocess
 import time
 
@@ -50,17 +51,31 @@ class FestivalOutput(Output):
             self._queue.append(str(text))
 
 
+    def _readlines(self):
+        '''
+        Do a read until something comes out on _subproc's stdout. We block until we
+        have at least one line's worth of output.
+        '''
+        result = ''
+        while '\n' not in result:
+            while (select.select([self._subproc.stdout], [], [], 0)[0] != []):
+                result += self._subproc.stdout.read(1)
+        return result.split('\n')
+
+
     def _start(self):
         '''
         @see Component._start()
         '''
         # Start the subprocess here so that it can die directly (for whaterv
         # reason) rather than in the thread
-        self._subproc = subprocess.Popen(('festival', '--pipe'),
+        self._subproc = subprocess.Popen(('festival', '--interactive'),
                                          stdin=subprocess.PIPE,
+                                         stdout=subprocess.PIPE,
                                          universal_newlines=True)
         self._subproc.stdin.write("(%s)\n" % self._voice)
         self._subproc.stdin.flush()
+        self._readlines()
 
         # Now spawn the worker thread
         thread = Thread(target=self._run)
@@ -89,11 +104,14 @@ class FestivalOutput(Output):
             # Else we have something to say
             try:
                 # Get the text, make sure that '"'s in it won't confuse things
-                text = self._queue.pop()
-                text = text.replace('"', '')
+                text    = self._queue.pop()
+                command = '(SayText "%s")\n' % text.replace('"', '')
+                LOG.info("Sending: %s" % command)
                 self._notify(Notifier.WORKING)
-                self._subproc.stdin.write('(SayText "%s")\n' % text)
+                self._subproc.stdin.write(command)
                 self._subproc.stdin.flush()
+                for line in self._readlines():
+                    LOG.info("Received: %s" % line)
 
             except Exception as e:
                 LOG.error("Failed to say '%s': %s" % (text, e))
