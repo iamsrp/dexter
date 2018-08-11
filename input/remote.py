@@ -110,6 +110,7 @@ class RemoteInput(AudioInput):
                 pass
             
         # Convert to tokens
-        tokens = [Token(word, 1.0, True)
-                  for word in result.split(' ')]        
+        tokens = [Token(word.strip(), 1.0, True)
+                  for word in result.split(' ')
+                  if word.strip() != '']
         return tokens
