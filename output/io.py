@@ -15,7 +15,7 @@ class _FileOutput(Output):
     '''
     An L{Output} which just writes to a file handle.
     '''
-    def __init__(self, notifier, handle):
+    def __init__(self, state, handle):
         '''
         @type  notifier: L{Notifier}
         @param notifier:
@@ -24,7 +24,7 @@ class _FileOutput(Output):
         @param handle:
             The file handle to write to.
         '''
-        super(_FileOutput, self).__init__(notifier)
+        super(_FileOutput, self).__init__(state)
         assert handle is None or (hasattr(handle, 'write') and
                                   hasattr(handle, 'flush') and
                                   hasattr(handle, 'closed')), (
@@ -48,36 +48,36 @@ class StdoutOutput(_FileOutput):
     '''
     An output to C{stdout}.
     '''
-    def __init__(self, notifier):
+    def __init__(self, state):
         '''
         @see Output.__init__()
         '''
-        super(Stdout, self).__init__(notifier, sys.stdout)
+        super(Stdout, self).__init__(state, sys.stdout)
 
 
 class StderrOutput(_FileOutput):
     '''
     An output to C{stderr}.
     '''
-    def __init__(self, notifier):
+    def __init__(self, state):
         '''
         @see Output.__init__()
         '''
-        super(Stderr, self).__init__(notifier, sys.stderr)
+        super(Stderr, self).__init__(state, sys.stderr)
 
 
 class LogOutput(Output):
     '''
     An output which logs as a particular level to the system's log.
     '''
-    def __init__(self, notifier, level=logging.INFO):
+    def __init__(self, state, level=logging.INFO):
         '''
         @see Output.__init__()
         @type  level: int or str
         @param level:
             The level to log at.
         '''
-        super(LogOutput, self).__init__(notifier)
+        super(LogOutput, self).__init__(state)
         try:
             self._level = int(level)
         except:

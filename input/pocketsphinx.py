@@ -46,7 +46,7 @@ class PocketSphinxInput(AudioInput):
 
     def _decode_raw(self, data):
         '''
-        @see L{AudioInput._decode_raw()}
+        @see AudioInput._decode_raw()
         '''
         # Decode the raw bytes
         self._decoder.start_utt()

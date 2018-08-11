@@ -59,11 +59,11 @@ class VolumeService(Service):
     '''
     A service which simply parrots back what was given to it.
     '''
-    def __init__(self, notifier):
+    def __init__(self, state):
         '''
         @see Service.__init__()
         '''
-        super(VolumeService, self).__init__("Volume", notifier)
+        super(VolumeService, self).__init__("Volume", state)
 
 
     def evaluate(self, tokens):

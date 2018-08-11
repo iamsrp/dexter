@@ -16,16 +16,16 @@ class Service(Component):
     '''
     A service which responds to input.
     '''
-    def __init__(self, name, notifier):
+    def __init__(self, name, state):
         '''
         @type  name: str
         @param name:
             The name of this service.
-        @type  notifier: L{Notifier}
-        @param notifier:
-            The Notifier instance.
+        @type  state: L{State}
+        @param state:
+            The global State instance.
         '''
-        super(Service, self).__init__(notifier)
+        super(Service, self).__init__(state)
         self._name = name
 
 

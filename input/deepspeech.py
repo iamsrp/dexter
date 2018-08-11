@@ -123,7 +123,7 @@ class DeepSpeechInput(AudioInput):
 
     def _decode_raw(self, data):
         '''
-        @see L{AudioInput._decode_raw()}
+        @see AudioInput._decode_raw()
         '''
         audio = numpy.frombuffer(data, numpy.int16)
         words = self._model.stt(audio, self._rate)

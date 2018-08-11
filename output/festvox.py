@@ -17,26 +17,26 @@ import time
 
 from   dexter.core     import Notifier
 from   dexter.core.log import LOG
-from   dexter.output   import Output
+from   dexter.output   import SpeechOutput
 from   threading       import Thread
 
 # ------------------------------------------------------------------------------
 
-class FestivalOutput(Output):
+class FestivalOutput(SpeechOutput):
     '''
     An output which logs as a particular level to the system's log.
 
     We run this in a subprocess since the in-process version tends to lock
     things up and also doesn't work outside the main thread.
     '''
-    def __init__(self, notifier, voice='voice_rab_diphone'):
+    def __init__(self, state, voice='voice_rab_diphone'):
         '''
         @see Output.__init__()
         @type  voice: str
         @param voice:
             The voice to use.
         '''
-        super(FestivalOutput, self).__init__(notifier)
+        super(FestivalOutput, self).__init__(state)
 
         self._voice   = voice
         self._queue   = []

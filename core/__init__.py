@@ -63,10 +63,14 @@ class _Startable(object):
 class Component(_Startable):
     '''
     A part of the system.
+
+    @type  state: L{State}
+    @param state:
+        The overall state of the system.
     '''
-    def __init__(self, notifier):
+    def __init__(self, state):
         super(Component, self).__init__()
-        self._notifier = notifier
+        self._state = state
 
 
     @property
@@ -86,6 +90,14 @@ class Component(_Startable):
 
 
     @property
+    def is_speech(self):
+        '''
+        Whether this component is an output which delivers speech.
+        '''
+        return False
+
+
+    @property
     def is_service(self):
         '''
         Whether this component is a service.
@@ -97,8 +109,8 @@ class Component(_Startable):
         '''
         Notify of a status change.
         '''
-        if self._notifier is not None:
-            self._notifier.update_status(self, status)
+        if self._state is not None:
+            self._state.update_status(self, status)
 
 
     def __str__(self):
@@ -134,13 +146,26 @@ class Notifier(_Startable):
     def __str__(self):
         return type(self).__name__
 
+
+class State(Notifier):
+    '''
+    The global state of the system.
+    '''
+    def is_speaking(self):
+        '''
+        Whether the system is currently outputing audible speech.
+        '''
+        # Subclasses should implement this
+        raise NotImplementedError("Abstract method called")
+
 # ------------------------------------------------------------------------------
+
 
 class Dexter(object):
     '''
     The main class which drives the system.
     '''
-    class _MainNotifier(Notifier):
+    class _State(State):
         '''
         Tell the system overall that we're busy.
         '''
@@ -151,6 +176,7 @@ class Dexter(object):
                 The other notifiers that we hold.
             '''
             self._notifiers = tuple(notifiers)
+            self._speakers  = set()
 
 
         def start(self):
@@ -179,14 +205,32 @@ class Dexter(object):
 
         def update_status(self, component, status):
             '''
-            @see L{Notifier.update_status()}
+            @see Notifier.update_status()
             '''
+            # See if this is a speaker, if so then we have to account for that
+            if component.is_speech:
+                if status == Notifier.IDLE:
+                    if component in self._speakers:
+                        self._speakers.remove(component)
+                        LOG.info("%s is no longer speaking" % (component,))
+                else:
+                    self._speakers.add(component)
+                    LOG.info("%s is speaking" % (component,))
+
+            # And tell the notifiers
             for notifier in self._notifiers:
                 try:
                     notifier.update_status(component, status)
                 except Exception as e:
                     LOG.error("Failed to update %s with (%s,%s): %s" %
                               (notifier, component, status, e))
+
+
+        def is_speaking(self):
+            '''
+            @see State.is_speaking()
+            '''
+            return len(self._speakers) > 0
 
 
     @staticmethod
@@ -280,7 +324,7 @@ class Dexter(object):
 
         # Create the notifiers
         notifiers = config.get('notifiers', [])
-        self._notifier = Dexter._MainNotifier(
+        self._state = Dexter._State(
             Dexter._get_notifier(classname, kwargs)
             for (classname, kwargs) in notifiers
         )
@@ -288,15 +332,15 @@ class Dexter(object):
         # Create the components, using our notifier
         components = config.get('components', {})
         self._inputs = [
-            Dexter._get_component(classname, kwargs, self._notifier)
+            Dexter._get_component(classname, kwargs, self._state)
             for (classname, kwargs) in components.get('inputs', [])
         ]
         self._outputs = [
-            Dexter._get_component(classname, kwargs, self._notifier)
+            Dexter._get_component(classname, kwargs, self._state)
             for (classname, kwargs) in components.get('outputs', [])
         ]
         self._services = [
-            Dexter._get_component(classname, kwargs, self._notifier)
+            Dexter._get_component(classname, kwargs, self._state)
             for (classname, kwargs) in components.get('services', [])
         ]
 
@@ -347,7 +391,7 @@ class Dexter(object):
         '''
         # Start the notifiers
         try:
-            self._notifier.start()
+            self._state.start()
         except Exception as e:
             LOG.fatal("Failed to start notifiers: %s" % (e,))
             sys.exit(1)
@@ -368,7 +412,7 @@ class Dexter(object):
         Stop the system.
         '''
         # Stop the notifiers
-        self._notifier.stop()
+        self._state.stop()
 
         # And the components
         for component in self._inputs + self._outputs + self._services:
@@ -422,7 +466,7 @@ class Dexter(object):
         for service in self._services:
             try:
                 # This service is being woken to so update the status
-                self._notifier.update_status(service, Notifier.ACTIVE)
+                self._state.update_status(service, Notifier.ACTIVE)
 
                 # Get any handler from the service for the given tokens
                 handler = service.evaluate(tokens[offset:])
@@ -436,7 +480,7 @@ class Dexter(object):
 
             finally:
                 # This service is done working now
-                self._notifier.update_status(service, Notifier.IDLE)
+                self._state.update_status(service, Notifier.IDLE)
 
         # Anything?
         if len(handlers) == 0:
@@ -462,8 +506,8 @@ class Dexter(object):
             try:
                 # Update the status of this handler's service to "working" while
                 # we call it
-                self._notifier.update_status(handler.service,
-                                             Notifier.WORKING)
+                self._state.update_status(handler.service,
+                                          Notifier.WORKING)
 
                 # Invoked the handler and see what we get back
                 result = handler.handle()
@@ -487,8 +531,8 @@ class Dexter(object):
 
             finally:
                 # This service is done working now
-                self._notifier.update_status(handler.service,
-                                             Notifier.IDLE)
+                self._state.update_status(handler.service,
+                                          Notifier.IDLE)
 
         # Give back whatever we had, if anything
         if error:

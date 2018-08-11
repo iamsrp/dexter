@@ -65,11 +65,11 @@ class ClockService(Service):
     >>> result.text.startswith('The current time is')
     True
     '''
-    def __init__(self, notifier):
+    def __init__(self, state):
         '''
         @see Service.__init__()
         '''
-        super(ClockService, self).__init__("Clock", notifier)
+        super(ClockService, self).__init__("Clock", state)
 
 
     def evaluate(self, tokens):

@@ -8,19 +8,19 @@ import time
 
 from   dexter.core     import Notifier
 from   dexter.core.log import LOG
-from   dexter.output   import Output
+from   dexter.output   import SpeechOutput
 from   espeak          import espeak
 from   threading       import Thread
 
 # ------------------------------------------------------------------------------
 
-class EspeakOutput(Output):
+class EspeakOutput(SpeechOutput):
     '''
     An output which logs as a particular level to the system's log.
     '''
-    def __init__(self, notifier, rate=None, voice=None):
+    def __init__(self, state, rate=None, voice=None):
         '''
-        @see Output.__init__()
+        @see SpeechOutput.__init__()
         @type  rate: int
         @param rate:
             The speed at which to speek. An integer value between 0 and 450. The
@@ -29,7 +29,7 @@ class EspeakOutput(Output):
         @param voice:
             The voice to use. See C{espeak.list_voices()}.
         '''
-        super(EspeakOutput, self).__init__(notifier)
+        super(EspeakOutput, self).__init__(state)
 
         if rate is not None:
             espeak.set_parameter(espeak.Parameter.Rate, int(rate))

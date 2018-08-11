@@ -32,11 +32,11 @@ class EchoService(Service):
     '''
     A service which simply parrots back what was given to it.
     '''
-    def __init__(self, notifier):
+    def __init__(self, state):
         '''
         @see Service.__init__()
         '''
-        super(EchoService, self).__init__("Echo", notifier)
+        super(EchoService, self).__init__("Echo", state)
 
 
     def evaluate(self, tokens):

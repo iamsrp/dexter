@@ -14,13 +14,13 @@ class Output(Component):
     '''
     A way to get information to the outside world.
     '''
-    def __init__(self, notifier):
+    def __init__(self, state):
         '''
-        @type  notifier: L{Notifier}
-        @param notifier:
-            The Notifier instance.
+        @type  state: L{State}
+        @param state:
+            The global State instance.
         '''
-        super(Output, self).__init__(notifier)
+        super(Output, self).__init__(state)
 
 
     @property
@@ -41,3 +41,19 @@ class Output(Component):
         '''
         # Subclasses should implement this
         raise NotImplementedError("Abstract method called")
+
+
+class SpeechOutput(Output):
+    '''
+    An output which generates audio speech.
+
+    When one of these classes has a state which is not C{IDLE} we deem it to be
+    generating audio on the speaker.
+    '''
+    @property
+    def is_speech(self):
+        '''
+        @see Component.is_speech()
+        '''
+        return True
+    

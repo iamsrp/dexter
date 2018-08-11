@@ -28,7 +28,7 @@ class AudioInput(Input):
       http://blog.justsophie.com/python-speech-to-text-with-pocketsphinx/
     '''
     def __init__(self,
-                 notifier,
+                 state,
                  pre_silence_limit=1.0,
                  mid_silence_limit=0.5,
                  prev_audio=1.5,
@@ -38,9 +38,9 @@ class AudioInput(Input):
                  rate=16000,
                  wav_dir=None):
         '''
-        @type  notifier: L{Notifier}
-        @param notifier:
-            The Notifier instance.
+        @type  state: L{State}
+        @param state:
+            The State instance.
         @type  pre_silence_limit: float
         @param pre_silence_limit:
             Number of seconds to look for sound in before a command.
@@ -68,7 +68,7 @@ class AudioInput(Input):
         @param wav_dir:
             Where to save WAV files to, if we are doing so.
         '''
-        super(AudioInput, self).__init__(notifier)
+        super(AudioInput, self).__init__(state)
 
         # Microphone stream config
         self._chunk    = chunk  # Chunks of bytes to read each time from mic
@@ -232,8 +232,8 @@ class AudioInput(Input):
                 # the end
                 values = numpy.array(average_win)[:slide_size]
 
-                # See what the top 20% of that looks like.
-                count   = int((window_size - slide_size) * 0.2) + 1
+                # See what the top X percent of that looks like.
+                count   = int((window_size - slide_size) * 0.25) + 1
                 average = numpy.mean(sorted(values, reverse=True)[:count])
 
                 # The threshold at which we denote there to be elevated sound
@@ -264,14 +264,17 @@ class AudioInput(Input):
                     log_threshold      = threshold
                     log_threshold_time = now
 
-                # Whether someone is likely talking.
-                max_level = max(slid_win)
-                new_talking = max_level > threshold
-                if new_talking != talking:
-                    LOG.info("Detecting change in sound levels where "
-                             "max level and threshold are: %d %d" %
-                             (max_level, threshold))
-                    talking = new_talking
+                # Only look to see if someone is speaking if the system is
+                # not. Otherwise we will likely hear ourselves.
+                if not self._state.is_speaking():
+                    # Whether someone is likely talking.
+                    max_level = max(slid_win)
+                    new_talking = max_level > threshold
+                    if new_talking != talking:
+                        LOG.info("Detecting change in sound levels where "
+                                 "max level and threshold are: %d %d" %
+                                 (max_level, threshold))
+                        talking = new_talking
 
             # If we think someone is talking then
             if talking:

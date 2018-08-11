@@ -72,11 +72,11 @@ class WikipediaService(Service):
     >>> result.text.startswith('Wikipedia says.\\nMark')
     True
     '''
-    def __init__(self, notifier):
+    def __init__(self, state):
         '''
         @see Service.__init__()
         '''
-        super(WikipediaService, self).__init__("Wikipedia", notifier)
+        super(WikipediaService, self).__init__("Wikipedia", state)
 
 
     def evaluate(self, tokens):
