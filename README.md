@@ -17,7 +17,7 @@ This is very much a toy project and should be considered work in progress right 
 
 ## Prerequisites
 
-* [Python 2.7](https://www.python.org/).
+* [Python 3](https://www.python.org/).
 * Around 4G of space, if you want to use PocketSphinx, DeepSpeech and so forth.
 * What is listed in the `requirements` file.
 
