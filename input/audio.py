@@ -29,8 +29,8 @@ class AudioInput(Input):
     '''
     def __init__(self,
                  notifier,
-                 pre_silence_limit=2.0,
-                 mid_silence_limit=1.0,
+                 pre_silence_limit=1.0,
+                 mid_silence_limit=0.5,
                  prev_audio=1.5,
                  chunk=1024,
                  format=pyaudio.paInt16,
@@ -187,8 +187,8 @@ class AudioInput(Input):
 
         # Threshold multipliers for detecting the start of talking and the
         # end. This is what we multiply the roling average sound levels by.
-        threshold_over  = 2.5
-        threshold_under = 1.5
+        threshold_over  = 1.75
+        threshold_under = 1.25
 
         # Things which we'll use in the loop below
         audio              = None
