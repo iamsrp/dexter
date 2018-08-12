@@ -335,6 +335,10 @@ def number_to_words(value):
     'minus four point seven eight nine'
     >>> number_to_words(42.01234)
     'forty two point zero one two three four'
+    >>> number_to_words(30)
+    'thirty'
+    >>> number_to_words(1000000)
+    'one million'
 
     @type  value: number
     @parse value:
@@ -350,42 +354,47 @@ def number_to_words(value):
     int_value   = int(value)
     float_value = float(value)
 
+    remainder = 0
     if int_value >= 1000000000:
         billions = int_value // 1000000000
-        result += (number_to_words(billions) +
-                   " billion " +
-                   number_to_words(int_value - billions * 1000000000))
+        result += number_to_words(billions) + " billion"
+        remainder = int_value - billions * 1000000000
     elif int_value >= 1000000:
         millions = int_value // 1000000
-        result += (number_to_words(millions) +
-                   " million " +
-                   number_to_words(int_value - millions * 1000000))
+        result += number_to_words(millions) + " million"
+        remainder = int_value - millions * 1000000
     elif int_value >= 1000:
         thousands = int_value // 1000
-        result += (number_to_words(thousands) +
-                   " thousand " +
-                   number_to_words(int_value - thousands * 1000))
+        result += number_to_words(thousands) + " thousand"
+        remainder = int_value - thousands * 1000
     elif int_value >= 100:
         hundreds = int_value // 100
-        result += (number_to_words(hundreds) +
-                   " thousand " +
-                   number_to_words(int_value - hundreds * 100))
+        result += number_to_words(hundreds) + " thousand"
+        remainder = int_value - hundreds * 100
     elif int_value >= 90:
-        result += "ninety "  + number_to_words(int_value - 90)
+        result += "ninety"
+        remainder = int_value - 90
     elif int_value >= 80:
-        result += "eighty "  + number_to_words(int_value - 80)
+        result += "eighty"
+        remainder = int_value - 80
     elif int_value >= 70:
-        result += "seventy " + number_to_words(int_value - 70)
+        result += "seventy"
+        remainder = int_value - 70
     elif int_value >= 60:
-        result += "sixty "   + number_to_words(int_value - 60)
+        result += "sixty"
+        remainder = int_value - 60
     elif int_value >= 50:
-        result += "fifty "   + number_to_words(int_value - 50)
+        result += "fifty "
+        remainder = int_value - 50
     elif int_value >= 40:
-        result += "forty "   + number_to_words(int_value - 40)
+        result += "forty"
+        remainder = int_value - 40
     elif int_value >= 30:
-        result += "thrity "  + number_to_words(int_value - 30)
+        result += "thirty"
+        remainder = int_value - 30
     elif int_value >= 20:
-        result += "twenty "  + number_to_words(int_value - 20)
+        result += "twenty"
+        remainder = int_value - 20
     elif int_value == 19:
         result += "nineteen"
     elif int_value == 18:
@@ -426,6 +435,10 @@ def number_to_words(value):
         result += "one"
     elif int_value == 0:
         result += "zero"
+
+    # Any more?
+    if remainder > 0:
+        result += " " + number_to_words(remainder)
 
     # Now any decimal
     if int_value != float_value:
