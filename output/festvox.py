@@ -106,7 +106,7 @@ class FestivalOutput(SpeechOutput):
                 # Get the text, make sure that '"'s in it won't confuse things
                 text    = self._queue.pop()
                 command = '(SayText "%s")\n' % text.replace('"', '')
-                LOG.info("Sending: %s" % command)
+                LOG.info("Sending: %s" % command.strip())
                 self._notify(Notifier.WORKING)
                 self._subproc.stdin.write(command)
                 self._subproc.stdin.flush()
