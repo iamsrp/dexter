@@ -32,6 +32,7 @@ class AudioInput(Input):
                  pre_silence_limit=1.0,
                  mid_silence_limit=0.1,
                  prev_audio=1.5,
+                 max_audio=10.0,
                  chunk=128,
                  format=pyaudio.paInt16,
                  channels=1,
@@ -93,6 +94,9 @@ class AudioInput(Input):
         # prepended. This helps to prevent chopping the beginning
         # of the phrase.
         self._prev_audio = prev_audio
+
+        # The maximum about of audio which we'll record.
+        self._max_audio = max_audio
 
         # What we receive
         self._output = list()
@@ -197,6 +201,7 @@ class AudioInput(Input):
         log_threshold_time = 0
         talking            = False
         talking_start      = 0
+        talking_last       = 0
 
         # Keep listening until we are stopped
         while self.is_running:
@@ -264,22 +269,31 @@ class AudioInput(Input):
                     log_threshold      = threshold
                     log_threshold_time = now
 
+                # Whether someone is likely talking.
+                max_level = max(slid_win)
+                new_talking = max_level > threshold
+                if new_talking:
+                    LOG.info( "Detected talking where "
+                              "max level and threshold are: %d %d" %
+                             (max_level, threshold))
+                elif new_talking != talking:
+                    LOG.info("Detecting change in sound levels where "
+                             "max level and threshold are: %d %d" %
+                             (max_level, threshold))
+
+                # And assign
+                talking = new_talking
+
                 # Only look to see if someone is speaking if the system is
                 # not. Otherwise we will likely hear ourselves.
-                if not self._state.is_speaking():
-                    # Whether someone is likely talking.
-                    max_level = max(slid_win)
-                    new_talking = max_level > threshold
-                    if new_talking != talking:
-                        LOG.info("Detecting change in sound levels where "
-                                 "max level and threshold are: %d %d" %
-                                 (max_level, threshold))
-                        talking = new_talking
+                if self._state.is_speaking() and talking:
+                    talking = False
+                    LOG.info("Ignoring talking since audio is being output")
 
             # If we think someone is talking then
             if talking:
                 # Remember the last time that we heard someone talking
-                talking_start = now
+                talking_last = now
 
                 # If we don't yet have any audio then we're starting the
                 # recording
@@ -287,6 +301,7 @@ class AudioInput(Input):
                     # Move the rolling window of recording to be the start of
                     # the audio
                     LOG.info("Starting recording")
+                    talking_start = now
                     self._notify(Notifier.ACTIVE)
                     audio = list(prev_audio)
                     prev_audio.clear()
@@ -296,8 +311,9 @@ class AudioInput(Input):
 
             # We deem that talking is still happening if it started only a
             # little while ago
-            elif ((now - talking_start) > self._mid_silence_limit and
-                  audio is not None):
+            elif (((now - talking_start) > self._max_audio or
+                   (now - talking_last ) > self._mid_silence_limit) and
+                   audio is not None):
                 # There's no talking but there us recorded audio. That means
                 # someone just stopped talking.
                 LOG.info("Finished recording")
