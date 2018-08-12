@@ -26,7 +26,7 @@ class AudioInput(Input):
     '''
     def __init__(self,
                  state,
-                 chunk_size=128,
+                 chunk_size=256,
                  format=pyaudio.paInt16,
                  channels=1,
                  rate=16000,
@@ -141,7 +141,7 @@ class AudioInput(Input):
 
         # The buffer of historical audio data
         audio_buf = deque(maxlen=int(1.0 * read_rate))
-        level_buf = deque(maxlen=int(3.0 * read_rate))
+        level_buf = deque(maxlen=int(2.0 * read_rate))
 
         # The index at which we cut the level buffer for the purposes of looking
         # for a change in the audio going from background to noisy, or vice
@@ -168,7 +168,7 @@ class AudioInput(Input):
 
             # Read in the next lump of data and get its average volume
             chunk = stream.read(self._chunk_size)
-            level = math.sqrt(abs(audioop.avg(chunk, self._width)))
+            level = numpy.sqrt(abs(audioop.avg(chunk, self._width)))
 
             # Accumulate into our buffers
             audio_buf.append(chunk)
@@ -199,36 +199,37 @@ class AudioInput(Input):
                 LOG.info("Ignoring talking since audio is being output")
                 talking = False
                 speech  = None
+                continue
 
             # We are looking for the background levels. If we think that someone
             # is talking then the background sound going to be at the end of the
             # levels, else it will be at the start.
-            ratio_up   = 2.0
-            ratio_dn   = 1.1
-            percentile = 0.75
+
+            # Different detection based on what we are looking for
             if not talking:
                 # Looking for a step up in the latter part
-                lo_levels = levels[        :avg_idx] # From start to avg_idx
-                hi_levels = levels[-avg_idx:       ] # From avg_idx to end
-                lo_pctl = numpy.sort(lo_levels)[int(len(lo_levels)* percentile)]
-                hi_pctl = numpy.sort(hi_levels)[int(len(hi_levels)* percentile)]
-                if lo_pctl * ratio_up < hi_pctl:
+                from_levels = levels[        :-avg_idx] # From start to avg_idx
+                to_levels   = levels[-avg_idx:        ] # From avg_idx to end
+                from_pctl = numpy.sort(from_levels)[int(len(from_levels) * 0.5)]
+                to_pctl   = numpy.sort(to_levels  )[int(len(to_levels  ) * 0.6)]
+                LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
+                if from_pctl * 1.5 < to_pctl:
                     LOG.info("Detected start of speech "
-                             "with levels going from %d to %d" %
-                             (lo_pctl, hi_pctl))
+                             "with levels going from %0.2f to %0.2f" %
+                             (from_pctl, to_pctl))
                     talking = True
                     talking_start = now
             else:
                 # Looking for a step down in the latter part
-                lo_levels = levels[-avg_idx:       ] # From avg_idx to end
-                hi_levels = levels[        :avg_idx] # From start to avg_idx
-                lo_pctl = numpy.sort(lo_levels)[int(len(lo_levels)* percentile)]
-                hi_pctl = numpy.sort(hi_levels)[int(len(hi_levels)* percentile)]
-                LOG.debug("Levels are hi=%d to lo=%d", hi_pctl, lo_pctl)
-                if lo_pctl * ratio_dn < hi_pctl:
+                from_levels = levels[        :avg_idx] # From start to avg_idx
+                to_levels   = levels[avg_idx:        ] # From avg_idx to end
+                from_pctl = numpy.sort(from_levels)[int(len(from_levels) * 0.5)]
+                to_pctl   = numpy.sort(to_levels  )[int(len(to_levels  ) * 0.5)]
+                LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
+                if from_pctl > to_pctl * 1.25:
                     LOG.info("Detected end of speech "
-                             "with levels going from %d to %d" %
-                             (hi_pctl, lo_pctl))
+                             "with levels going from %0.2f to %0.2f" %
+                             (from_pctl, to_pctl))
                     talking = False
 
             # If the talking has been going on too long then just stop it. Quite
@@ -288,6 +289,9 @@ class AudioInput(Input):
                     LOG.debug("Junking backlog of %d", available)
                     stream.read(available)
                     available = stream.get_read_available()
+
+                # Clear out the level buffer so that it can settle again
+                level_buf.clear()
 
                 # And we're back to listening
                 LOG.info("Listening")
