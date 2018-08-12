@@ -30,9 +30,9 @@ class AudioInput(Input):
     def __init__(self,
                  state,
                  pre_silence_limit=1.0,
-                 mid_silence_limit=0.5,
+                 mid_silence_limit=0.1,
                  prev_audio=1.5,
-                 chunk=1024,
+                 chunk=128,
                  format=pyaudio.paInt16,
                  channels=1,
                  rate=16000,
@@ -256,7 +256,7 @@ class AudioInput(Input):
                     )
                     log_threshold      = threshold
                     log_threshold_time = now
-                elif now - log_threshold_time > 60:
+                elif now - log_threshold_time > 1:
                     LOG.info(
                         "Audio threshold is currently %d, with an average of %d" %
                         (threshold, average)
