@@ -224,7 +224,7 @@ class AudioInput(Input):
                 hi_levels = levels[        :avg_idx] # From start to avg_idx
                 lo_pctl = numpy.sort(lo_levels)[int(len(lo_levels)* percentile)]
                 hi_pctl = numpy.sort(hi_levels)[int(len(hi_levels)* percentile)]
-                LOG.info("Levels are hi=%d to lo=%d" % (hi_pctl, lo_pctl))
+                LOG.debug("Levels are hi=%d to lo=%d", hi_pctl, lo_pctl)
                 if lo_pctl * ratio_dn < hi_pctl:
                     LOG.info("Detected end of speech "
                              "with levels going from %d to %d" %
