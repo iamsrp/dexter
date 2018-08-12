@@ -26,6 +26,8 @@ class AudioInput(Input):
 
     Heavily adapted from::
       http://blog.justsophie.com/python-speech-to-text-with-pocketsphinx/
+    which looks to have partly come from Example 22 in:
+      https://www.programcreek.com/python/example/100708/audioop.avg
     '''
     def __init__(self,
                  state,
