@@ -61,9 +61,6 @@ class DeepSpeechInput(AudioInput):
     def __init__(self,
                  notifier,
                  use_lm=False,
-                 pre_silence_limit=2.0,
-                 mid_silence_limit=1.0,
-                 prev_audio=1.5,
                  wav_dir=None):
         '''
         @see AudioInput.__init__()
@@ -74,10 +71,6 @@ class DeepSpeechInput(AudioInput):
         '''
         super(DeepSpeechInput, self).__init__(
             notifier,
-            pre_silence_limit=pre_silence_limit,
-            mid_silence_limit=mid_silence_limit,
-            prev_audio=prev_audio,
-            chunk=1024,
             format=pyaudio.paInt16,
             channels=1,
             rate=16000,

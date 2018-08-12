@@ -24,12 +24,9 @@ class RemoteInput(AudioInput):
     Use a remote server to do the audio decoding for us.
     '''
     def __init__(self,
-                 notifier,
+                 state,
                  host='localhost',
                  port=8008,
-                 pre_silence_limit=2.0,
-                 mid_silence_limit=1.0,
-                 prev_audio=1.5,
                  wav_dir=None):
         '''
         @see AudioInput.__init__()
@@ -41,14 +38,8 @@ class RemoteInput(AudioInput):
         @param port:
             The port to connect to.
         '''
-        super(RemoteInput, self).__init__(
-            notifier,
-            pre_silence_limit=pre_silence_limit,
-            mid_silence_limit=mid_silence_limit,
-            prev_audio=prev_audio,
-            wav_dir=wav_dir
-        )
-
+        super(RemoteInput, self).__init__(state,
+                                          wav_dir=wav_dir)
         self._host = host
         self._port = int(port)
         
