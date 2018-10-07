@@ -23,7 +23,7 @@ This is very much a toy project and should be considered work in progress right 
 
 You'll also need the trained data from [DeepSpeech](https://github.com/mozilla/DeepSpeech), which you should probably untar into `/usr/local/share/deepspeech`. (If you don't have root access then anywhere is fine really; this is just where I put it and so that's what the vanilla code expects.) This is only the barest of information; read their [project page](https://github.com/mozilla/DeepSpeech) for more information.
 
-Make sure that ALSA is working by testing `aplay` and `arecord`. If it is not then you may well get strange errors from `pyaudio`.
+Make sure that ALSA is working by testing `aplay` and `arecord`. If it is not then you may well get strange errors from `pyaudio`. Also make sure that you have a decent microphone with no noise; try listening to some arecord output to make sure it sounds clear.
 
 ## Configuration
 
