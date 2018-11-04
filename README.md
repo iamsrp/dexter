@@ -13,6 +13,7 @@ This is very much a toy project and should be considered work in progress right 
   - [Inputs](#inputs)
   - [Outputs](#outputs)
   - [Services](#services)
+- [Notes](#notes)
 
 
 ## Prerequisites
@@ -64,3 +65,11 @@ These are ways to get Dexter's responses back to the user. This might be simple 
 ### Services
 
 The services are what actually handle the user requests. These might be things like playing music, telling you what the weather is or setting some sort of timer. A simple `EchoService` is gives a basic example which just says back to you what you said to it.
+
+## Notes
+
+This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It's designed to work on a Raspberry Pi running Raspbian, but any Linux distribution will probably work.
+
+Currently it uses DeepSpeech or PocketSphynx to handle the voice to text rendering. However, these run really slowly on a Raspberry Pi so I wound up running them on a more powerful machine (still local), and handing off to that from the Raspberry Pi, to perform the actual voice to text.
+
+Right now, a bunch of basic services are there, like asking about things and playing music. That's pretty much most people tend to use their home assistant for anyhow it seems...

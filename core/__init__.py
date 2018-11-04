@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function, with_statemen
 
 import sys
 import time
+import traceback
 
 from dexter.core.log  import LOG
 from dexter.core.util import to_letters, list_index
@@ -473,9 +474,11 @@ class Dexter(object):
                 if handler is not None:
                     handlers.append(handler)
 
-            except Exception as e:
-                LOG.error("Failed to evaluate %s with %s: %s" %
-                          ([str(token) for token in tokens], service, e))
+            except:
+                LOG.error("Failed to evaluate %s with %s:\n%s" %
+                          ([str(token) for token in tokens],
+                           service,
+                           traceback.format_exc()))
                 return "Sorry, there was a problem"
 
             finally:
@@ -522,11 +525,12 @@ class Dexter(object):
                 if handler.exclusive or result.exclusive:
                     break
 
-            except Exception as e:
+            except:
                 error = True
                 LOG.error(
-                    "Handler %s with tokens %s for service %s yielded: %s" %
-                    (handler, handler.tokens, handler.service, e)
+                    "Handler %s with tokens %s for service %s yielded:\n%s" %
+                    (handler, handler.tokens, handler.service,
+                     traceback.format_exc())
                 )
 
             finally:
@@ -559,5 +563,6 @@ class Dexter(object):
         for output in self._outputs:
             try:
                 output.write(response)
-            except Exception as e:
-                LOG.error("Failed to respond with %s: %s" % (output, e))
+            except:
+                LOG.error("Failed to respond with %s:\n%s" %
+                (output, traceback.format_exc()))
