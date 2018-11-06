@@ -2,8 +2,6 @@
 A simple service which echoes back the input,
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 from dexter.service import Service, Handler, Result
 
 class _EchoHandler(Handler):

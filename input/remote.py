@@ -5,8 +5,6 @@ This can be used in conjunction with something like the C{deepspeech_server.py}
 script in order to have a fast machine do the actual speech-to-text decoding.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import numpy
 import os
 import pyaudio

@@ -29,11 +29,20 @@
         ],
 
         "services" : [
-            [ "dexter.service.chrono.ClockService", {
+            [ "dexter.service.chronos.ClockService", {
             }],
+
             [ "dexter.service.echo.EchoService", {
             }],
+
             [ "dexter.service.volume.VolumeService", {
+            }],
+
+            [ "dexter.service.wikiquery.WikipediaService", {
+            }],
+
+            [ "dexter.service.music.LocalMusicService", {
+                "dirname" : "/home/pi/music"
             }]
         ]
     }

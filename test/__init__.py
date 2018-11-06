@@ -2,8 +2,6 @@
 Things to help with testing
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 from dexter.core import Notifier
 
 # ------------------------------------------------------------------------------

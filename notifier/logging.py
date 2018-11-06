@@ -2,8 +2,6 @@
 A simple notifer which logs.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 from dexter.core     import Notifier
 from dexter.core.log import LOG
 

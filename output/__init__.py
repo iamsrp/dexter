@@ -4,8 +4,6 @@ How Dexter sends information to the outside world.
 This might be via speech synthesis, a display, logging, etc.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 from   dexter.core import Component
 
 # ------------------------------------------------------------------------------

@@ -4,8 +4,6 @@ How Dexter gets instructions from outside world.
 This might be via speech recognition, a network connection, etc.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 from dexter.core  import Component
 
 # ------------------------------------------------------------------------------

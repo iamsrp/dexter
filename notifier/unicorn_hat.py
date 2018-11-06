@@ -4,8 +4,6 @@ A notifier which utilises the Unicorn Hat HD on a Raspberry Pi.
 @see https://github.com/pimoroni/unicorn-hat-hd
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import math
 import time
 

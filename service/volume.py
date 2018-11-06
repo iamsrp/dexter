@@ -2,7 +2,7 @@
 Set the audio output volume. It goes up to 11.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
+import traceback
 
 from dexter.core.audio import set_volume
 from dexter.core.log   import LOG
@@ -44,8 +44,9 @@ class _Handler(Handler):
                     True
                 )
 
-        except Exception as e:
-            LOG.error("Problem parsing volume '%s': %s" % (self._volume, e))
+        except Exception:
+            LOG.error("Problem parsing volume '%s':\n%s" %
+                      (self._volume, traceback.format_exc()))
             return Result(
                 self,
                 "Sorry, I don't know how to set the volume to %s" %

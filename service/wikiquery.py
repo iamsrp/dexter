@@ -2,8 +2,6 @@
 Pull information from Wikipedia.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import wikipedia
 
 from   dexter.core      import Notifier

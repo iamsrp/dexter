@@ -4,8 +4,6 @@ Chronos, the greek god of Thyme, and other select herbs.
 Various services related to the ticking of the clock.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import time
 
 from   dexter.core.log  import LOG

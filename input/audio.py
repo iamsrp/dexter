@@ -2,8 +2,6 @@
 Input using audio data from the microphone.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import audioop
 import math
 import numpy

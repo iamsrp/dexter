@@ -2,14 +2,18 @@
 The heart of the system.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
+import heapq
+import queue
 import sys
 import time
 import traceback
 
-from dexter.core.log  import LOG
-from dexter.core.util import to_letters, list_index
+from dexter.core.audio  import get_volume, set_volume
+from dexter.core.event  import TimerEvent
+from dexter.core.log    import LOG
+from dexter.core.util   import to_letters, list_index
+
+from fuzzywuzzy.process import fuzz
 
 # ------------------------------------------------------------------------------
 
@@ -234,6 +238,13 @@ class Dexter(object):
             return len(self._speakers) > 0
 
 
+    # How long to wait for a command after being primed with just the keyphrase
+    _KEY_PHRASE_ONLY_TIMEOUT = 5
+
+    # The volume to set to when listening after being prompted by the keyphrase
+    _LISTENING_VOLUME = 2
+
+
     @staticmethod
     def _get_notifier(full_classname, kwargs):
         '''
@@ -345,6 +356,14 @@ class Dexter(object):
             for (classname, kwargs) in components.get('services', [])
         ]
 
+        # When we last heard just the keyphrase on its own, in seconds since
+        # epoch
+        self._last_keyphrase_only = 0
+
+        # Our events
+        self._events       = queue.Queue()
+        self._timer_events = []
+
         # And we're off!
         self._running  = True
 
@@ -359,6 +378,25 @@ class Dexter(object):
         LOG.info("Entering main loop")
         while self._running:
             try:
+                # What time is love?
+                now = time.time()
+
+                # Handle any events. First check to see if any time events are
+                # pending and need to be scheduled.
+                while len(self._timer_events) > 0 and \
+                      self._timer_events[0].schedule_time <= now:
+                    self._events.put(heapq.heappop(self._timer_events))
+
+                # Now handle the actual events
+                while not self._events.empty():
+                    event = self._events.get()
+                    try:
+                        result = event.invoke()
+                        if result is not None:
+                            self._events.put(result)
+                    except Exception as e:
+                        LOG.error("Event %s raised exception: %s", event, e)
+
                 # Loop over all the inputs and see if they have anything pending
                 for input in self._inputs:
                     # Attempt a read, this will return None if there's nothing
@@ -451,15 +489,79 @@ class Dexter(object):
             try:
                 offset = (list_index(words, key_phrase) +
                           len(key_phrase))
-                LOG.info("Found key-pharse %s at offset %d in '%s'" %
-                         (key_phrase, offset, words))
+                LOG.info("Found key-pharse %s at offset %d in %s" %
+                         (key_phrase, offset - len(key_phrase), words))
             except ValueError:
                 pass
 
-        # If we have an offset then we found a key-phrase
-        if offset is None:
+        # If we don't have an offset then we haven't found a key-phrase. Try a
+        # fuzzy match, but only if we are not waiting for someone to say
+        # something after priming with the keypharse.
+        now = time.time()
+        if now - self._last_keyphrase_only < Dexter._KEY_PHRASE_ONLY_TIMEOUT:
+            # Okay, treat what we got as the command, so we have no keypharse
+            # and so the offset is zero.
+            LOG.info("Treating %s as a command", (words,))
+            offset = 0
+        elif offset is None:
+            # Not found, but if we got something which sounded like the key
+            # phrase then set the offset this way too. This allows someone to
+            # just say the keyphrase and we can handle it by waiting for them to
+            # then say something else.
             LOG.info("Key pharses %s not found in %s" %
                      (self._key_phrases, words))
+
+            # Check for it being _almost_ the key phrase
+            ratio = 75
+            what = ' '.join(words)
+            for key_phrase in self._key_phrases:
+                if fuzz.ratio(' '.join(key_phrase), what) > ratio:
+                    offset = len(key_phrase)
+                    LOG.info("Fuzzy-matched key-pharse %s in %s" %
+                             (key_phrase, words))
+
+        # Anything?
+        if offset is None:
+            return None
+
+        # If we have the keyphrase and no more then we just got a priming
+        # command, we should be ready for the rest of it to follow
+        if offset == len(words):
+            # Remember that we were primed
+            self._last_keyphrase_only = now
+
+            # Drop the volume down on any services so that we can hear what's
+            # coming. We'll need a capturing function to do this.
+            def make_fn(s, v):
+                def fn():
+                    s.set_volume(v)
+                    return None
+
+            # Look at all the services and see which have volume controls
+            for service in self._services:
+                if not (hasattr(service, 'get_volume') and
+                        hasattr(service, 'set_volume')):
+                    continue
+
+                # Get the current volume
+                try:
+                    volume = service.get_volume()
+                except Exception:
+                    continue
+
+                # If it's too loud then drop it down, and schedule an event to
+                # bump it back up in a little bit,
+                if volume > Dexter._LISTENING_VOLUME:
+                    service.set_volume(Dexter._LISTENING_VOLUME)
+                    heapq.heappush(
+                        self._timer_events.put,
+                        TimerEvent(
+                            now + Dexter._KEY_PHRASE_ONLY_TIMEOUT,
+                            make_fn(service, volume)
+                        )
+                    )
+
+            # Nothing more to do until we hear the rest of the command
             return None
 
         # See which services want them
@@ -529,7 +631,9 @@ class Dexter(object):
                 error = True
                 LOG.error(
                     "Handler %s with tokens %s for service %s yielded:\n%s" %
-                    (handler, handler.tokens, handler.service,
+                    (handler,
+                     [str(t) for t in handler.tokens],
+                     handler.service,
                      traceback.format_exc())
                 )
 

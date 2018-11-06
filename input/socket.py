@@ -2,8 +2,6 @@
 An input which listens from a socket.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import socket
 import time
 

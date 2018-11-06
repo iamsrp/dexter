@@ -2,8 +2,6 @@
 Input using PocketSphinx.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import os
 
 from dexter.input              import Token

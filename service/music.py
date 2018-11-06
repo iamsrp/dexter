@@ -2,8 +2,6 @@
 Base class for various music playing services.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 from   dexter.core.log          import LOG
 from   dexter.core.media_index  import MusicIndex, AudioEntry
 from   dexter.core.player       import SimpleMP3Player
@@ -40,11 +38,12 @@ class MusicService(Service):
         # Get stripped text, for matching
         words = [to_letters(w).lower() for w in self._words(tokens)]
 
-        # Look for specific control words
+        # Look for specific control words, doing a fuzzy match
+        threshold = 80
         if len(words) == 1:
-            if words[0] == "stop":
+            if self._matches(words[0], "stop"):
                 return self._get_stop_handler(tokens)
-            elif words[0] == "play":
+            elif self._matches(words[0], "play"):
                 return self._get_play_handler(tokens)
 
         # We expect to have something along the lines of:
@@ -56,7 +55,7 @@ class MusicService(Service):
             return None
 
         # See if the first word is "play"
-        if words[0] != "play":
+        if not self._matches(words[0], "play"):
             # Nope, probably not ours then
             return None
 
@@ -66,7 +65,7 @@ class MusicService(Service):
         # See if it ends with "on <platform>", if so then we can see if it's for
         # us specificaly.
         platform_match = False
-        if words[-2] == "on":
+        if self._matches(words[-2], "on"):
             if words[-1] == self._platform.lower():
                 # This is definitely for us
                 platform_match = True
@@ -95,7 +94,7 @@ class MusicService(Service):
 
         # See if it ends with a genre indicator. Don't do this is we matched an
         # artist (since it could be "Sexy Music" by "Meat Puppets", for example.
-        if artist is None and len(words) > 1 and words[-1] == "music":
+        if artist is None and len(words) > 1 and self._matches(words[-1], "music"):
             genre = tuple(words[:-1])
             words = []
         else:
@@ -112,6 +111,37 @@ class MusicService(Service):
                                      genre,
                                      artist,
                                      song_or_album)
+
+
+    def set_volume(self, volume):
+        '''
+        Set the volume to a value between zero and eleven.
+
+        @type  value: float
+        @param value:
+            The volume level to set. This should be between 0 and 11 inclusive.
+        '''
+        # To be implemented by subclasses
+        raise NotImplementedError("Abstract method called")
+
+
+    def get_volume():
+        '''
+        Get the current volume, as a value between zero and eleven.
+
+        @rtype: float
+        @return:
+            The volume level; between 0 and 11 inclusive.
+        '''
+        # To be implemented by subclasses
+        raise NotImplementedError("Abstract method called")
+
+
+    def _matches(self, words, target):
+        '''
+        Use fuzz.ratio  to match word tuples.
+        '''
+        return fuzz.ratio(words, target) > 80
 
 
     def _match_artist(self, artist):
@@ -293,6 +323,20 @@ class LocalMusicService(MusicService):
         thread = Thread(name='MusicIndexer', target=create_index)
         thread.daemon = True
         thread.start()
+
+
+    def set_volume(self, volume):
+        '''
+        @see MusicService.set_volume()
+        '''
+        self._player.set_volume(volume)
+
+
+    def get_volume():
+        '''
+        @see MusicService.get_volume()
+        '''
+        return self._player.get_volume()
 
 
     def play(self, filenames):

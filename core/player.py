@@ -2,8 +2,6 @@
 How we play media (like music).
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 from   dexter.core.log import LOG
 from   threading       import Thread
 
@@ -17,7 +15,7 @@ class SimpleMP3Player(object):
     '''
     A simple mp3 layer, local files only.
     '''
-    def __init_(self):
+    def __init__(self):
         '''
         Constructor.
         '''
@@ -35,6 +33,35 @@ class SimpleMP3Player(object):
         thread = Thread(target=self._controller)
         thread.daemon = True
         thread.start()
+
+    def set_volume(self, volume):
+        '''
+        Set the volume to a value between zero and eleven.
+
+        @type  value: float
+        @param value:
+            The volume level to set. This should be between 0 and 11 inclusive.
+        '''
+        volume = float(value)
+
+        if volume < 0 or volume > 11:
+            raise ValueError("Volume out of [0..11] range: %s" % value)
+
+        # Set as a fraction of 1
+        v = (volume / 11)
+        LOG.info("Setting volume to %0.2f" % v)
+        pygame.mixer.music.set_volume(v)
+
+
+    def get_volume(self):
+        '''
+        Get the current volume, as a value between zero and eleven.
+
+        @rtype: float
+        @return:
+            The volume level; between 0 and 11 inclusive.
+        '''
+        return 11.0 * pygame.mixer.music.get_volume()
 
 
     def is_playing(self):

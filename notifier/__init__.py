@@ -2,8 +2,6 @@
 The different types of notifier in the system.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 from dexter.core import Notifier
 
 # ------------------------------------------------------------------------------

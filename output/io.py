@@ -2,8 +2,6 @@
 Simple IO-based output.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import logging
 
 from   dexter.core.log import LOG
@@ -91,5 +89,5 @@ class LogOutput(Output):
         '''
         @see Output.write
         '''
-        LOG.log(self._level, str(text))
-    
+        if text:
+            LOG.log(self._level, str(text))

@@ -2,13 +2,11 @@
 Input using DeepSpeech.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import numpy
 import os
 import pyaudio
 
-from   deepspeech.model   import Model
+from   deepspeech         import Model
 from   dexter.input       import Token
 from   dexter.input.audio import AudioInput
 from   dexter.core.log    import LOG
@@ -110,9 +108,8 @@ class DeepSpeechInput(AudioInput):
                                             lm,
                                             trie,
                                             _LM_WEIGHT,
-                                            _WORD_COUNT_WEIGHT,
                                             _VALID_WORD_COUNT_WEIGHT)
-        
+
 
     def _decode_raw(self, data):
         '''
@@ -121,6 +118,7 @@ class DeepSpeechInput(AudioInput):
         audio = numpy.frombuffer(data, numpy.int16)
         words = self._model.stt(audio, self._rate)
         LOG.info("Got: %s" % (words,))
-        tokens = [Token(word, 1.0, True)
-                  for word in words.split(' ')]
+        tokens = [Token(word.strip(), 1.0, True)
+                  for word in words.split(' ')
+                  if len(word.strip()) > 0]
         return tokens
