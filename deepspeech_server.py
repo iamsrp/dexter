@@ -10,15 +10,13 @@ And, if Google can ship audio off from its Home device to the cloud to process,
 then it seems only fair that we can do something like that too.
 '''
 
-from __future__ import (absolute_import, division, print_function, with_statement)
-
 import logging
 import numpy
 import os
 import socket
 import struct
 
-from deepspeech.model   import Model
+from deepspeech import Model
 
 # ------------------------------------------------------------------------------
 
@@ -86,7 +84,6 @@ model.enableDecoderWithLM(alphabet,
                           lm,
                           trie,
                           _LM_WEIGHT,
-                          _WORD_COUNT_WEIGHT,
                           _VALID_WORD_COUNT_WEIGHT)
 
 # Set up the server socket
