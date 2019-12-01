@@ -68,7 +68,7 @@ def main(config=None):
             LOG.fatal("Failed to parse config file '%s': %s" % (config, e))
             sys.exit(1)
     else:
-        configuration = _DEFAULT_CONFIG
+        configuration = CONFIG
 
     # And spawn it
     dexter = Dexter(configuration)
