@@ -35,7 +35,14 @@ class _Handler(Handler):
         except Exception as e:
             LOG.error("Failed to query Wikipedia about '%s': %s" %
                       (self._thing, e))
-            summary = None
+            return Result(
+                self,
+                "Sorry, there was a problem asking Wikipedia about %s" % (
+                    self._thing,
+                ),
+                False,
+                True
+            )
 
         # Anything?
         if summary is None or len(summary.strip()) == 0:
