@@ -102,12 +102,20 @@ class FestivalOutput(SpeechOutput):
             # Else we have something to say
             try:
                 # Get the text, make sure that '"'s in it won't confuse things
+                start   = time.time()
                 text    = self._queue.pop()
                 command = '(SayText "%s")\n' % text.replace('"', '')
                 LOG.info("Sending: %s" % command.strip())
                 self._notify(Notifier.WORKING)
                 self._subproc.stdin.write(command)
                 self._subproc.stdin.flush()
+
+                # Wait for a bit, since festival can sometimes return with a
+                # response right away
+                while time.time() - start < len(text) * 0.05:
+                    time.sleep(0.1)
+
+                # And read in the result, which should mean it's done
                 for line in self._readlines():
                     LOG.info("Received: %s" % line)
 
