@@ -24,7 +24,7 @@ class AudioInput(Input):
     '''
     def __init__(self,
                  state,
-                 chunk_size=256,
+                 chunk_size=512,
                  format=pyaudio.paInt16,
                  channels=1,
                  rate=16000,
@@ -157,7 +157,9 @@ class AudioInput(Input):
         # State etc.
         talking  = None  # True when we have detect talking
         speech   = None  # What we will process as speech data
+        min_secs =  4
         max_secs = 10
+        last_log =  0
 
         # Keep listening until we are stopped
         while self.is_running:
@@ -165,7 +167,7 @@ class AudioInput(Input):
             now = time.time()
 
             # Read in the next lump of data and get its average volume
-            chunk = stream.read(self._chunk_size)
+            chunk = stream.read(self._chunk_size, exception_on_overflow=False)
             level = numpy.sqrt(abs(audioop.avg(chunk, self._width)))
 
             # Accumulate into our buffers
@@ -217,14 +219,20 @@ class AudioInput(Input):
                              (from_pctl, to_pctl))
                     talking = True
                     talking_start = now
+                    start_pctl = from_pctl
             else:
                 # Looking for a step down in the latter part
                 from_levels = levels[        :avg_idx] # From start to avg_idx
                 to_levels   = levels[avg_idx:        ] # From avg_idx to end
                 from_pctl = numpy.sort(from_levels)[int(len(from_levels) * 0.5)]
                 to_pctl   = numpy.sort(to_levels  )[int(len(to_levels  ) * 0.5)]
-                LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
-                if from_pctl > to_pctl * 1.25:
+                if now - last_log > 0.2:
+                    LOG.info("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
+                    last_log = now
+                else:
+                    LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
+                if (now - talking_start > min_secs and
+                    (from_pctl > to_pctl * 1.25 or to_pctl < start_pctl * 1.1)):
                     LOG.info("Detected end of speech "
                              "with levels going from %0.2f to %0.2f" %
                              (from_pctl, to_pctl))
