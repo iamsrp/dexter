@@ -1,0 +1,12 @@
+# An example ALSA config file which uses a microphone plugged into the USB port`
+pcm.!default {
+        type asym
+        playback.pcm {
+                type plug
+                slave.pcm "hw:0,0"
+        }
+        capture.pcm {
+                type plug
+                slave.pcm "hw:1,0"
+        } 
+}
