@@ -69,10 +69,16 @@ while True:
         logging.info("Reading header")
         header = b''
         while len(header) < (4 * 8):
-            header += conn.recv((4 * 8) - len(header))
+            got = conn.recv((4 * 8) - len(header))
+            if len(got) == 0:
+                raise IOError("EOF in recv()")
+            header += got
 
         # Unpack to variables
         (channels, width, rate, length) = struct.unpack('!qqqq', header)
+        logging.info("%d channel(s), %d byte(s) wide, %dHz, %d bytes length" %
+                     (channels, width, rate, length))
+
         if model.sampleRate() != rate:
             raise ValueError("Given sample rate, %d, differs from desired rate, %d" %
                              (rate, model.sampleRate()))
@@ -80,13 +86,16 @@ while True:
         # Pull in the data
         logging.info("Reading %d bytes of data" % (length,))
         data = b''
-        while len(data) < length:
-            data += conn.recv(length - len(data))
+        while len(data) < length:            
+            got = conn.recv(length - len(data))
+            if len(got) == 0:
+                raise IOError("EOF in recv()")
+            data += got
 
         # Actually decode it
         logging.info("Decoding")
         audio = numpy.frombuffer(data, numpy.int16)
-        words = model.stt(audio, rate)
+        words = model.stt(audio)
         logging.info("Got: '%s'" % (words,))
 
         # Send back the length (as a long) and the string
