@@ -2,7 +2,10 @@
 Methods for dealing with audio manipulation.
 '''
 
-import alsaaudio
+try:
+    import alsaaudio as pyalsaaudio
+except:
+    import pyalsa    as pyalsaaudio
 
 from   dexter.core.log import LOG
 
@@ -56,6 +59,6 @@ def _get_alsa_mixer():
     # Get the ALSA mixer. We should probably handle pulse audio at some point
     # too I guess.
     try:
-        return alsaaudio.Mixer()
+        return pyalsaaudio.Mixer()
     except:
-        return alsaaudio.Mixer('PCM')
+        return pyalsaaudio.Mixer('PCM')
