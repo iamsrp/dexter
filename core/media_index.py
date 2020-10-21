@@ -132,7 +132,7 @@ class MusicIndex(object):
             The directory name to build from.
         '''
         # Walk the tree
-        for (subdir, subdirs, files) in os.walk(dirname):
+        for (subdir, subdirs, files) in os.walk(dirname, followlinks=True):
             LOG.info("Indexing %s", subdir)
 
             # Handle all the files which we can find
