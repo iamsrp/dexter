@@ -27,29 +27,6 @@ from   dexter.core.log    import LOG
 # Typical installation location for deepspeech data
 _MODEL_DIR = "/usr/local/share/deepspeech/models"
 
-# Beam width used in the CTC decoder when building candidate transcriptions
-_BEAM_WIDTH = 500
-
-# These constants are tied to the shape of the graph used (changing them changes
-# the geometry of the first layer), so make sure you use the same constants that
-# were used during training
-
-# Number of MFCC features to use
-_NUM_FEATURES = 26
-
-# Size of the context window used for producing timesteps in the input vector
-_NUM_CONTEXT = 9
-
-# The alpha hyperparameter of the CTC decoder. Language Model weight
-_LM_WEIGHT = 1.75
-
-# The beta hyperparameter of the CTC decoder. Word insertion weight (penalty)
-_WORD_COUNT_WEIGHT = 1.00
-
-# Valid word insertion weight. This is used to lessen the word insertion penalty
-# when the inserted word is part of the vocabulary
-_VALID_WORD_COUNT_WEIGHT = 1.00
-
 # ------------------------------------------------------------------------------
 
 class DeepSpeechInput(AudioInput):
@@ -58,8 +35,9 @@ class DeepSpeechInput(AudioInput):
     '''
     def __init__(self,
                  notifier,
-                 use_lm=False,
-                 wav_dir=None):
+                 wav_dir=None,
+                 model=os.path.join(_MODEL_DIR, 'models.pbmm'),
+                 scorer=os.path.join(_MODEL_DIR, 'models.scorer')):
         '''
         @see AudioInput.__init__()
 
@@ -67,48 +45,25 @@ class DeepSpeechInput(AudioInput):
         @param use_lm:
             Whether to use the DeepSpeech language model for better predictions.
         '''
+        # If these don't exist then DeepSpeech will segfault when inferring!
+        if not os.path.exists(model):
+            raise IOError("Not found: %s" % (model,))
+
+        # Load in and configure the model.
+        LOG.info("Loading model from %s" % (models,))
+        self._model = Model(models)
+        if os.path.exists(scorer):
+            LOG.info("Loading scorer from %s" % (scorer,))
+            self._model.enableExternalScorer(scorer)
+
+        # Wen can now init the superclass
         super(DeepSpeechInput, self).__init__(
             notifier,
             format=pyaudio.paInt16,
             channels=1,
-            rate=16000,
+            rate=self._model.sampleRate(),
             wav_dir=wav_dir
         )
-
-        # The files which we'll need from the model directory
-        alphabet = os.path.join(_MODEL_DIR, 'alphabet.txt')
-        model    = os.path.join(_MODEL_DIR, 'output_graph.pb')
-        lm       = os.path.join(_MODEL_DIR, 'lm.binary')
-        trie     = os.path.join(_MODEL_DIR, 'trie')
-
-        # If these don't exist then DeepSpeech will segfault when inferring!
-        if not os.path.exists(alphabet):
-            raise IOError("Not found: %s" % alphabet)
-        if not os.path.exists(model):
-            raise IOError("Not found: %s" % model)
-
-        # Load in the model.
-        LOG.info("Loading %s" % model)
-        self._model = Model(model,
-                            _NUM_FEATURES,
-                            _NUM_CONTEXT,
-                            alphabet,
-                            _BEAM_WIDTH)
-
-        # If we're using a language model then pull that in too. This requires a
-        # decent chunk of memory.
-        if use_lm:
-            if not os.path.exists(lm):
-                raise IOError("Not found: %s" % lm)
-            if not os.path.exists(trie):
-                raise IOError("Not found: %s" % trie)
-
-            LOG.info("Loading %s" % lm)
-            self._model.enableDecoderWithLM(alphabet,
-                                            lm,
-                                            trie,
-                                            _LM_WEIGHT,
-                                            _VALID_WORD_COUNT_WEIGHT)
 
 
     def _decode_raw(self, data):

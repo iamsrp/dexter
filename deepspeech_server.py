@@ -6,10 +6,12 @@ This can be run a machine with a decent amount of oomph and the L{RemoteService}
 can talk to it instead of doing the speech-to-text locally. Thias is handy for
 when your client machine is just a Raspberry Pi.
 
-And, if Google can ship audio off from its Home device to the cloud to process,
-then it seems only fair that we can do something like that too.
+And, if other Home Hub providers can ship audio off from their Home Hub to the
+cloud to process, then it seems only fair that we can do something like that
+too.
 '''
 
+import argparse
 import logging
 import numpy
 import os
@@ -20,78 +22,39 @@ from deepspeech import Model
 
 # ------------------------------------------------------------------------------
 
-# Typical installation location for deepspeech data
-_MODEL_DIR = "/usr/local/share/deepspeech/models"
-
-# Beam width used in the CTC decoder when building candidate transcriptions
-_BEAM_WIDTH = 500
-
-# These constants are tied to the shape of the graph used (changing them changes
-# the geometry of the first layer), so make sure you use the same constants that
-# were used during training
-
-# Number of MFCC features to use
-_NUM_FEATURES = 26
-
-# Size of the context window used for producing timesteps in the input vector
-_NUM_CONTEXT = 9
-
-# The alpha hyperparameter of the CTC decoder. Language Model weight
-_LM_WEIGHT = 1.75
-
-# The beta hyperparameter of the CTC decoder. Word insertion weight (penalty)
-_WORD_COUNT_WEIGHT = 1.00
-
-# Valid word insertion weight. This is used to lessen the word insertion penalty
-# when the inserted word is part of the vocabulary
-_VALID_WORD_COUNT_WEIGHT = 1.00
-
-# ------------------------------------------------------------------------------
-
 # Set up the logger
 logging.basicConfig(
     format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
     level=logging.INFO
 )
 
-# The files which we'll need from the model directory
-alphabet = os.path.join(_MODEL_DIR, 'alphabet.txt')
-model    = os.path.join(_MODEL_DIR, 'output_graph.pb')
-lm       = os.path.join(_MODEL_DIR, 'lm.binary')
-trie     = os.path.join(_MODEL_DIR, 'trie')
-
-# If these don't exist then DeepSpeech will segfault when inferring!
-if not os.path.exists(alphabet):
-    raise IOError("Not found: %s" % alphabet)
-if not os.path.exists(model):
-    raise IOError("Not found: %s" % model)
-if not os.path.exists(lm):
-    raise IOError("Not found: %s" % lm)
-if not os.path.exists(trie):
-    raise IOError("Not found: %s" % trie)
+# Parse the command line args
+parser = argparse.ArgumentParser(description='Running DeepSpeech inference.')
+parser.add_argument('--model', required=True,
+                    help='Path to the .pbmm file')
+parser.add_argument('--scorer', required=False,
+                    help='Path to the .scorer file')
+parser.add_argument('--beam_width', type=int, default=500,
+                    help='Beam width for the CTC decoder')
+parser.add_argument('--port', type=int, default=8008,
+                    help='The port number to listen on')
+args = parser.parse_args()
 
 # Load in the model
-logging.info("Loading %s" % model)
-model = Model(model,
-              _NUM_FEATURES,
-              _NUM_CONTEXT,
-              alphabet,
-              _BEAM_WIDTH)
+logging.info("Loading model from %s" % args.model)
+model = Model(args.model)
 
-# Add the language model
-logging.info("Loading %s" % lm)
-model.enableDecoderWithLM(alphabet,
-                          lm,
-                          trie,
-                          _LM_WEIGHT,
-                          _VALID_WORD_COUNT_WEIGHT)
-
+# Configure it
+model.setBeamWidth(args.beam_width)
+if args.scorer:
+    logging.info("Loading scorer from %s" % (args.scorer,))
+    model.enableExternalScorer(args.scorer)
+ 
 # Set up the server socket
-port = 8008
-logging.info("Opening socket on port %d" % (port,))
+logging.info("Opening socket on port %d" % (args.port,))
 sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sckt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sckt.bind(('0.0.0.0', port))
+sckt.bind(('0.0.0.0', args.port))
 sckt.listen(5)
 
 # Do this forever
@@ -110,6 +73,9 @@ while True:
 
         # Unpack to variables
         (channels, width, rate, length) = struct.unpack('!qqqq', header)
+        if model.sampleRate() != rate:
+            raise ValueError("Given sample rate, %d, differs from desired rate, %d" %
+                             (rate, model.sampleRate()))
 
         # Pull in the data
         logging.info("Reading %d bytes of data" % (length,))
