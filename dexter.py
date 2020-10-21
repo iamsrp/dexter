@@ -3,6 +3,7 @@
 import argh
 import logging
 import json
+import os
 import sys
 
 sys.path[0] += '/..'
@@ -60,6 +61,7 @@ def main(config=None):
     '''
     Main entry point.
     '''
+    # Load in any configuration
     if config is not None:
         try:
             with open(config) as fh:
@@ -69,6 +71,40 @@ def main(config=None):
             sys.exit(1)
     else:
         configuration = CONFIG
+
+    # Handle environment variables in the component kwargs, in the form of
+    # "${VARNAME}". This isn't overly pretty, but it works.
+    for typ in configuration['components']:
+        # We might have kwargs for all the components
+        for component in configuration['components'][typ]:
+            (which, kwargs) = component
+            if kwargs is None:
+                continue
+
+            # Look at all the kwargs which we have and check for environment
+            # variables in the value names.
+            for name in kwargs:
+                value = kwargs[name]
+                try:
+                    while True:
+                        start   = value.index('${')
+                        end     = value.index('}', start)
+                        varname = value[start+2:end]
+                        value   = (value[:start] +
+                                   os.environ.get(varname, '') +
+                                   value[end+1:])
+                except ValueError:
+                    # This means we failed to find the opening or closing
+                    # varname container in the string, so we're done
+                    pass
+
+                # If we changed it then save it back in
+                if value != kwargs[name]:
+                    LOG.info(
+                        "Expanded component %s:%s:%s argument from '%s' to '%s'" %
+                        (typ, which, name, kwargs[name], value)
+                    )
+                    kwargs[name] = value
 
     # And spawn it
     dexter = Dexter(configuration)
@@ -82,4 +118,3 @@ if __name__ == "__main__":
         argh.dispatch_command(main)
     except Exception as e:
         print("%s" % e)
-    

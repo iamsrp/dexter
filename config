@@ -42,7 +42,7 @@
             }],
 
             [ "dexter.service.music.LocalMusicService", {
-                "dirname" : "/home/pi/music"
+                "dirname" : "${HOME}/Music"
             }]
         ]
     }
