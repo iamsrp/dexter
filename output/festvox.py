@@ -102,9 +102,18 @@ class FestivalOutput(SpeechOutput):
             # Else we have something to say
             try:
                 # Get the text, make sure that '"'s in it won't confuse things
-                start   = time.time()
-                text    = self._queue.pop()
-                command = '(SayText "%s")\n' % text.replace('"', '')
+                start = time.time()
+                text  = self._queue.pop()
+                text  = text.replace('"', '')
+
+                # Ignore empty strings since they confuse Festival
+                if not text:
+                    LOG.info("Nothing to say...")
+                    continue
+
+                # I've got something to say (it's better to burn out, than to
+                # fade away...)
+                command = '(SayText "%s")\n' % text
                 LOG.info("Sending: %s" % command.strip())
                 self._notify(Notifier.WORKING)
                 self._subproc.stdin.write(command)
