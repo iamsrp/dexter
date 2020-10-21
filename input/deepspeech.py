@@ -50,8 +50,8 @@ class DeepSpeechInput(AudioInput):
             raise IOError("Not found: %s" % (model,))
 
         # Load in and configure the model.
-        LOG.info("Loading model from %s" % (models,))
-        self._model = Model(models)
+        LOG.info("Loading model from %s" % (model,))
+        self._model = Model(model)
         if os.path.exists(scorer):
             LOG.info("Loading scorer from %s" % (scorer,))
             self._model.enableExternalScorer(scorer)
@@ -71,7 +71,7 @@ class DeepSpeechInput(AudioInput):
         @see AudioInput._decode_raw()
         '''
         audio = numpy.frombuffer(data, numpy.int16)
-        words = self._model.stt(audio, self._rate)
+        words = self._model.stt(audio)
         LOG.info("Got: %s" % (words,))
         tokens = [Token(word.strip(), 1.0, True)
                   for word in words.split(' ')
