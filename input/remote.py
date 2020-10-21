@@ -73,14 +73,20 @@ class RemoteInput(AudioInput):
             LOG.info("Waiting for result...")
             length = b''
             while len(length) < 8:
-                length += sckt.recv(8 - len(length))
+                got = sckt.recv(8 - len(length))
+                if len(got) == 0:
+                    raise IOError("EOF in recv()")
+                length += got
             (count,) = struct.unpack("!q", length)
 
             # Read in the string
             LOG.info("Reading %d chars" % (count,))
             result = b''
             while len(result) < count:
-                result += sckt.recv(count - len(result))
+                got = sckt.recv(count - len(result))
+                if len(got) == 0:
+                    raise IOError("EOF in recv()")
+                result += got
             result = result.decode()
             LOG.info("Result is: '%s'" % (result,))
 
