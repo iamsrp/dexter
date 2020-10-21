@@ -50,7 +50,7 @@ class PocketSphinxInput(AudioInput):
             vrbl = True
 
             # Start and end tokens
-            if word is '<s>' or word is '</s>':
+            if word == '<s>' or word == '</s>':
                 continue
 
             # Non-verbal tokens
