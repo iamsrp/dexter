@@ -32,16 +32,28 @@ class PocketSphinxInput(AudioInput):
         config.set_string('-lm',   os.path.join(_MODEL_DIR, 'en-us/en-us.lm.bin'))
         config.set_string('-dict', os.path.join(_MODEL_DIR, 'en-us/cmudict-en-us.dict'))
         self._decoder = Decoder(config)
+        self._data    = b''
 
 
-    def _decode_raw(self, data):
+    def _feed_raw(self, data):
+        '''
+        @see AudioInput._decode_raw()
+        '''
+        # Just buffer it up
+        self._data += data
+
+
+    def _decode(self):
         '''
         @see AudioInput._decode_raw()
         '''
         # Decode the raw bytes
-        self._decoder.start_utt()
-        self._decoder.process_raw(data, False, True)
-        self._decoder.end_utt()
+        try:
+            self._decoder.start_utt()
+            self._decoder.process_raw(self._data, False, True)
+            self._decoder.end_utt()
+        finally:
+            self._data = b''
 
         tokens = []
         for seg in self._decoder.seg():

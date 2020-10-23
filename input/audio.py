@@ -59,6 +59,9 @@ class AudioInput(Input):
         self._width      = pyaudio.get_sample_size(pyaudio.paInt16) * channels
         self._rate       = rate
 
+        # How we hand off to another thread to decode asynchronously
+        self._decode_queue = deque()
+
         # Where to save the wav files, if anywhere. This should already exist.
         if wav_dir is not None and not os.path.isdir(wav_dir):
             raise IOError("Not a directory: %s" % wav_dir)
@@ -84,7 +87,12 @@ class AudioInput(Input):
         '''
         @see Component._start()
         '''
+        # Start the component's worker threads
         thread = Thread(target=self._run)
+        thread.daemon = True
+        thread.start()
+
+        thread = Thread(target=self._handler)
         thread.daemon = True
         thread.start()
 
@@ -110,13 +118,21 @@ class AudioInput(Input):
             wf.close()
 
 
-    def _decode_raw(self, data):
+    def _feed_raw(self, data):
         '''
-        Decode the raw data.
+        Feed a chunk of raw data to the decoder.
 
-        @type  data: str
+        @type  data: str.
         @param data:
             The bytes to save decode.
+        '''
+        # Subclasses should implement this
+        raise NotImplementedError("Abstract method called")
+
+
+    def _decode(self):
+        '''
+        Decode the raw fed data.
 
         @rtype: tuple(L{Token})
         @return:
@@ -254,10 +270,16 @@ class AudioInput(Input):
                     # the audio
                     LOG.info("Starting recording")
                     self._notify(Notifier.ACTIVE)
-                    speech = list(audio_buf)
+                    speech = []
+
+                    # Push in everything that we have so far
+                    for prev in audio_buf:
+                        speech.append(prev)
+                        self._decode_queue.append(prev)
 
                 # Add on what we just recorded
                 speech.append(chunk)
+                self._decode_queue.append(chunk)
 
             # We deem that talking is still happening if it started only a
             # little while ago
@@ -278,11 +300,14 @@ class AudioInput(Input):
                 # Maybe save then as a wav file
                 self._save_bytes(audio)
 
-                # Now decode
+                # Now decode. We do this by passing over a future and awaiting
+                # its result.
                 LOG.info("Decoding %0.2fs seconds of audio" %
                          (len(audio) / self._width / self._rate))
-                tokens = self._decode_raw(audio)
-                LOG.info("Decoded audio in %0.2fs: %s" %
+                future = _Future()
+                self._decode_queue.append(future)
+                tokens = future.get_result()
+                LOG.info("Finished decoding audio after %0.2fs: %s" %
                          (time.time() - start, ([str(x) for x in tokens])))
 
                 # Add then to the output
@@ -305,5 +330,82 @@ class AudioInput(Input):
 
         # If we got here then _running was set to False and we're done
         LOG.info("Done listening")
+        self._decode_queue = None
         stream.close()
         p.terminate()
+
+
+    def _handler(self):
+        '''
+        Pulls values from the decoder queue and handles them appropriately. Runs in
+        its own thread.
+        '''
+        LOG.info("Started decoding handler")
+        while True:
+            try:
+                # Get a handle on the queue. This will be nulled out when we're
+                # done.
+                queue = self._decode_queue
+                if queue is None:
+                    break
+            
+                # Anything?
+                if len(queue) > 0:
+                    item = queue.popleft()
+                    LOG.debug("Got a %s" % type(item))
+                    if isinstance(item, _Future):
+                        # This means the sender wants a result
+                        try:
+                            item.set_result(self._decode())
+                        except Exception as e:
+                            item.set_result(e)
+                    elif isinstance(item, bytes):
+                        # Something to feed the decoder
+                        self._feed_raw(item)
+                    else:
+                        LOG.warning("Ignoring junk on decode queue: %r" % (item,))
+
+                    # Go around again
+                    continue
+
+            except Exception as e:
+                # Be robust but log it
+                LOG.error("Got an error in the decoder queue: %s" % (e,))
+                
+            # Don't busy-wait
+            time.sleep(0.001)
+
+        # And we're done!
+        LOG.info("Stopping decoding handler")
+
+
+class _Future(object):
+    '''
+    A simple future, for returning a result.
+    '''
+    def __init__(self):
+        self._result = None
+        self._ready  = False
+
+
+    def set_result(self, result):
+        '''
+        Set the result.
+        '''
+        self._result = result
+        self._ready  = True
+
+
+    def get_result(self):
+        '''
+        Get the result, blocking until it's ready.
+
+        If the result was an exception then it will be thrown.
+        '''
+        while True:
+            if self._ready:
+                if isinstance(self._result, Exception):
+                    raise self._result
+                else:
+                    return self._result
+            time.sleep(0.001)

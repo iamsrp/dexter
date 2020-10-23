@@ -38,34 +38,63 @@ class RemoteInput(AudioInput):
         '''
         super(RemoteInput, self).__init__(state,
                                           wav_dir=wav_dir)
-        self._host = host
-        self._port = int(port)
-        
+        self._host   = host
+        self._port   = int(port)
+        self._sckt   = None
+        self._header = struct.pack('!qqq',
+                                    self._channels, self._width, self._rate)
 
-    def _decode_raw(self, data):
+
+    def _feed_raw(self, data):
         '''
-        @see AudioInput._decode_raw()
+        @see AudioInput._feed_raw()
         '''
         # Handle funy inputs
         if data is None or len(data) == 0:
+            return
+
+        # Don't let exceptions kill the thread
+        try:
+            # Connect?
+            if self._sckt is None:
+                # Connect and send the header information
+                LOG.info("Opening connection to %s:%d" %
+                         (self._host, self._port,))
+                self._sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._sckt.connect((self._host, self._port))
+                self._sckt.sendall(self._header)
+
+            # Send off the chunk
+            LOG.debug("Sending %d bytes of data to %s" %
+                      (len(data), self._host))
+            self._sckt.sendall(struct.pack('!q', len(data)))
+            self._sckt.sendall(data)
+
+        except Exception as e:
+            # Don't kill the thread by throwing an exception, just grumble
+            LOG.info("Failed to send to remote side: %s" % e)
+            try:
+                self._sckt.shutdown(socket.SHUT_RDWR)
+                self._sckt.close()
+            except:
+                pass
+            finally:
+                self._sckt = None
+            return
+
+
+    def _decode(self):
+        '''
+        @see AudioInput._decode()
+        '''
+        if self._sckt is None:
+            # No context means no tokens
+            LOG.warning("Had no stream context to close")
             return []
 
-        # Info in the header
-        header = struct.pack('!qqqq',
-                             self._channels, self._width, self._rate,
-                             len(data))
-        
-        # Connect
-        LOG.info("Opening connection to %s:%d" % (self._host, self._port,))
         try:
-            # Connect
-            sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sckt.connect((self._host, self._port))
-
-            # Send off our query
-            LOG.info("Sending %d bytes of data to %s" % (len(data), self._host))
-            sckt.sendall(header)
-            sckt.sendall(data)
+            # Send the EOD token
+            self._sckt.sendall(struct.pack('!q', -1)
 
             # Get back the result:
             #   8 bytes for the length
@@ -73,39 +102,41 @@ class RemoteInput(AudioInput):
             LOG.info("Waiting for result...")
             length = b''
             while len(length) < 8:
-                got = sckt.recv(8 - len(length))
+                got = self._sckt.recv(8 - len(length))
                 if len(got) == 0:
                     raise IOError("EOF in recv()")
                 length += got
             (count,) = struct.unpack("!q", length)
-
+    
             # Read in the string
             LOG.info("Reading %d chars" % (count,))
             result = b''
             while len(result) < count:
-                got = sckt.recv(count - len(result))
+                got = self._sckt.recv(count - len(result))
                 if len(got) == 0:
                     raise IOError("EOF in recv()")
                 result += got
             result = result.decode()
             LOG.info("Result is: '%s'" % (result,))
+    
+            # Convert to tokens
+            tokens = [Token(word.strip(), 1.0, True)
+                      for word in result.split(' ')
+                      if word.strip() != '']
+            return tokens
 
         except Exception as e:
-            # Don't kill the thread by throwing an exception, just grumble
+            # Again, just grumble on exceptions
             LOG.info("Failed to do remote processing: %s" % e)
             return []
-
+    
         finally:
             # Close it out, best effort
             try:
                 LOG.info("Closing connection")
-                sckt.shutdown(socket.SHUT_RDWR)
-                sckt.close()
+                self._sckt.shutdown(socket.SHUT_RDWR)
+                self._sckt.close()
             except:
                 pass
-            
-        # Convert to tokens
-        tokens = [Token(word.strip(), 1.0, True)
-                  for word in result.split(' ')
-                  if word.strip() != '']
-        return tokens
+            finally:
+                self._sckt = None

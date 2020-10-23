@@ -17,6 +17,7 @@ import numpy
 import os
 import socket
 import struct
+import time
 
 from deepspeech import Model
 
@@ -68,34 +69,58 @@ while True:
         # Read in the header data
         logging.info("Reading header")
         header = b''
-        while len(header) < (4 * 8):
-            got = conn.recv((4 * 8) - len(header))
+        while len(header) < (3 * 8):
+            got = conn.recv((3 * 8) - len(header))
             if len(got) == 0:
-                raise IOError("EOF in recv()")
+                time.sleep(0.001)
+                continue
             header += got
 
         # Unpack to variables
-        (channels, width, rate, length) = struct.unpack('!qqqq', header)
-        logging.info("%d channel(s), %d byte(s) wide, %dHz, %d bytes length" %
-                     (channels, width, rate, length))
+        (channels, width, rate) = struct.unpack('!qqq', header)
+        logging.info("%d channel(s), %d byte(s) wide, %dHz" %
+                     (channels, width, rate))
 
         if model.sampleRate() != rate:
             raise ValueError("Given sample rate, %d, differs from desired rate, %d" %
                              (rate, model.sampleRate()))
 
-        # Pull in the data
-        logging.info("Reading %d bytes of data" % (length,))
-        data = b''
-        while len(data) < length:            
-            got = conn.recv(length - len(data))
-            if len(got) == 0:
-                raise IOError("EOF in recv()")
-            data += got
+        # Decode as we go
+        context = model.createStream()
 
-        # Actually decode it
+        # Keep pulling in the data until we get an empty chunk
+        while True:
+            # How big is this incoming chunk?
+            length_bytes = b''
+            while len(length_bytes) < (8):
+                got = conn.recv(8 - len(length_bytes))
+                if len(got) == 0:
+                    time.sleep(0.001)
+                    continue
+                length_bytes += got
+            (length,) = struct.unpack('!q', length_bytes)
+
+            # End marker?
+            if length < 0:
+                break
+
+            # Pull in the chunk
+            logging.debug("Reading %d bytes of data" % (length,))
+            data = b''
+            while len(data) < length:
+                got = conn.recv(length - len(data))
+                if len(got) == 0:
+                    time.sleep(0.001)
+                    continue
+                data += got
+
+            # Feed it in
+            audio = numpy.frombuffer(data, numpy.int16)
+            context.feedAudioContent(audio)
+
+        # Finally, decode it
         logging.info("Decoding")
-        audio = numpy.frombuffer(data, numpy.int16)
-        words = model.stt(audio)
+        words = context.finishStream()
         logging.info("Got: '%s'" % (words,))
 
         # Send back the length (as a long) and the string

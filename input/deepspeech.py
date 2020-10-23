@@ -65,15 +65,36 @@ class DeepSpeechInput(AudioInput):
             wav_dir=wav_dir
         )
 
+        # Where we put the stream context
+        self._context = None
 
-    def _decode_raw(self, data):
+
+    def _feed_raw(self, data):
         '''
-        @see AudioInput._decode_raw()
+        @see AudioInput._feed_raw()
         '''
+        if self._context is None:
+            self._context = self._model.createStream()
         audio = numpy.frombuffer(data, numpy.int16)
-        words = self._model.stt(audio)
-        LOG.info("Got: %s" % (words,))
-        tokens = [Token(word.strip(), 1.0, True)
-                  for word in words.split(' ')
-                  if len(word.strip()) > 0]
+        self._context.feedAudioContent(audio)
+
+
+    def _decode(self):
+        '''
+        @see AudioInput._decode()
+        '''
+        if self._context is None:
+            # No context means no tokens
+            LOG.warning("Had no stream context to close")
+            tokens = []
+        else:
+            # Finish up by finishing the decoding
+            words = self._context.finishStream()
+            LOG.info("Got: %s" % (words,))
+            self._context = None
+
+            # And tokenize
+            tokens = [Token(word.strip(), 1.0, True)
+                      for word in words.split(' ')
+                      if len(word.strip()) > 0]
         return tokens
