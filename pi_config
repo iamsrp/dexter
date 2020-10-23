@@ -18,7 +18,6 @@
             }],
 
             [ "dexter.input.remote.RemoteInput", {
-                "wav_dir" : "/home/pi/wavs",
                 "host"    : "server_name",
                 "port"    : "8008"
             }]
