@@ -19,53 +19,26 @@ import socket
 import struct
 import time
 
-from deepspeech import Model
+from   deepspeech import Model
+from   threading  import Thread
 
 # ------------------------------------------------------------------------------
 
-# Set up the logger
-logging.basicConfig(
-    format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
-    level=logging.INFO
-)
 
-# Parse the command line args
-parser = argparse.ArgumentParser(description='Running DeepSpeech inference.')
-parser.add_argument('--model', required=True,
-                    help='Path to the .pbmm file')
-parser.add_argument('--scorer', required=False,
-                    help='Path to the .scorer file')
-parser.add_argument('--beam_width', type=int, default=500,
-                    help='Beam width for the CTC decoder')
-parser.add_argument('--port', type=int, default=8008,
-                    help='The port number to listen on')
-args = parser.parse_args()
+def handle(conn):
+    '''
+    Create a new thread for the given connection and start it.
+    '''
+    thread = Thread(target=lambda: run(conn))
+    thread.daemon = True
+    thread.start()
 
-# Load in the model
-logging.info("Loading model from %s" % args.model)
-model = Model(args.model)
 
-# Configure it
-model.setBeamWidth(args.beam_width)
-if args.scorer:
-    logging.info("Loading scorer from %s" % (args.scorer,))
-    model.enableExternalScorer(args.scorer)
- 
-# Set up the server socket
-logging.info("Opening socket on port %d" % (args.port,))
-sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sckt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sckt.bind(('0.0.0.0', args.port))
-sckt.listen(5)
-
-# Do this forever
-while True:
+def run(conn):
+    '''
+    Handle a new connection, in its own thread.
+    '''
     try:
-        # Get a connection
-        logging.info("Waiting for a connection")
-        (conn, addr) = sckt.accept()
-        logging.info("Got connection from %s" % (addr,))
-
         # Read in the header data
         logging.info("Reading header")
         header = b''
@@ -142,3 +115,53 @@ while True:
             pass
 
         
+# ------------------------------------------------------------------------------
+
+
+# Set up the logger
+logging.basicConfig(
+    format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
+    level=logging.INFO
+)
+
+# Parse the command line args
+parser = argparse.ArgumentParser(description='Running DeepSpeech inference.')
+parser.add_argument('--model', required=True,
+                    help='Path to the .pbmm file')
+parser.add_argument('--scorer', required=False,
+                    help='Path to the .scorer file')
+parser.add_argument('--beam_width', type=int, default=500,
+                    help='Beam width for the CTC decoder')
+parser.add_argument('--port', type=int, default=8008,
+                    help='The port number to listen on')
+args = parser.parse_args()
+
+# Load in the model
+logging.info("Loading model from %s" % args.model)
+model = Model(args.model)
+
+# Configure it
+model.setBeamWidth(args.beam_width)
+if args.scorer:
+    logging.info("Loading scorer from %s" % (args.scorer,))
+    model.enableExternalScorer(args.scorer)
+ 
+# Set up the server socket
+logging.info("Opening socket on port %d" % (args.port,))
+sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sckt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sckt.bind(('0.0.0.0', args.port))
+sckt.listen(5)
+
+# Do this forever
+while True:
+    try:
+        # Get a connection
+        logging.info("Waiting for a connection")
+        (conn, addr) = sckt.accept()
+        logging.info("Got connection from %s" % (addr,))
+        handle(conn)
+
+    except Exception as e:
+        # Tell the user at least
+        logging.error("Error handling incoming connection: %s" % e)
