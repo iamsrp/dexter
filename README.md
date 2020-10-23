@@ -20,14 +20,30 @@ This is very much a toy project and should be considered work in progress right 
 ## Prerequisites
 
 * [Python 3](https://www.python.org/).
-* Around 4G of space, if you want to use PocketSphinx, DeepSpeech and so forth.
+* Around 1G of extra disk space, if you want to use PocketSphinx, DeepSpeech and so forth.
 * What is listed in the `requirements` file.
 
 You'll also need the trained data from [DeepSpeech](https://github.com/mozilla/DeepSpeech). For more information on setting up DeepSpeech read their [project page](https://github.com/mozilla/DeepSpeech) and [documentation](https://deepspeech.readthedocs.io/).
 
-If you're running Dexter on a Raspberry Pi then make sure that ALSA is working by testing `aplay` and `arecord`. If it is not then you may well get strange errors from `pyaudio`.
-
 When it comes to recording, make sure that you have a decent microphone with no noise; try listening to some arecord output to make sure it sounds clear. You can also provide a `wav_dir` argument for some of the audio input components, like `dexter.input.deepspeech.DeepSpeechInput`.
+
+### Raspberry Pi Specifics
+
+If you're running Dexter on a Raspberry Pi then make sure that ALSA is working by testing `aplay` and `arecord`, tweaking volume with `alsamixer`. If it is not then you may well get strange errors from `pyaudio`. You might also want a `/home/pi/.asoundrc` file which looks something like this:
+```
+pcm.!default {
+        type asym
+        playback.pcm {
+                type plug
+                slave.pcm "hw:0,0"
+        }
+        capture.pcm {
+                type plug
+                slave.pcm "hw:1,0"
+        } 
+}
+```
+You can see the different hardware devices in `alsamixer`.
 
 ## Configuration
 
