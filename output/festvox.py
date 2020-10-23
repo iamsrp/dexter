@@ -27,7 +27,7 @@ class FestivalOutput(SpeechOutput):
     We run this in a subprocess since the in-process version tends to lock
     things up and also doesn't work outside the main thread.
     '''
-    def __init__(self, state, voice='voice_rab_diphone'):
+    def __init__(self, state, voice='voice_cmu_us_slt_arctic_hts'):
         '''
         @see Output.__init__()
         @type  voice: str
