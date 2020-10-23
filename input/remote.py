@@ -94,7 +94,7 @@ class RemoteInput(AudioInput):
 
         try:
             # Send the EOD token
-            self._sckt.sendall(struct.pack('!q', -1)
+            self._sckt.sendall(struct.pack('!q', -1))
 
             # Get back the result:
             #   8 bytes for the length
