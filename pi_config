@@ -18,8 +18,8 @@
             }],
 
             [ "dexter.input.remote.RemoteInput", {
-                "host"    : "server_name",
-                "port"    : "8008"
+                "host" : "server_name",
+                "port" : "8008"
             }]
         ],
 
