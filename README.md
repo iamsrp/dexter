@@ -80,10 +80,14 @@ It is only recommended that you have a single audio input.
 
 These are ways to get Dexter's responses back to the user. This might be simple logging via the `LogOutput` or an audio one, like `EspeakOutput`.
 
-
 ### Services
 
 The services are what actually handle the user requests. These might be things like playing music, telling you what the weather is or setting some sort of timer. A simple `EchoService` is gives a basic example which just says back to you what you said to it.
+
+### Notifiers
+
+The Notifiers are how Dexter tells the user what it's doing. There are two right now: a simple logging notifier, and one which uses the [Pimoroni Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd).
+
 
 ## Notes
 
