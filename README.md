@@ -13,6 +13,7 @@ This is very much a toy project and should be considered work in progress right 
   - [Inputs](#inputs)
   - [Outputs](#outputs)
   - [Services](#services)
+  - [Notifiers](#notifiers)
 - [Notes](#notes)
 - [Bugs](#bugs)
 
