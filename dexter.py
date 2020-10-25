@@ -93,7 +93,7 @@ def main(config=None):
                         value   = (value[:start] +
                                    os.environ.get(varname, '') +
                                    value[end+1:])
-                except ValueError:
+                except:
                     # This means we failed to find the opening or closing
                     # varname container in the string, so we're done
                     pass
