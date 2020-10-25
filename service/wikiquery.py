@@ -123,7 +123,7 @@ class WikipediaService(Service):
                 return _Handler(self, tokens, belief, thing)
 
             except Exception as e:
-                LOG.info("%s not in %s: %s" % (prefix, words, e))
+                LOG.debug("%s not in %s: %s" % (prefix, words, e))
                 
 
         # If we got here then it didn't look like a query for us.
