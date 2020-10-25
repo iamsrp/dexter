@@ -42,6 +42,10 @@
 
             [ "dexter.service.music.LocalMusicService", {
                 "dirname" : "${HOME}/Music"
+            }],
+
+            [ "dexter.service.purpleair.PurpleAirService", {
+                "sensor_id" : 1234
             }]
         ]
     }
