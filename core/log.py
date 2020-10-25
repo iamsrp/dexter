@@ -1,6 +1,6 @@
-'''
+"""
 How we log in the system.
-'''
+"""
 
 import logging
 

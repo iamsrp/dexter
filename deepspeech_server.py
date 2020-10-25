@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''
+"""
 Listen for incoming data and give back parsed results.
 
 This can be run a machine with a decent amount of oomph and the L{RemoteService}
@@ -9,7 +9,7 @@ when your client machine is just a Raspberry Pi.
 And, if other Home Hub providers can ship audio off from their Home Hub to the
 cloud to process, then it seems only fair that we can do something like that
 too.
-'''
+"""
 
 import argparse
 import logging
@@ -26,18 +26,18 @@ from   threading  import Thread
 
 
 def handle(conn):
-    '''
+    """
     Create a new thread for the given connection and start it.
-    '''
+    """
     thread = Thread(target=lambda: run(conn))
     thread.daemon = True
     thread.start()
 
 
 def run(conn):
-    '''
+    """
     Handle a new connection, in its own thread.
-    '''
+    """
     try:
         # Read in the header data
         logging.info("Reading header")

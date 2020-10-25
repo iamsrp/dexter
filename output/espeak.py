@@ -1,6 +1,6 @@
-'''
+"""
 Speech synthesis output using espeak.
-'''
+"""
 
 import time
 
@@ -13,11 +13,11 @@ from   threading       import Thread
 # ------------------------------------------------------------------------------
 
 class EspeakOutput(SpeechOutput):
-    '''
+    """
     An output which logs as a particular level to the system's log.
-    '''
+    """
     def __init__(self, state, rate=None, voice=None):
-        '''
+        """
         @see SpeechOutput.__init__()
         @type  rate: int
         @param rate:
@@ -26,7 +26,7 @@ class EspeakOutput(SpeechOutput):
         @type  voice: str
         @param voice:
             The voice to use. See C{espeak.list_voices()}.
-        '''
+        """
         super(EspeakOutput, self).__init__(state)
 
         if rate is not None:
@@ -36,34 +36,34 @@ class EspeakOutput(SpeechOutput):
 
 
     def write(self, text):
-        '''
+        """
         @see Output.write
-        '''
+        """
         # Simply pass it along to espeak
         espeak.synth(text)
 
 
     def _start(self):
-        '''
+        """
         @see Component._start()
-        '''
+        """
         thread = Thread(target=self._do_notify)
         thread.daemon = True
         thread.start()
 
 
     def _stop(self):
-        '''
+        """
         @see Component._stop()
-        '''
+        """
         # Stop any pending speech
         espeak.cancel()
 
 
     def _do_notify(self):
-        '''
+        """
         Handle sending notifications to denote espeak's state.
-        '''
+        """
         state = Notifier.IDLE
         while self.is_running:
             # If espeak is playing then we are working then so are we, else

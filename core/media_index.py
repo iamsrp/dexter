@@ -1,6 +1,6 @@
-'''
+"""
 A way to index media.
-'''
+"""
 
 import math
 import mutagen
@@ -12,17 +12,17 @@ from   fuzzywuzzy      import process
 # ------------------------------------------------------------------------------
 
 class MusicIndex(object):
-    '''
+    """
     Index music in various ways.
-    '''
+    """
     def __init__(self, roots):
-        '''
+        """
         @type  roots: tuple(str)
         @param roots:
             The list of URLs to search for music on. In the simplest form these
             will likely just be a bunch of strings looking something like:
                 C{file:///home/pi/Music}
-        '''
+        """
         # The various indices. These are of the form <str,tuple(_Entry)>.
         self._by_name   = {}
         self._by_artist = {}
@@ -40,7 +40,7 @@ class MusicIndex(object):
 
 
     def lookup(self, name=None, artist=None, album=None):
-        '''
+        """
         Look up an entry by any given constraints.
 
         @type  name: str
@@ -56,7 +56,7 @@ class MusicIndex(object):
         @rtype: tuple<Entry>
         @return:
            The potential entries, in order of likely match. Possibly empty.
-        '''
+        """
         # Look in all our indices. We will create lists of (Entry,score) pairs
         # for each.
         if name is not None:
@@ -104,13 +104,13 @@ class MusicIndex(object):
 
 
     def _build(self, root):
-        '''
+        """
         Build an index based on the given root.
 
         @type  root: str
         @param root:
             The URL of the root to build from.
-        '''
+        """
         if root is None:
             return
         if not isinstance(root, str):
@@ -124,13 +124,13 @@ class MusicIndex(object):
 
 
     def _build_from_dirname(self, dirname):
-        '''
+        """
         Build an index based on the given directory root.
 
         @type  dirname: str
         @param dirname:
             The directory name to build from.
-        '''
+        """
         # Walk the tree
         for (subdir, subdirs, files) in os.walk(dirname, followlinks=True):
             LOG.info("Indexing %s", subdir)
@@ -152,13 +152,13 @@ class MusicIndex(object):
 
 
     def _add_entry(self, entry):
-        '''
+        """
         Add an entry to the index.
 
         @type  entry: _Entry
         @param entry:
             The entry to add to the index.
-        '''
+        """
         # Ignore entries with no name
         if entry.name is None:
             return
@@ -209,17 +209,17 @@ class MusicIndex(object):
 
 
 class _Entry(object):
-    '''
+    """
     An entry in the media index. This contains all the details which you need to
     know about a particular piece of media.
-    '''
+    """
     # The types of file which we know about
     MP3  = 'mp3'
     FLAC = 'flac'
 
 
     def __init__(self, name, url, file_type):
-        '''
+        """
         @type  name: str
         @param name:
             The name of this piece of media.
@@ -229,7 +229,7 @@ class _Entry(object):
         @type  file_type: str
         @param file_type:
             The type of file.
-        '''
+        """
         self._name = _clean_string(name)
         self._url  = _clean_string(url)
         self._type = file_type
@@ -237,53 +237,53 @@ class _Entry(object):
 
     @property
     def name(self):
-        '''
+        """
         The name of the entry, An audio track title, for example.
 
         @rtype: str
         @return:
             The name of the entry.
-        '''
+        """
         return self._name
 
 
     @property
     def url(self):
-        '''
+        """
         The URL to access this entry, if any.
 
         @rtype: str
         @return:
             The URL for the entry.
-        '''
+        """
         return self._url
 
 
     @property
     def file_type(self):
-        '''
+        """
         The type of data.
 
         @rtype: str
         @return:
             The type of data which we hold.
-        '''
+        """
         return self._type
 
 
 class AudioEntry(_Entry):
-    '''
+    """
     An entry for an audio file, like MP3 or Flac.
-    '''
+    """
     @staticmethod
     def from_mp3(info):
-        '''
+        """
         Factory method to create an entry from MP3 data.
 
         @type  info: mutagen.mp3.MP3
         @param info:
             The mp3 tag information.
-        '''
+        """
         # Sanity
         if info is None:
             return None
@@ -318,13 +318,13 @@ class AudioEntry(_Entry):
 
     @staticmethod
     def from_flac(info):
-        '''
+        """
         Factory method to create an entry from FLAC data.
 
         @type  info: mutagen.flac.FLAC
         @param info:
             The flac tag information.
-        '''
+        """
         # Sanity
         if info is None:
             return None
@@ -358,7 +358,7 @@ class AudioEntry(_Entry):
 
 
     def __init__(self, name, url, file_type, track, album, artist):
-        '''
+        """
         @see _Entry.__init__()
 
         @type  name: str
@@ -373,7 +373,7 @@ class AudioEntry(_Entry):
         @type  artist: str, or None
         @param artist:
             The name of the artist, if any
-        '''
+        """
         super(AudioEntry, self).__init__(name, url, file_type)
         self._track  = _clean_int   (track)
         self._album  = _clean_string(album)
@@ -382,44 +382,44 @@ class AudioEntry(_Entry):
 
     @property
     def track(self):
-        '''
+        """
         The track number of this entry, if any.
 
         @rtype: int, or None
         @return:
             The track index.
-        '''
+        """
         return self._track
 
 
     @property
     def album(self):
-        '''
+        """
         The album name for this entry, if any.
 
         @rtype: str
         @return:
             The album name.
-        '''
+        """
         return self._album
 
 
     @property
     def artist(self):
-        '''
+        """
         The artist for this entry, if any. This may typically be the performer but
         might also be the composer.
 
         @rtype: str
         @return:
             The artist name.
-        '''
+        """
         return self._artist
 
 # ------------------------------------------------------------------------------
 
 def _clean_string(string):
-    '''
+    """
     Turn empty strings into None and remove surrounding whitespace.
 
     @type  string: str
@@ -429,7 +429,7 @@ def _clean_string(string):
     @rtype: str
     @return:
        The cleaned string, or None.
-    '''
+    """
     if string is None:
         return None
 
@@ -443,7 +443,7 @@ def _clean_string(string):
 
 
 def _clean_int(integer):
-    '''
+    """
     Turn a value into an integer, taking strings and yielding None where
     appropriate.
 
@@ -454,7 +454,7 @@ def _clean_int(integer):
     @rtype: int
     @return:
        The cleaned int, or None.
-    '''
+    """
     if isinstance(integer, int):
         return integer
 
@@ -469,7 +469,7 @@ def _clean_int(integer):
 
 
 def _clean_filename(filename):
-    '''
+    """
     Ensure that a filename is good for our purposes.
 
     @type  filename: str
@@ -479,7 +479,7 @@ def _clean_filename(filename):
     @rtype: str
     @return:
        The cleaned filename, or None.
-    '''
+    """
     filename = _clean_string(filename)
     if filename is None:
         return None

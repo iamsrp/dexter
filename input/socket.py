@@ -1,6 +1,6 @@
-'''
+"""
 An input which listens from a socket.
-'''
+"""
 
 import socket
 import time
@@ -12,19 +12,19 @@ from   threading       import Thread
 # ------------------------------------------------------------------------------
 
 class SocketInput(Input):
-    '''
+    """
     A way to get text from the outside world. 
 
     This creates an unsecured socket which anyone can connect to. Useful for
     testing but probably not advised for the real world.
-    '''
+    """
     def __init__(self, state, port=8008):
-        '''
+        """
         @see Input.__init__()
         @type  port: int
         @param port:
             The port to listen on.
-        '''
+        """
         super(SocketInput, self).__init__(state)
         self._port   = int(port)
         self._socket = None
@@ -32,9 +32,9 @@ class SocketInput(Input):
 
 
     def read(self):
-        '''
+        """
         @see Input.read
-        '''
+        """
         if len(self._output) > 0:
             try:
                 return self._output.pop()
@@ -43,9 +43,9 @@ class SocketInput(Input):
 
 
     def _start(self):
-        '''
+        """
         @see Component.start()
-        '''
+        """
         # Create the socket 
         LOG.info("Opening socket on port %d" % (self._port,))
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -67,9 +67,9 @@ class SocketInput(Input):
 
 
     def _stop(self):
-       '''
+       """
        @see Input.stop
-       '''
+       """
        try:
            self._socket.close()
        except:
@@ -77,9 +77,9 @@ class SocketInput(Input):
 
 
     def _handle(self, sckt):
-        '''
+        """
         Handle reading from a socket
-        '''
+        """
         LOG.info("Started new socket handler")
 
         # We'll build these up

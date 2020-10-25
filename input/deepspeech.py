@@ -1,6 +1,6 @@
-'''
+"""
 Input using DeepSpeech.
-'''
+"""
 
 import numpy
 import os
@@ -30,21 +30,21 @@ _MODEL_DIR = "/usr/local/share/deepspeech/models"
 # ------------------------------------------------------------------------------
 
 class DeepSpeechInput(AudioInput):
-    '''
+    """
     Input from DeepSpeech using the US English language model.
-    '''
+    """
     def __init__(self,
                  notifier,
                  wav_dir=None,
                  model=os.path.join(_MODEL_DIR, 'models.pbmm'),
                  scorer=os.path.join(_MODEL_DIR, 'models.scorer')):
-        '''
+        """
         @see AudioInput.__init__()
 
         @type  use_lm: bool
         @param use_lm:
             Whether to use the DeepSpeech language model for better predictions.
-        '''
+        """
         # If these don't exist then DeepSpeech will segfault when inferring!
         if not os.path.exists(model):
             raise IOError("Not found: %s" % (model,))
@@ -70,9 +70,9 @@ class DeepSpeechInput(AudioInput):
 
 
     def _feed_raw(self, data):
-        '''
+        """
         @see AudioInput._feed_raw()
-        '''
+        """
         if self._context is None:
             self._context = self._model.createStream()
         audio = numpy.frombuffer(data, numpy.int16)
@@ -80,9 +80,9 @@ class DeepSpeechInput(AudioInput):
 
 
     def _decode(self):
-        '''
+        """
         @see AudioInput._decode()
-        '''
+        """
         if self._context is None:
             # No context means no tokens
             LOG.warning("Had no stream context to close")

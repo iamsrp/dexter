@@ -1,8 +1,8 @@
-'''
+"""
 A notifier which utilises the Unicorn Hat HD on a Raspberry Pi.
 
 @see https://github.com/pimoroni/unicorn-hat-hd
-'''
+"""
 
 import math
 import time
@@ -17,14 +17,14 @@ from   threading       import Thread
 # ------------------------------------------------------------------------------
 
 class UnicornHatNotifier(ByComponentNotifier):
-    '''
+    """
     A notifier which can do different things depending on the type of component
     which is giving it input.
-    '''
+    """
     def __init__(self):
-        '''
+        """
         @see ByComponentNotifier.__init__()
-        '''
+        """
         super(UnicornHatNotifier, self).__init__()
 
         # Unicorn settings
@@ -50,9 +50,9 @@ class UnicornHatNotifier(ByComponentNotifier):
 
 
     def update_status(self, component, status):
-        '''
+        """
         @see Notifier.update_status()
-        '''
+        """
         # Sanity
         if component is None or status is None:
             return
@@ -96,9 +96,9 @@ class UnicornHatNotifier(ByComponentNotifier):
 
 
     def _start(self):
-        '''
+        """
         @see Notifier._start()
-        '''
+        """
         # The thread which will maintain the display
         thread = Thread(target=self._updater)
         thread.deamon = True
@@ -106,9 +106,9 @@ class UnicornHatNotifier(ByComponentNotifier):
 
 
     def _updater(self):
-        '''
+        """
         The method which will maintain the display.
-        '''
+        """
         # Some state variables
         i_mult = 0.0
         s_mult = 0.0
@@ -177,11 +177,11 @@ class UnicornHatNotifier(ByComponentNotifier):
 
 
     def _swirl(self, x, y, index, direction):
-        '''
+        """
         Get the intensity for the given coordinates at the given time index.
 
         Adapted from the hat example code (see github link above).
-        '''
+        """
         x -= (self._width  / 2)
         y -= (self._height / 2)
 

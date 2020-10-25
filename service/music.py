@@ -1,6 +1,6 @@
-'''
+"""
 Base class for various music playing services.
-'''
+"""
 
 from   dexter.core.log          import LOG
 from   dexter.core.media_index  import MusicIndex, AudioEntry
@@ -14,27 +14,27 @@ from   threading                import Thread
 # ------------------------------------------------------------------------------
 
 class MusicService(Service):
-    '''
+    """
     The base class for playing music on various platforms.
-    '''
+    """
     def __init__(self, name, state, platform):
-        '''
+        """
         @see Service.__init__()
 
         @type  platform: str
         @param platform:
             The name of the platform that this service streams music from, like
             C{Spotify}, C{Pandora}, C{Edna}, C{}, etc.
-        '''
+        """
         super(MusicService, self).__init__(name, state)
 
         self._platform = platform
 
 
     def evaluate(self, tokens):
-        '''
+        """
         @see Service.evaluate()
-        '''
+        """
         # Get stripped text, for matching
         words = [to_letters(w).lower() for w in self._words(tokens)]
 
@@ -114,70 +114,70 @@ class MusicService(Service):
 
 
     def set_volume(self, volume):
-        '''
+        """
         Set the volume to a value between zero and eleven.
 
         @type  value: float
         @param value:
             The volume level to set. This should be between 0 and 11 inclusive.
-        '''
+        """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
 
     def get_volume():
-        '''
+        """
         Get the current volume, as a value between zero and eleven.
 
         @rtype: float
         @return:
             The volume level; between 0 and 11 inclusive.
-        '''
+        """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
 
     def _matches(self, words, target):
-        '''
+        """
         Use fuzz.ratio  to match word tuples.
-        '''
+        """
         return fuzz.ratio(words, target) > 80
 
 
     def _match_artist(self, artist):
-        '''
+        """
         See if the given artist name tuple matches something we know about.
 
         @type  artist: tuple(str)
         @param artist:
             The artist name, as a tuple of strings.
-        '''
+        """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
 
     def _get_stop_handler(self, tokens):
-        '''
+        """
         Get the handler to stop playing whatever is playing. If nothing is playing
         then return C{None}.
 
         @type  tokens: tuple(L{Token})
         @param tokens:
             The tokens for which this handler was generated.
-        '''
+        """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
 
     def _get_play_handler(self, tokens):
-        '''
+        """
         Get the handler to resume playing whatever was playing (and was previously
         stopped). If nothing was playing then return C{None}.
 
         @type  tokens: tuple(L{Token})
         @param tokens:
             The tokens for which this handler was generated.
-        '''
+        """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
@@ -188,7 +188,7 @@ class MusicService(Service):
                          genre,
                          artist,
                          song_or_album):
-        '''
+        """
         Get the handler for the given arguments, if any.
 
         @type  tokens: tuple(L{Token})
@@ -206,7 +206,7 @@ class MusicService(Service):
         @type  song_or_album: tuple(str)
         @param song_or_album:
             The name of the song or album to play, as a tuple of strings.
-        '''
+        """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
@@ -214,9 +214,9 @@ class MusicService(Service):
 
 class _LocalMusicServicePauseHandler(Handler):
     def __init__(self, service, tokens):
-        '''
+        """
         @see Handler.__init__()
-        '''
+        """
         super(_LocalMusicServicePauseHandler, self).__init__(
             service,
             tokens,
@@ -226,9 +226,9 @@ class _LocalMusicServicePauseHandler(Handler):
 
 
     def handle(self):
-        '''
+        """
         @see Handler.handle()`
-        '''
+        """
         was_playing = self.service.is_playing()
         self.service.pause()
         return Result(self, '', False, was_playing)
@@ -236,9 +236,9 @@ class _LocalMusicServicePauseHandler(Handler):
 
 class _LocalMusicServiceUnpauseHandler(Handler):
     def __init__(self, service, tokens):
-        '''
+        """
         @see Handler.__init__()
-        '''
+        """
         super(_LocalMusicServiceUnpauseHandler, self).__init__(
             service,
             tokens,
@@ -248,9 +248,9 @@ class _LocalMusicServiceUnpauseHandler(Handler):
 
 
     def handle(self):
-        '''
+        """
         @see Handler.handle()`
-        '''
+        """
         was_paused = self.service.is_paused()
         self.service.unpause()
         return Result(self, '', False, was_paused)
@@ -258,7 +258,7 @@ class _LocalMusicServiceUnpauseHandler(Handler):
 
 class _LocalMusicServicePlayHandler(Handler):
     def __init__(self, service, tokens, what, filenames, score):
-        '''
+        """
         @see Handler.__init__()
 
         @type  what: str
@@ -270,7 +270,7 @@ class _LocalMusicServicePlayHandler(Handler):
         @type  score: float
         @param score:
             The match score out of 1.0.
-        '''
+        """
         # We deem ourselves exclusive since we had a match
         super(_LocalMusicServicePlayHandler, self).__init__(
             service,
@@ -283,26 +283,26 @@ class _LocalMusicServicePlayHandler(Handler):
 
 
     def handle(self):
-        '''
+        """
         @see Handler.handle()`
-        '''
+        """
         LOG.info('Playing %s' % (self._what))
         self.service.play(self._filenames)
         return Result(self, '', False, True)
 
 
 class LocalMusicService(MusicService):
-    '''
+    """
     Music service for local files.
-    '''
+    """
     def __init__(self, state, dirname=None):
-        '''
+        """
         @see Service.__init__()
 
         @type  dirname: str
         @param dirname:
             The directory where all the music lives.
-        '''
+        """
         super(LocalMusicService, self).__init__("LocalMusic",
                                                 state,
                                                 "Local")
@@ -326,70 +326,70 @@ class LocalMusicService(MusicService):
 
 
     def set_volume(self, volume):
-        '''
+        """
         @see MusicService.set_volume()
-        '''
+        """
         self._player.set_volume(volume)
 
 
     def get_volume():
-        '''
+        """
         @see MusicService.get_volume()
-        '''
+        """
         return self._player.get_volume()
 
 
     def play(self, filenames):
-        '''
+        """
         Play the given list of filenames.
 
         @type  filenames: tuple(str)
         @param filenames:
             The list of filenames to play.
-        '''
+        """
         self._player.play_files(filenames)
 
 
     def is_playing(self):
-        '''
+        """
         Whether the player is playing.
 
         @rtype: bool
         @return:
            Whether the player is playing.
-        '''
+        """
         return self._player.is_playing()
 
 
     def is_paused(self):
-        '''
+        """
         Whether the player is paused.
 
         @rtype: bool
         @return:
            Whether the player is paused.
-        '''
+        """
         return self._player.is_paused()
 
 
     def pause(self):
-        '''
+        """
         Pause any currently playing music.
-        '''
+        """
         self._player.pause()
 
 
     def unpause(self):
-        '''
+        """
         Resume any currently paused music.
-        '''
+        """
         self._player.unpause()
 
 
     def _match_artist(self, artist):
-        '''
+        """
         @see MusicService._match_artist()
-        '''
+        """
         if self._media_index is None:
             return False
         else:
@@ -398,16 +398,16 @@ class LocalMusicService(MusicService):
 
 
     def _get_stop_handler(self, tokens):
-        '''
+        """
         @see MusicService._get_stop_handler()
-        '''
+        """
         return _LocalMusicServicePauseHandler(self, tokens)
 
 
     def _get_play_handler(self, tokens):
-        '''
+        """
         @see MusicService._get_play_handler()
-        '''
+        """
         return _LocalMusicServiceUnpauseHandler(self, tokens)
 
 
@@ -417,9 +417,9 @@ class LocalMusicService(MusicService):
                          genre,
                          artist,
                          song_or_album):
-        '''
+        """
         @see MusicService._get_handler_for()
-        '''
+        """
         if self._media_index is None:
             return None
 

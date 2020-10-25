@@ -1,6 +1,6 @@
-'''
+"""
 The heart of the system.
-'''
+"""
 
 import heapq
 import queue
@@ -18,61 +18,61 @@ from fuzzywuzzy.process import fuzz
 # ------------------------------------------------------------------------------
 
 class _Startable(object):
-    '''
+    """
     A class which may be started and stopped.
-    '''
+    """
     def __init__(self):
         super(_Startable, self).__init__()
         self._running  = False
 
 
     def start(self):
-        '''
+        """
         Start running.
-        '''
+        """
         if not self._running:
             self._running = True
             self._start()
 
 
     def stop(self):
-        '''
+        """
         Stop running.
-        '''
+        """
         self._running = False
         self._stop()
 
 
     @property
     def is_running(self):
-        '''
+        """
         Whether we are currently running (i.e. it's been started, and not stopped).
-        '''
+        """
         return self._running
 
 
     def _start(self):
-        '''
+        """
         Start the subclass-specific parts.
-        '''
+        """
         pass
 
 
     def _stop(self):
-        '''
+        """
         Stop the subclass-specific parts.
-        '''
+        """
         pass
 
 
 class Component(_Startable):
-    '''
+    """
     A part of the system.
 
     @type  state: L{State}
     @param state:
         The overall state of the system.
-    '''
+    """
     def __init__(self, state):
         super(Component, self).__init__()
         self._state = state
@@ -80,40 +80,40 @@ class Component(_Startable):
 
     @property
     def is_input(self):
-        '''
+        """
         Whether this component is an input.
-        '''
+        """
         return False
 
 
     @property
     def is_output(self):
-        '''
+        """
         Whether this component is an output.
-        '''
+        """
         return False
 
 
     @property
     def is_speech(self):
-        '''
+        """
         Whether this component is an output which delivers speech.
-        '''
+        """
         return False
 
 
     @property
     def is_service(self):
-        '''
+        """
         Whether this component is a service.
-        '''
+        """
         return False
 
 
     def _notify(self, status):
-        '''
+        """
         Notify of a status change.
-        '''
+        """
         if self._state is not None:
             self._state.update_status(self, status)
 
@@ -123,9 +123,9 @@ class Component(_Startable):
 
 
 class Notifier(_Startable):
-    '''
+    """
     How a Component tells the system about its status changes.
-    '''
+    """
     class _Status(object):
         def __init__(self, name):
             self._name = name
@@ -141,9 +141,9 @@ class Notifier(_Startable):
 
 
     def update_status(self, component, status):
-        '''
+        """
         Tell the system of a status change for a component.
-        '''
+        """
         # Subclasses should implement this
         raise NotImplementedError("Abstract method called")
 
@@ -153,13 +153,13 @@ class Notifier(_Startable):
 
 
 class State(Notifier):
-    '''
+    """
     The global state of the system.
-    '''
+    """
     def is_speaking(self):
-        '''
+        """
         Whether the system is currently outputing audible speech.
-        '''
+        """
         # Subclasses should implement this
         raise NotImplementedError("Abstract method called")
 
@@ -167,27 +167,27 @@ class State(Notifier):
 
 
 class Dexter(object):
-    '''
+    """
     The main class which drives the system.
-    '''
+    """
     class _State(State):
-        '''
+        """
         Tell the system overall that we're busy.
-        '''
+        """
         def __init__(self, notifiers):
-            '''
+            """
             @type  notifiers: list(Notifier)
             @param notifiers:
                 The other notifiers that we hold.
-            '''
+            """
             self._notifiers = tuple(notifiers)
             self._speakers  = set()
 
 
         def start(self):
-            '''
+            """
             Start all the notifiers going.
-            '''
+            """
             for notifier in self._notifiers:
                 try:
                     LOG.info("Starting %s" % notifier)
@@ -197,9 +197,9 @@ class Dexter(object):
 
 
         def stop(self):
-            '''
+            """
             Stop all the notifiers.
-            '''
+            """
             for notifier in self._notifiers:
                 try:
                     LOG.info("Stopping %s" % notifier)
@@ -209,9 +209,9 @@ class Dexter(object):
 
 
         def update_status(self, component, status):
-            '''
+            """
             @see Notifier.update_status()
-            '''
+            """
             # See if this is a speaker, if so then we have to account for that
             if component.is_speech:
                 if status == Notifier.IDLE:
@@ -232,9 +232,9 @@ class Dexter(object):
 
 
         def is_speaking(self):
-            '''
+            """
             @see State.is_speaking()
-            '''
+            """
             return len(self._speakers) > 0
 
 
@@ -247,7 +247,7 @@ class Dexter(object):
 
     @staticmethod
     def _get_notifier(full_classname, kwargs):
-        '''
+        """
         The the instance of the given L{Notifier}.
 
         @type  full_classname: str
@@ -256,7 +256,7 @@ class Dexter(object):
         @type  kwargs: dict
         @param kwargs:
             The keyword arguments to use when calling the constructor.
-        '''
+        """
         try:
             (module, classname) = full_classname.rsplit('.', 1)
             globals = {}
@@ -275,7 +275,7 @@ class Dexter(object):
 
     @staticmethod
     def _get_component(full_classname, kwargs, notifier):
-        '''
+        """
         The the instance of the given L{Component}.
 
         @type  full_classname: str
@@ -287,7 +287,7 @@ class Dexter(object):
         @type  notifier: L{Notifier}
         @param notifier:
             The notifier for the L{Component}.
-        '''
+        """
         try:
             (module, classname) = full_classname.rsplit('.', 1)
             globals = {}
@@ -306,13 +306,13 @@ class Dexter(object):
 
     @staticmethod
     def _parse_key_phrase(phrase):
-        '''
+        """
         Turn a string into a tuple, without punctuation, as lowercase.
 
         @type  phrase: str
         @param phrase:
             The key-phrase to sanitise.
-        '''
+        """
         result = []
         for word in phrase.split(' '):
             # Strip to non-letters and only append if it's not the empty string
@@ -325,11 +325,11 @@ class Dexter(object):
 
 
     def __init__(self, config):
-        '''
+        """
         @type  config: configuration
         @param config:
             The configuration for the system.
-        '''
+        """
         # Set up the key-phrases, sanitising them
         self._key_phrases = tuple(Dexter._parse_key_phrase(p)
                                   for p in config['key_phrases'])
@@ -369,9 +369,9 @@ class Dexter(object):
 
 
     def run(self):
-        '''
+        """
         The main worker.
-        '''
+        """
         LOG.info("Starting the system")
         self._start()
 
@@ -425,9 +425,9 @@ class Dexter(object):
 
 
     def _start(self):
-        '''
+        """
         Start the system going.
-        '''
+        """
         # Start the notifiers
         try:
             self._state.start()
@@ -447,9 +447,9 @@ class Dexter(object):
 
 
     def _stop(self):
-        '''
+        """
         Stop the system.
-        '''
+        """
         # Stop the notifiers
         self._state.stop()
 
@@ -465,7 +465,7 @@ class Dexter(object):
 
 
     def _handle(self, tokens):
-        '''
+        """
         Handle a list of L{Token}s from the input.
 
         @type  tokens: list(L{Token})
@@ -475,7 +475,7 @@ class Dexter(object):
         @rtype: str
         @return:
             The textual response, if any.
-        '''
+        """
         # Give back nothing if we have no tokens
         if tokens is None:
             return None
@@ -652,13 +652,13 @@ class Dexter(object):
 
 
     def _respond(self, response):
-        '''
+        """
         Given back the response to the user via the outputs.
 
         @type  response: str
         @param response:
             The text to send off to the user in the real world.
-        '''
+        """
         # Give back nothing if we have no response
         if response is None:
             return None

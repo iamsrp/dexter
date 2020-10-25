@@ -1,6 +1,6 @@
-'''
+"""
 Pull information from Wikipedia.
-'''
+"""
 
 import wikipedia
 
@@ -10,25 +10,25 @@ from   dexter.core.util import list_index
 from   dexter.service   import Service, Handler, Result
 
 class _Handler(Handler):
-    '''
+    """
     The handler for Wikipedia queries.
-    '''
+    """
     def __init__(self, service, tokens, belief, thing):
-        '''
+        """
         @see Handler.__init__()
 
         @type  thing: str
         @param thing:
             What, or who, is being asked about.
-        '''
+        """
         super(_Handler, self).__init__(service, tokens, belief, False)
         self._thing = str(thing)
 
 
     def handle(self):
-        '''
+        """
         @see Handler.handle()
-        '''
+        """
         try:
             LOG.info("Querying Wikipedia for '%s'" % (self._thing,))
             summary = wikipedia.summary(self._thing)
@@ -67,7 +67,7 @@ class _Handler(Handler):
 
 
 class WikipediaService(Service):
-    '''
+    """
     A service which attempts to look for things on Wikipedia.
 
     >>> from dexter.test import NOTIFIER, tokenise
@@ -76,18 +76,18 @@ class WikipediaService(Service):
     >>> result = handler.handle()
     >>> result.text.startswith('Wikipedia says.\\nMark')
     True
-    '''
+    """
     def __init__(self, state):
-        '''
+        """
         @see Service.__init__()
-        '''
+        """
         super(WikipediaService, self).__init__("Wikipedia", state)
 
 
     def evaluate(self, tokens):
-        '''
+        """
         @see Service.evaluate()
-        '''
+        """
         # Render to lower-case, for matching purposes.
         words = self._words(tokens)
 

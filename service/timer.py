@@ -1,6 +1,6 @@
-'''
+"""
 Simple timer service, for setting a timer!
-'''
+"""
 
 import pyaudio
 import time
@@ -32,17 +32,17 @@ _PERIODS = ((('eons',       'eon'      ), 1000000000 * 365.24 * 24 * 60 * 60),
 
 class _SetHandler(Handler):
     def __init__(self, service, tokens, times):
-        '''
+        """
         @see Handler.__init__()
-        '''
+        """
         super(_SetHandler, self).__init__(service, tokens, 1.0, True)
         self._times = times
 
 
     def handle(self):
-        '''
+        """
         @see Handler.handle()
-        '''
+        """
         # If we got nothing then grumble in a vaguely (un)helpful way
         if len(self._times) == 0:
             return Result(
@@ -125,17 +125,17 @@ class _SetHandler(Handler):
 
 class _CancelHandler(Handler):
     def __init__(self, service, tokens, words):
-        '''
+        """
         @see Handler.__init__()
-        '''
+        """
         super(_CancelHandler, self).__init__(service, tokens, 1.0, False)
         self._words = words
 
 
     def handle(self):
-        '''
+        """
         @see Handler.handle()
-        '''
+        """
         # Just cancel them all for now
         try:
             self.service.cancel_timer()
@@ -155,9 +155,9 @@ class _CancelHandler(Handler):
 
 
 class Timer(object):
-    '''
+    """
     A timer.
-    '''
+    """
     def __init__(self, service, seconds):
         self._service   = service
         self._seconds   = seconds
@@ -166,25 +166,25 @@ class Timer(object):
 
 
     def start(self):
-        '''
+        """
         Start this timer.
-        '''
+        """
         thread = Thread(target=self._run)
         thread.daemon = True
         thread.start()
 
 
     def cancel(self):
-        '''
+        """
         Cancel this timer.
-        '''
+        """
         self._cancelled = True
 
 
     def _run(self):
-        '''
+        """
         How we run.
-        '''
+        """
         while not self._cancelled:
             if time.time() > self._when:
                 self._service.sound_alarm(self)
@@ -197,13 +197,13 @@ class Timer(object):
 
 
 class TimerService(Service):
-    '''
+    """
     A service for setting timers and alarms.
-    '''
+    """
     def __init__(self, state, timer_wave=None):
-        '''
+        """
         @see Service.__init__()
-        '''
+        """
         super(TimerService, self).__init__("Timer", state)
 
         self._timers  = []
@@ -222,9 +222,9 @@ class TimerService(Service):
 
 
     def evaluate(self, tokens):
-        '''
+        """
         @see Service.evaluate()
-        '''
+        """
         # We use a number of different prefices here since the word "for" has a
         # homonyms of "four" and "set" apparently sounds like "said". Yes, I
         # know I could do a cross product here but...
@@ -267,18 +267,18 @@ class TimerService(Service):
 
 
     def add_timer(self, seconds):
-        '''
+        """
         Set a timer for the given number of seconds and set it running.
-        '''
+        """
         timer = Timer(self, seconds)
         self._timers.append(timer)
         timer.start()
 
 
     def cancel_timer(self, which=None):
-        '''
+        """
         Cancel a timer, possibly all of them
-        '''
+        """
         if which is None:
             for timer in self._timers:
                 timer.cancel
@@ -292,9 +292,9 @@ class TimerService(Service):
 
 
     def sound_alarm(self, timer):
-        '''
+        """
         Ring the alarm for the given timer.
-        '''
+        """
         # Let the terminal know
         LOG.info("DING DING DING!!! Timer %s has expired..." % (timer,))
 

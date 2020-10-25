@@ -58,9 +58,9 @@ CONFIG = {
 @argh.arg('--config', '-c',
           help="The JSON configuration file to use")
 def main(config=None):
-    '''
+    """
     Main entry point.
-    '''
+    """
     # Load in any configuration
     if config is not None:
         try:

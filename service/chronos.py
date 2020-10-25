@@ -1,8 +1,8 @@
-'''
+"""
 Chronos, the greek god of Thyme, and other select herbs.
 
 Various services related to the ticking of the clock.
-'''
+"""
 
 import time
 
@@ -14,16 +14,16 @@ from   dexter.service   import Service, Handler, Result
 
 class _ClockHandler(Handler):
     def __init__(self, service, tokens):
-        '''
+        """
         @see Handler.__init__()
-        '''
+        """
         super(_ClockHandler, self).__init__(service, tokens, 1.0, True)
 
 
     def handle(self):
-        '''
+        """
         @see Handler.handle()
-        '''
+        """
         # Get the time in the local timezone and render the component parts that
         # we care about
         now = time.localtime(time.time())
@@ -53,7 +53,7 @@ class _ClockHandler(Handler):
 
 
 class ClockService(Service):
-    '''
+    """
     A service which tells the time.
 
     >>> from dexter.test import NOTIFIER, tokenise
@@ -62,18 +62,18 @@ class ClockService(Service):
     >>> result = handler.handle()
     >>> result.text.startswith('The current time is')
     True
-    '''
+    """
     def __init__(self, state):
-        '''
+        """
         @see Service.__init__()
-        '''
+        """
         super(ClockService, self).__init__("Clock", state)
 
 
     def evaluate(self, tokens):
-        '''
+        """
         @see Service.evaluate()
-        '''
+        """
         # Get stripped text, for matching
         text = ' '.join(to_letters(w) for w in self._words(tokens))
 

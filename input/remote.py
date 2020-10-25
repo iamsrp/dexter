@@ -1,9 +1,9 @@
-'''
+"""
 Input using a remote server to to the decoding.
 
 This can be used in conjunction with something like the C{deepspeech_server.py}
 script in order to have a fast machine do the actual speech-to-text decoding.
-'''
+"""
 
 import numpy
 import os
@@ -18,15 +18,15 @@ from dexter.core.log    import LOG
 # ------------------------------------------------------------------------------
 
 class RemoteInput(AudioInput):
-    '''
+    """
     Use a remote server to do the audio decoding for us.
-    '''
+    """
     def __init__(self,
                  state,
                  host='localhost',
                  port=8008,
                  wav_dir=None):
-        '''
+        """
         @see AudioInput.__init__()
 
         @type  host: str
@@ -35,7 +35,7 @@ class RemoteInput(AudioInput):
         @type  port: int
         @param port:
             The port to connect to.
-        '''
+        """
         super(RemoteInput, self).__init__(state,
                                           wav_dir=wav_dir)
         self._host   = host
@@ -46,9 +46,9 @@ class RemoteInput(AudioInput):
 
 
     def _feed_raw(self, data):
-        '''
+        """
         @see AudioInput._feed_raw()
-        '''
+        """
         # Handle funy inputs
         if data is None or len(data) == 0:
             return
@@ -84,9 +84,9 @@ class RemoteInput(AudioInput):
 
 
     def _decode(self):
-        '''
+        """
         @see AudioInput._decode()
-        '''
+        """
         if self._sckt is None:
             # No context means no tokens
             LOG.warning("Had no stream context to close")

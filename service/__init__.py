@@ -1,9 +1,9 @@
-'''
+"""
 How we handle services (or applets) inside Dexter.
 
 Each service provides something which responds to given input commands, and
 possibly has some output too.
-'''
+"""
 
 from dexter.core  import Component
 from dexter.input import Token
@@ -11,32 +11,32 @@ from dexter.input import Token
 # ------------------------------------------------------------------------------
 
 class Service(Component):
-    '''
+    """
     A service which responds to input.
-    '''
+    """
     def __init__(self, name, state):
-        '''
+        """
         @type  name: str
         @param name:
             The name of this service.
         @type  state: L{State}
         @param state:
             The global State instance.
-        '''
+        """
         super(Service, self).__init__(state)
         self._name = name
 
 
     @property
     def is_service(self):
-        '''
+        """
         Whether this component is a service.
-        '''
+        """
         return True
 
 
     def evaluate(self, tokens):
-        '''
+        """
         Determine whether this service can handle the given C{tokens}. If the
         service believes that it can then it gives back a L{Handler}, else it
         returns C{None}.
@@ -47,22 +47,22 @@ class Service(Component):
         @rtype: L{Handler} or None
         @return:
              A L{Handler} for the given input tokens, or None.
-        '''
+        """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
 
     def _words(self, tokens):
-        '''
+        """
         Get only the words from the tokens, all as lowercase.
-        '''
+        """
         return [token.element.lower()
                 for token in tokens
                 if token.verbal and token.element is not None]
 
 
 class Handler(object):
-    '''
+    """
     A handler from a L{Service}. This corresponds to a particular set of input
     tokens.
 
@@ -72,9 +72,9 @@ class Handler(object):
       Computer: The time is six forty eight PM.
     might result in a belief of 0.8 since only two thirds of the words were
     matched but the final word was _almost_ matched.
-    '''
+    """
     def __init__(self, service, tokens, belief, exclusive):
-        '''
+        """
         @type  service: L{Service}
         @param service:
             The L{Service} instance which generated this L{Handler}.
@@ -88,7 +88,7 @@ class Handler(object):
         @type  exclusive: bool
         @param exclusive:
             Whether this handler should be the only one to be called.
-        '''
+        """
         super(Handler, self).__init__()
         self._service   = service
         self._tokens    = tokens
@@ -117,19 +117,19 @@ class Handler(object):
 
 
     def handle(self):
-        '''
+        """
         Handle the input. This will be called on the main thread.
 
         @rtype: L{Result} or C{None}
         @return:
             The result of responding to the query, or None if no response.
-        '''
+        """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
 
 class Result(object):
-    '''
+    """
     The result of caling L{Handler.handle()}.
 
     This might be a simple response, for example:
@@ -147,9 +147,9 @@ class Result(object):
                 Yankovic.
     Here you would not want another service to also play Captain Underpants at
     the same time that the responding one does.
-    '''
+    """
     def __init__(self, handler, text, is_query, exclusive):
-        '''
+        """
         @type  handler: L{Handler}
         @param handler
             The L{Handler} instance which generated this L{Response}.
@@ -164,7 +164,7 @@ class Result(object):
         @param exclusive:
             Whether this response should prevent the processing of any further
             ones.
-        '''
+        """
         super(Result, self).__init__()
         self._handler   = handler
         self._text      = text

@@ -1,6 +1,6 @@
-'''
+"""
 Input using PocketSphinx.
-'''
+"""
 
 import os
 
@@ -14,15 +14,15 @@ from pocketsphinx.pocketsphinx import *
 _MODEL_DIR = "/usr/share/pocketsphinx/model"
 
 class PocketSphinxInput(AudioInput):
-    '''
+    """
     Input from PocketSphinx using the US English language model.
-    '''
+    """
     def __init__(self,
                  state,
                  wav_dir=None):
-        '''
+        """
         @see AudioInput.__init__()
-        '''
+        """
         super(PocketSphinxInput, self).__init__(state,
                                                 wav_dir=wav_dir)
 
@@ -36,17 +36,17 @@ class PocketSphinxInput(AudioInput):
 
 
     def _feed_raw(self, data):
-        '''
+        """
         @see AudioInput._decode_raw()
-        '''
+        """
         # Just buffer it up
         self._data += data
 
 
     def _decode(self):
-        '''
+        """
         @see AudioInput._decode_raw()
-        '''
+        """
         # Decode the raw bytes
         try:
             self._decoder.start_utt()

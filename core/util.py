@@ -1,6 +1,6 @@
-'''
+"""
 Various utility methods.
-'''
+"""
 
 import numpy
 import re
@@ -168,7 +168,7 @@ _NUMBERS = ''.join(str(i) for i in range(0, 10))
 # ------------------------------------------------------------------------------
 
 def _strip_to(string, alphabet):
-    '''
+    """
     Remove non-alphabet contents from a word.
 
     @type   string: str
@@ -178,14 +178,14 @@ def _strip_to(string, alphabet):
     @rtype: str
     @return:
         The stripped string.
-    '''
+    """
     return ''.join(char
                    for char in string
                    if  char in alphabet)
 
 
 def to_letters(string):
-    '''
+    """
     Remove non-letters from a string.
 
     >>> to_letters('1a2b3c4d')
@@ -200,12 +200,12 @@ def to_letters(string):
     @rtype: str
     @return:
         The stripped string.
-    '''
+    """
     return _strip_to(string, _UPPER + _LOWER)
 
 
 def to_alphanumeric(string):
-    '''
+    """
     Remove non-letters and non-numbers from a string.
 
     >>> to_alphanumeric(' 1a2b3c4d ')
@@ -220,12 +220,12 @@ def to_alphanumeric(string):
     @rtype: str
     @return:
         The stripped string.
-    '''
+    """
     return _strip_to(string, _UPPER + _LOWER + _NUMBERS)
 
 
 def parse_number(words):
-    '''
+    """
     Turn a set of words into a number. These might be complex ("One thousand
     four hundred and eleven") or simple ("Seven").
 
@@ -241,7 +241,7 @@ def parse_number(words):
     @type  words: str
     @parse words:
         The string words to parse. E.g. C{'twenty seven'}.
-    '''
+    """
     # Sanity
     if words is None:
         return None
@@ -320,7 +320,7 @@ def parse_number(words):
 
 
 def number_to_words(value):
-    '''
+    """
     Turn a number into words.
 
     >>> number_to_words(1)
@@ -341,7 +341,7 @@ def number_to_words(value):
     @type  value: number
     @parse value:
         The value to convert to words.
-    '''
+    """
     # First handle the integer part
     if value < 0:
         result = 'minus '
@@ -455,7 +455,7 @@ def number_to_words(value):
 
 
 def list_index(list_, sublist, start=0):
-    '''
+    """
     Find the index of of a sublist in a list.
 
     >>> list_index(range(10), range(3, 5))
@@ -482,7 +482,7 @@ def list_index(list_, sublist, start=0):
     @type  start: int
     @param start:
         Where to start looking in the C{list}.
-    '''
+    """
     # Make sure these are lists
     if list_ is None:
         raise ValueError("list was None")

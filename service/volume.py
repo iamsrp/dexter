@@ -1,6 +1,6 @@
-'''
+"""
 Set the audio output volume. It goes up to 11.
-'''
+"""
 
 import traceback
 
@@ -11,17 +11,17 @@ from dexter.service    import Service, Handler, Result
 
 class _Handler(Handler):
     def __init__(self, service, tokens, volume):
-        '''
+        """
         @see Handler.__init__()
-        '''
+        """
         super(_Handler, self).__init__(service, tokens, 1.0, True)
         self._volume = volume
 
 
     def handle(self):
-        '''
+        """
         @see Handler.handle()
-        '''
+        """
         try:
             value = parse_number(self._volume)
             LOG.info("Got value of %s from %s" % (value, self._volume))
@@ -57,20 +57,20 @@ class _Handler(Handler):
 
 
 class VolumeService(Service):
-    '''
+    """
     A service for setting the volume.
-    '''
+    """
     def __init__(self, state):
-        '''
+        """
         @see Service.__init__()
-        '''
+        """
         super(VolumeService, self).__init__("Volume", state)
 
 
     def evaluate(self, tokens):
-        '''
+        """
         @see Service.evaluate()
-        '''
+        """
         # We use a number of different prefices here since the word "to" has a
         # bunch of homonyms and "set" apparently sounds like "said"...
         words    = self._words(tokens)

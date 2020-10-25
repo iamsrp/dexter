@@ -1,8 +1,8 @@
-'''
+"""
 Speech synthesis output using festival.
 
 @see http://www.cstr.ed.ac.uk/projects/festival/
-'''
+"""
 
 # For this you will need:
 #  sudo apt install festival festvox-rablpc16k
@@ -21,19 +21,19 @@ from   threading       import Thread
 # ------------------------------------------------------------------------------
 
 class FestivalOutput(SpeechOutput):
-    '''
+    """
     An output which logs as a particular level to the system's log.
 
     We run this in a subprocess since the in-process version tends to lock
     things up and also doesn't work outside the main thread.
-    '''
+    """
     def __init__(self, state, voice='voice_cmu_us_slt_arctic_hts'):
-        '''
+        """
         @see Output.__init__()
         @type  voice: str
         @param voice:
             The voice to use.
-        '''
+        """
         super(FestivalOutput, self).__init__(state)
 
         self._voice   = voice
@@ -42,18 +42,18 @@ class FestivalOutput(SpeechOutput):
 
 
     def write(self, text):
-        '''
+        """
         @see Output.write
-        '''
+        """
         if text is not None:
             self._queue.append(str(text))
 
 
     def _readlines(self):
-        '''
+        """
         Do a read until something comes out on _subproc's stdout. We block until we
         have at least one line's worth of output.
-        '''
+        """
         result = ''
         while '\n' not in result:
             while (select.select([self._subproc.stdout], [], [], 0)[0] != []):
@@ -62,9 +62,9 @@ class FestivalOutput(SpeechOutput):
 
 
     def _start(self):
-        '''
+        """
         @see Component._start()
-        '''
+        """
         # Start the subprocess here so that it can die directly (for whaterv
         # reason) rather than in the thread
         self._subproc = subprocess.Popen(('festival', '--interactive'),
@@ -82,17 +82,17 @@ class FestivalOutput(SpeechOutput):
 
 
     def _stop(self):
-        '''
+        """
         @see Component._stop()
-        '''
+        """
         # Clear any pending dialogue
         self._queue = []
 
 
     def _run(self):
-        '''
+        """
         The actual worker thread.
-        '''
+        """
         # Keep going until we're told to stop
         while self.is_running:
             if len(self._queue) == 0:

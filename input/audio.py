@@ -1,6 +1,6 @@
-'''
+"""
 Input using audio data from the microphone.
-'''
+"""
 
 import audioop
 import math
@@ -19,9 +19,9 @@ from   threading       import Thread
 # ------------------------------------------------------------------------------
 
 class AudioInput(Input):
-    '''
+    """
     Base class for input from audio.
-    '''
+    """
     def __init__(self,
                  state,
                  chunk_size=512,
@@ -29,7 +29,7 @@ class AudioInput(Input):
                  channels=1,
                  rate=16000,
                  wav_dir=None):
-        '''
+        """
         @type  state: L{State}
         @param state:
             The State instance.
@@ -49,7 +49,7 @@ class AudioInput(Input):
         @type  wav_dir: str
         @param wav_dir:
             Where to save WAV files to, if we are doing so.
-        '''
+        """
         super(AudioInput, self).__init__(state)
 
         # Microphone stream config
@@ -72,9 +72,9 @@ class AudioInput(Input):
 
 
     def read(self):
-        '''
+        """
         @see Input.read
-        '''
+        """
         if len(self._output) > 0:
             try:
                 return self._output.pop()
@@ -84,9 +84,9 @@ class AudioInput(Input):
 
 
     def _start(self):
-        '''
+        """
         @see Component._start()
-        '''
+        """
         # Start the component's worker threads
         thread = Thread(target=self._run)
         thread.daemon = True
@@ -119,33 +119,33 @@ class AudioInput(Input):
 
 
     def _feed_raw(self, data):
-        '''
+        """
         Feed a chunk of raw data to the decoder.
 
         @type  data: str.
         @param data:
             The bytes to save decode.
-        '''
+        """
         # Subclasses should implement this
         raise NotImplementedError("Abstract method called")
 
 
     def _decode(self):
-        '''
+        """
         Decode the raw fed data.
 
         @rtype: tuple(L{Token})
         @return:
            The decoded tokens.
-        '''
+        """
         # Subclasses should implement this
         raise NotImplementedError("Abstract method called")
 
 
     def _run(self):
-        '''
+        """
         Reads from the audio input stream and hands it off to be processed.
-        '''
+        """
         # This possibly takes a while so tell the system what we're doing.
         self._notify(Notifier.INIT)
 
@@ -336,10 +336,10 @@ class AudioInput(Input):
 
 
     def _handler(self):
-        '''
+        """
         Pulls values from the decoder queue and handles them appropriately. Runs in
         its own thread.
-        '''
+        """
         LOG.info("Started decoding handler")
         while True:
             try:
@@ -380,28 +380,28 @@ class AudioInput(Input):
 
 
 class _Future(object):
-    '''
+    """
     A simple future, for returning a result.
-    '''
+    """
     def __init__(self):
         self._result = None
         self._ready  = False
 
 
     def set_result(self, result):
-        '''
+        """
         Set the result.
-        '''
+        """
         self._result = result
         self._ready  = True
 
 
     def get_result(self):
-        '''
+        """
         Get the result, blocking until it's ready.
 
         If the result was an exception then it will be thrown.
-        '''
+        """
         while True:
             if self._ready:
                 if isinstance(self._result, Exception):
