@@ -7,7 +7,8 @@
     "components" : {
         "inputs" : [
             [ "dexter.input.socket.SocketInput", {
-                "port" : "8008"
+                "port"   : "8008",
+                "prefix" : "Dexter"
             }]
         ],
 
