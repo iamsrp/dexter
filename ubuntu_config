@@ -34,7 +34,6 @@
             }],
 
             [ "dexter.service.chronos.TimerService", {
-                "timer_wave" : "${HOME}/Music/alarm.wav"
             }],
 
             [ "dexter.service.wikiquery.WikipediaService", {
