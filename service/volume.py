@@ -58,7 +58,7 @@ class _Handler(Handler):
 
 class VolumeService(Service):
     '''
-    A service which simply parrots back what was given to it.
+    A service for setting the volume.
     '''
     def __init__(self, state):
         '''
