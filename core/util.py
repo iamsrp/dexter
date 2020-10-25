@@ -23,7 +23,8 @@ class _WordsToNumbers():
     # they are an odd case where numbers that might otherwise be called
     # 'ten one', 'ten two', etc. actually have their own names as single
     # digits do)
-    __ones__ = { 'one':   1, 'eleven':     11,
+    __ones__ = { 'a':     1,
+                 'one':   1, 'eleven':     11,
                  'two':   2, 'twelve':     12,
                  'three': 3, 'thirteen':   13,
                  'four':  4, 'fourteen':   14,
