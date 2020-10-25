@@ -1,0 +1,48 @@
+{
+    "key_phrases" : [
+        "Dexter",
+        "Hey Computer"
+    ],
+
+    "notifiers" : [
+        [ "dexter.notifier.logging.LogNotifier", {
+        }]
+    ],
+
+    "components" : {
+        "inputs" : [
+            [ "dexter.input.deepspeech.DeepSpeechInput", {
+                "model"   : "${HOME}/deepspeech/deepspeech-0.8.1-models.pbmm",
+                "scorer"  : "${HOME}/deepspeech/deepspeech-0.8.1-models.scorer"
+            }]
+        ],
+
+        "outputs" : [
+            [ "dexter.output.io.LogOutput", {
+                "level" : "INFO"
+            }],
+
+            [ "dexter.output.festvox.FestivalOutput", {
+            }]
+        ],
+
+        "services" : [
+            [ "dexter.service.chronos.ClockService", {
+            }],
+
+            [ "dexter.service.volume.VolumeService", {
+            }],
+
+            [ "dexter.service.timer.TimerService", {
+                "timer_wave" : "${HOME}/Music/alarm.wav"
+            }],
+
+            [ "dexter.service.wikiquery.WikipediaService", {
+            }],
+
+            [ "dexter.service.music.LocalMusicService", {
+                "dirname" : "${HOME}/Music"
+            }]
+        ]
+    }
+}
