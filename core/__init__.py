@@ -483,7 +483,8 @@ class Dexter(object):
         # See if the key-phrase is in the tokens and use it to determine the
         # offset of the command.
         words = [to_letters(token.element).lower()
-                 for token in tokens]
+                 for token in tokens
+                 if token.verbal]
         offset = None
         for key_phrase in self._key_phrases:
             try:
