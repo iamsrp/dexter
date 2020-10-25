@@ -8,8 +8,8 @@ from   dexter.core.player       import SimpleMP3Player
 from   dexter.core.util         import to_letters
 from   dexter.service           import Service, Handler, Result
 
-from   fuzzywuzzy      import fuzz
-from   threading       import Thread
+from   fuzzywuzzy               import fuzz
+from   threading                import Thread
 
 # ------------------------------------------------------------------------------
 
