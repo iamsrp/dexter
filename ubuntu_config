@@ -33,7 +33,7 @@
             [ "dexter.service.volume.VolumeService", {
             }],
 
-            [ "dexter.service.timer.TimerService", {
+            [ "dexter.service.chronos.TimerService", {
                 "timer_wave" : "${HOME}/Music/alarm.wav"
             }],
 
