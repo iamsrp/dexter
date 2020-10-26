@@ -10,9 +10,13 @@ import traceback
 import wave
 
 from   dexter.core.log  import LOG
-from   dexter.core.util import to_letters, number_to_words, list_index, parse_number
+from   dexter.core.util import (homonize,
+                                list_index,
+                                number_to_words,
+                                parse_number,
+                                to_letters)
 from   dexter.service   import Service, Handler, Result
-from   threading         import Thread
+from   threading        import Thread
 
 # ------------------------------------------------------------------------------
 
@@ -312,17 +316,11 @@ class TimerService(Service):
         # homonyms of "four" and "set" apparently sounds like "said". Yes, I
         # know I could do a cross product here but...
         words    = self._words(tokens)
-        prefices = (('set',  'a', 'timer', 'for' ),
-                    ('set',  'a', 'timer', 'four'),
-                    ('said', 'a', 'timer', 'for' ),
-                    ('said', 'a', 'timer', 'four'),
-                    ('set',  'a', 'time',  'for' ),
-                    ('set',  'a', 'time',  'four'),
-                    ('said', 'a', 'time',  'for' ),
-                    ('said', 'a', 'time',  'four'),)
+        prefices = (homonize(('set', 'a', 'timer', 'for')),
+                    homonize(('set', 'a', 'time',  'for')),)
         for prefix in prefices:
             try:
-                index = list_index(words, prefix)
+                index = list_index(homonize(words), prefix)
                 return _SetTimerHandler(self,
                                         tokens,
                                         words[index + len(prefix):])
@@ -330,15 +328,12 @@ class TimerService(Service):
                 pass
 
         # And now for cancelling
-        prefices = (('counsel', 'timers' ),
-                    ('counsel', 'timer'  ),
-                    ('counsel', 'time'   ),
-                    ('cancel',  'timers' ),
-                    ('cancel',  'timer'  ),
-                    ('cancel',  'time'   ),)
+        prefices = (homonize(('cancel', 'timers')),
+                    homonize(('cancel', 'timer' )),
+                    homonize(('cancel', 'time'  )),)
         for prefix in prefices:
             try:
-                index = list_index(words, prefix)
+                index = list_index(homonize(words), prefix)
                 return _CancelHandler(self,
                                       tokens,
                                       words)

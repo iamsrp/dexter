@@ -3,7 +3,7 @@ Get data from Purple Air and render it.
 """
 
 from   dexter.core.log   import LOG
-from   dexter.core.util  import list_index
+from   dexter.core.util  import homonize, list_index
 from   dexter.service    import Service, Handler, Result
 
 import httplib2
@@ -62,7 +62,7 @@ class _PurpleAirHandler(Handler):
         if 'results' not in raw or len(raw['results']) == 0:
             return {}
         else:
-            LOG.info("Got: %s", (raw['results'][0],))
+            LOG.debug("Got: %s", (raw['results'][0],))
             return raw['results'][0]
 
 
@@ -213,9 +213,9 @@ class PurpleAirService(Service):
         words = self._words(tokens)
         for (tokens, handler) in self._HANDLERS:
             for prefix in self._PREFICES:
-                phrase = prefix + tokens
+                phrase = homonize(prefix + tokens)
                 try:
-                    if list_index(words, phrase) >= 0:
+                    if list_index(homonize(words), phrase) >= 0:
                         return handler(self, tokens)
                 except Exception as e:
                     LOG.debug("Failed to handle '%s': %s" % (' '.join(words), e))
@@ -226,6 +226,4 @@ class PurpleAirService(Service):
         """
         Get the sensor ID as best we can.
         """
-        if self._sensor_id is None:
-            self._sensor_id = 14633 # Randomly chosen
         return self._sensor_id

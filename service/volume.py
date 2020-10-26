@@ -6,7 +6,7 @@ import traceback
 
 from dexter.core.audio import set_volume
 from dexter.core.log   import LOG
-from dexter.core.util  import list_index, parse_number
+from dexter.core.util  import homonize, list_index, parse_number
 from dexter.service    import Service, Handler, Result
 
 class _Handler(Handler):
@@ -71,24 +71,14 @@ class VolumeService(Service):
         """
         @see Service.evaluate()
         """
-        # We use a number of different prefices here since the word "to" has a
-        # bunch of homonyms and "set" apparently sounds like "said"...
-        words    = self._words(tokens)
-        prefices = (('set',  'volume', 'to' ),
-                    ('set',  'volume', 'two'),
-                    ('set',  'volume', 'too'),
-                    ('said', 'volume', 'to' ),
-                    ('said', 'volume', 'two'),
-                    ('said', 'volume', 'too'),)
-        for prefix in prefices:
-            try:
-                index = list_index(words, prefix)
-                return _Handler(self,
-                                tokens,
-                                ' '.join(words[index + len(prefix):]))
-            except:
-                pass
-
-        # Didn't find any of the prefices
-        return None
+        words  = self._words(tokens)
+        prefix = homonize(('set', 'volume', 'to'))
+        try:
+            index = list_index(homonize(words), prefix)
+            return _Handler(self,
+                            tokens,
+                            ' '.join(words[index + len(prefix):]))
+        except:
+            # Didn't find a match
+            return None
 

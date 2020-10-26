@@ -166,6 +166,214 @@ _LOWER   = ''.join(chr(i) for i in range(ord('a'), ord('z') + 1))
 _UPPER   = _LOWER.upper()
 _NUMBERS = ''.join(str(i) for i in range(0, 10))
 
+# The list of homonyms, and whether the key can match as a plural
+_HOMONYMS = {
+    'aloud'      : ('allowed',     False),
+    'altar'      : ('alter',       True ),
+    'ant'        : ('aunt',        True ),
+    'arc'        : ('ark',         True ),
+    'ate'        : ('eight',       False),
+    'auger'      : ('augur',       True ),
+    'aural'      : ('oral',        True ),
+    'baize'      : ('bays',        True ),
+    'bald'       : ('bawled',      True ),
+    'bawl'       : ('ball',        True ),
+    'band'       : ('banned',      True ),
+    'bard'       : ('barred',      True ),
+    'bare'       : ('bear',        True ),
+    'baron'      : ('barren',      True ),
+    'bean'       : ('been',        False),
+    'bee'        : ('be',          True ),
+    'beech'      : ('beach',       False),
+    'beeches'    : ('beaches',     False),
+    'beer'       : ('bier',        True ),
+    'berries'    : ('buries',      False),
+    'berry'      : ('bury',        False),
+    'berth'      : ('birth',       True ),
+    'billed'     : ('build',       False),
+    'blue'       : ('blew',        False),
+    'bored'      : ('board',       False),
+    'braid'      : ('brayed',      False),
+    'break'      : ('brake',       True ),
+    'bred'       : ('bread',       False),
+    'brews'      : ('bruise',      False),
+    'bridal'     : ('bridle',      False),
+    'brite'      : ('bright',      False),
+    'broach'     : ('brooch',      True ),
+    'buy'        : ('by',          False),
+    'bye'        : ('by',          False),
+    'byes'       : ('buys',        False),
+    'capital'    : ('capitol',     True ),
+    'counsel'    : ('cancel',      True ),
+    'cellar'     : ('seller',      True ),
+    'census'     : ('senses',      False),
+    'cereal'     : ('serial',      True ),
+    'chili'      : ('chilly',      False),
+    'choral'     : ('coral',       True ),
+    'cite'       : ('sight',       True ),
+    'cite'       : ('site',        True ),
+    'coarse'     : ('course',      True ),
+    'complement' : ('compliment',  True ),
+    'deer'       : ('dear',        False),
+    'discreet'   : ('discrete',    False),
+    'doe'        : ('dough',       False),
+    'done'       : ('dun',         False),
+    'draft'      : ('draught',     True ),
+    'dual'       : ('duel',        True ),
+    'dye'        : ('die',         True ),
+    'earn'       : ('urn',         True ),
+    'ewe'        : ('you',         False),
+    'eye'        : ('i',           False),
+    'farther'    : ('father',      False),
+    'faze'       : ('phase',       True ),
+    'file'       : ('phial',       True ),
+    'find'       : ('fined',       False),
+    'fir'        : ('fur',         True ),
+    'flaw'       : ('floor',       True ),
+    'flea'       : ('flee',        True ),
+    'flew'       : ('flu',         False),
+    'flex'       : ('flecks',      False),
+    'flour'      : ('flower',      False),
+    'flue'       : ('flu',         False),
+    'for'        : ('four',        False),
+    'force'      : ('fours',       False),
+    'foreword'   : ('forward',     True ),
+    'fort'       : ('fought',      False),
+    'foul'       : ('fowl',        True ),
+    'fowl'       : ('foul',        True ),
+    'gait'       : ('gate',        True ),
+    'gamble'     : ('gambol',      True ),
+    'genes'      : ('jeans',       True ),
+    'gored'      : ('gourd',       False),
+    'great'      : ('grate',       True ),
+    'groan'      : ('grown',       False),
+    'hart'       : ('heart',       True ),
+    'hear'       : ('here',        False),
+    'heel'       : ('heal',        True ),
+    'heir'       : ('air',         False),
+    'high'       : ('hi',          False),
+    'him'        : ('hymn',        False),
+    'hoard'      : ('horde',       True ),
+    'hole'       : ('whole',       False),
+    'holy'       : ('wholly',      False),
+    'hour'       : ('our',         True ),
+    'idle'       : ('idol',        True ),
+    'idol'       : ('idle',        False),
+    'incite'     : ('insight',     True ),
+    'inn'        : ('in',          True ),
+    'knead'      : ('need',        True ),
+    'knew'       : ('new',         False),
+    'knight'     : ('night',       True ),
+    'knot'       : ('not',         True ),
+    'know'       : ('no',          False),
+    'knows'      : ('nose',        False),
+    'leak'       : ('leek',        True ),
+    'lessen'     : ('lesson',      True ),
+    'levee'      : ('levy',        False),
+    'levees'     : ('levies',      False),
+    'links'      : ('lynx',        False),
+    'loan'       : ('lone',        False),
+    'loot'       : ('lute',        True ),
+    'lynx'       : ('links',       False),
+    'made'       : ('maid',        False),
+    'maid'       : ('made',        False),
+    'mail'       : ('male',        True ),
+    'main'       : ('mane',        True ),
+    'manna'      : ('manner',      False),
+    'marshal'    : ('martial',     False),
+    'masque'     : ('mask',        True ),
+    'maw'        : ('more',        False),
+    'maws'       : ('moars',       False),
+    'meat'       : ('meet',        True ),
+    'medal'      : ('meddle',      True ),
+    'might'      : ('mite',        False),
+    'mist'       : ('missed',      False),
+    'moar'       : ('more',        False),
+    'moose'      : ('mousse',      False),
+    'muscle'     : ('mussel',      True ),
+    'none'       : ('nun',         False),
+    'nose'       : ('knows',       False),
+    'oar'        : ('or',          False),
+    'overdo'     : ('overdue',     False),
+    'pail'       : ('pale',        True ),
+    'pain'       : ('pane',        False),
+    'pair'       : ('pear',        True ),
+    'passed'     : ('past',        False),
+    'peace'      : ('piece',       False),
+    'peak'       : ('peek',        True ),
+    'pear'       : ('pair',        True ),
+    'pedal'      : ('peddle',      True ),
+    'plane'      : ('plain',       True ),
+    'prey'       : ('pray',        False),
+    'prays'      : ('praise',      False),
+    'pried'      : ('pride',       False),
+    'principal'  : ('principle',   True ),
+    'profit'     : ('prophet',     True ),
+    'reign'      : ('rain',        True ),
+    'red'        : ('read',        False),
+    'ring'       : ('wring',       True ),
+    'rode'       : ('road',        False),
+    'role'       : ('roll',        True ),
+    'rouse'      : ('rows',        False),
+    'rung'       : ('wrung',       True ),
+    'said'       : ('set',         False),
+    'sail'       : ('sale',        True ),
+    'sauce'      : ('source',      True ),
+    'scene'      : ('seen',        False),
+    'scull'      : ('skull',       True ),
+    'sea'        : ('see',         True ),
+    'shoo'       : ('shoe',        True ),
+    'side'       : ('sighed',      False),
+    'site'       : ('sight',       True ),
+    'slay'       : ('sleigh',      True ),
+    'soar'       : ('sore',        True ),
+    'sole'       : ('soul',        False),
+    'some'       : ('sum',         False),
+    'son'        : ('son',         True ),
+    'sort'       : ('sought',      False),
+    'soul'       : ('sole',        True ),
+    'staid'      : ('stayed',      False),
+    'stalk'      : ('stork',       True ),
+    'stare'      : ('stair',       True ),
+    'stationary' : ('stationery',  False),
+    'steal'      : ('steel',       True ),
+    'stile'      : ('style',       True ),
+    'sun'        : ('son',         True ),
+    'sync'       : ('sink',        False),
+    'tail'       : ('tale',        True ),
+    'tale'       : ('tail',        True ),
+    'team'       : ('teem',        True ),
+    'their'      : ('there',       True ),
+    'threw'      : ('through',     False),
+    'throne'     : ('thrown',      False),
+    'tide'       : ('tied',        False),
+    'toe'        : ('tow',         True ),
+    'too'        : ('to',          False),
+    'two'        : ('to',          False),
+    'vain'       : ('vein',        False),
+    'vary'       : ('very',        False),
+    'wail'       : ('whale',       True ),
+    'waist'      : ('waste',       True ),
+    'wares'      : ('wheres',      False),
+    'watt'       : ('what',        True ),
+    'way'        : ('weigh',       True ),
+    'weak'       : ('week',        False),
+    'wear'       : ('where',       True ),
+    'weather'    : ('whether',     False),
+    'wether'     : ('whether',     False),
+    'where'      : ('wear',        True ),
+    'which'      : ('witch',       False),
+    'whole'      : ('hole',        False),
+    'whos'       : ('whose',       False),
+    'witch'      : ('which',       False),
+    'won'        : ('one',         False),
+    'would'      : ('wood',        False),
+    'wring'      : ('ring',        True ),
+    'write'      : ('right',       True ),
+    'yew'        : ('you',         False),
+    'youre'      : ('your',        False),
+}
+
 # ------------------------------------------------------------------------------
 
 def _strip_to(string, alphabet):
@@ -518,3 +726,39 @@ def list_index(list_, sublist, start=0):
         # Move the offset to be after the first instance of sublist[0], so
         # that we may find the next one, if any
         offset = first + 1
+
+
+def homonize(word):
+    """
+    Given a word, return its homonym. Case and punctuation will not be
+    preserved.
+    """
+    # Empty breeds empty
+    if not word:
+        return word
+
+    # Handle lists and tuples via recursion and early out
+    type_ = type(word)
+    if type_ in (tuple, list):
+        return type_(map(homonize, word))
+
+    # Get the stripped down version
+    alnum = to_alphanumeric(str(word))
+
+    # And give it back, or its homonym
+    if alnum in _HOMONYMS:
+        # Simple match
+        return _HOMONYMS[alnum][0]
+
+    # See if it looks like a plural and try to match on the singular version, if
+    # that's allowed
+    if alnum.endswith('s' ) and not alnum.endswith('ss'):
+        singular = alnum[:-1]
+        if singular in _HOMONYMS:
+            (homonym, allowed) = _HOMONYMS[singular]
+            if allowed:
+                # Plural match
+                return homonym
+
+    # No match, give back the stripped form
+    return alnum

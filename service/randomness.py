@@ -3,7 +3,7 @@ Services which simulate random processes (coins, dice, etc.).
 """
 
 from   dexter.core.log  import LOG
-from   dexter.core.util import list_index, parse_number
+from   dexter.core.util import homonize, list_index, parse_number
 from   dexter.service   import Service, Handler, Result
 
 import random
@@ -88,16 +88,16 @@ class RandomService(Service):
         @see Service.evaluate()
         """
         words  = self._words(tokens)
-        phrase = ' '.join(words)
+        phrase = ' '.join(homonize(words))
 
-        if phrase == "toss a coin":
+        if phrase in ("toss a coin", "flip a coin"):
             return _CoinTossHandler(self, tokens)
         elif phrase in ("roll a die", "roll a dice"):
             return _DiceHandler(self, tokens, 6)
         else:
             try:
-                prefix = ('give', 'me', 'a', 'number', 'between')
-                index  = list_index(words, prefix)
+                prefix = homonize(('give', 'me', 'a', 'number', 'between'))
+                index  = list_index(homonize(words), prefix)
                 offset = index + len(prefix)
                 if len(words) >= offset + 3:
                     and_index = words.index('and')
