@@ -30,10 +30,10 @@
             [ "dexter.service.chronos.ClockService", {
             }],
 
-            [ "dexter.service.volume.VolumeService", {
+            [ "dexter.service.chronos.TimerService", {
             }],
 
-            [ "dexter.service.chronos.TimerService", {
+            [ "dexter.service.volume.VolumeService", {
             }],
 
             [ "dexter.service.wikiquery.WikipediaService", {
@@ -41,6 +41,9 @@
 
             [ "dexter.service.music.LocalMusicService", {
                 "dirname" : "${HOME}/Music"
+            }],
+
+            [ "dexter.service.randomness.RandomService", {
             }],
 
             [ "dexter.service.purpleair.PurpleAirService", {
