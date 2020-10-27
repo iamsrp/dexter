@@ -480,17 +480,20 @@ class Dexter(object):
         if tokens is None:
             return None
 
-        # See if the key-phrase is in the tokens and use it to determine the
-        # offset of the command.
+        # Get the words from this text
         words = [to_letters(token.element).lower()
                  for token in tokens
                  if token.verbal]
+        LOG.info("Handling: \"%s\"" % ' '.join(words))
+
+        # See if the key-phrase is in the tokens and use it to determine the
+        # offset of the command.
         offset = None
         for key_phrase in self._key_phrases:
             try:
                 offset = (list_index(words, key_phrase) +
                           len(key_phrase))
-                LOG.info("Found key-pharse %s at offset %d in %s" %
+                LOG.info("Found key-phrase %s at offset %d in %s" %
                          (key_phrase, offset - len(key_phrase), words))
             except ValueError:
                 pass
