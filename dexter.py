@@ -13,7 +13,8 @@ from dexter.core.log import LOG
 
 # ------------------------------------------------------------------------------
 
-# WIP
+# A very basic configuration which should work on most things if people have
+# installed the various requirements. Not very exciting though.
 CONFIG = {
     'key_phrases' : (
         "Hey Computer",
@@ -27,10 +28,6 @@ CONFIG = {
                     'port' : '8008'
                 }
             ),
-            (
-                'dexter.input.pocketsphinx.PocketSphinxInput',
-                None
-            ),
         ),
         'outputs' : (
             (
@@ -40,7 +37,7 @@ CONFIG = {
                 }
             ),
             (
-                'dexter.output.espeak.EspeakOutput',
+                'dexter.output.festvox.FestivalOutput',
                 None
             ),
         ),
