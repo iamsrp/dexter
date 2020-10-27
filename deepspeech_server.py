@@ -114,7 +114,7 @@ def run(conn):
         except:
             pass
 
-        
+
 # ------------------------------------------------------------------------------
 
 
@@ -145,7 +145,7 @@ model.setBeamWidth(args.beam_width)
 if args.scorer:
     logging.info("Loading scorer from %s" % (args.scorer,))
     model.enableExternalScorer(args.scorer)
- 
+
 # Set up the server socket
 logging.info("Opening socket on port %d" % (args.port,))
 sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

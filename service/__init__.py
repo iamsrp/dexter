@@ -143,7 +143,7 @@ class Result(object):
     Some results of a query might be considered canonical for a particular
     service. For example:
       User:    Hey Computer, play Captain Underpants by Weird Al.
-      Computer: Okay, playing Captain Underpants Theme Song by Weird Al 
+      Computer: Okay, playing Captain Underpants Theme Song by Weird Al
                 Yankovic.
     Here you would not want another service to also play Captain Underpants at
     the same time that the responding one does.
@@ -158,7 +158,7 @@ class Result(object):
             The text of the response.
         @type  is_query: bool
         @param is_query:
-            Whether or not this result is a query and expects the user to 
+            Whether or not this result is a query and expects the user to
             respond.
         @type  exclusive: bool
         @param exclusive:

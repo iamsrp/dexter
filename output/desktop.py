@@ -53,4 +53,4 @@ class NotifierOutput(Output):
 
             except Exception as e:
                 LOG.warning("Failed to display desktop notifications: %s" % e)
-                
+

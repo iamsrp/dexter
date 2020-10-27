@@ -13,7 +13,7 @@ from   threading       import Thread
 
 class SocketInput(Input):
     """
-    A way to get text from the outside world. 
+    A way to get text from the outside world.
 
     This creates an unsecured socket which anyone can connect to. Useful for
     testing but probably not advised for the real world.
@@ -55,7 +55,7 @@ class SocketInput(Input):
         """
         @see Component.start()
         """
-        # Create the socket 
+        # Create the socket
         LOG.info("Opening socket on port %d" % (self._port,))
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -118,7 +118,7 @@ class SocketInput(Input):
                 if c == b'\n':
                     if len(tokens) > 0:
                         if self._prefix:
-                            tokens.insert(0, self._prefix) 
+                            tokens.insert(0, self._prefix)
                         self._output.append(tokens)
                         tokens = []
 

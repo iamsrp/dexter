@@ -71,7 +71,7 @@ class TimerEvent(Event):
         @property
         def schedule_time(self):
             """
-            The time at which this event should be scheduled, in seconds since 
+            The time at which this event should be scheduled, in seconds since
             epoch.
             """
             return self._schedule_time

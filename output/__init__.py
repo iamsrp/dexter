@@ -54,4 +54,4 @@ class SpeechOutput(Output):
         @see Component.is_speech()
         """
         return True
-    
+

@@ -77,7 +77,7 @@ class Input(Component):
         A non-blocking call to get a list of C{element}s from the outside world.
 
         Each C{element} is either a L{str} representing a word or a L{Token}.
-        
+
         @rtype: tuple(C{element})
         @return:
             The list of elements received from the outside world, or None if

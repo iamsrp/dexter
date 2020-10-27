@@ -124,7 +124,7 @@ class WikipediaService(Service):
 
             except Exception as e:
                 LOG.debug("%s not in %s: %s" % (prefix, words, e))
-                
+
 
         # If we got here then it didn't look like a query for us.
         return None

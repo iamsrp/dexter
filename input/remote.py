@@ -107,7 +107,7 @@ class RemoteInput(AudioInput):
                     raise IOError("EOF in recv()")
                 length += got
             (count,) = struct.unpack("!q", length)
-    
+
             # Read in the string
             LOG.info("Reading %d chars" % (count,))
             result = b''
@@ -118,7 +118,7 @@ class RemoteInput(AudioInput):
                 result += got
             result = result.decode()
             LOG.info("Result is: '%s'" % (result,))
-    
+
             # Convert to tokens
             tokens = [Token(word.strip(), 1.0, True)
                       for word in result.split(' ')
@@ -129,7 +129,7 @@ class RemoteInput(AudioInput):
             # Again, just grumble on exceptions
             LOG.info("Failed to do remote processing: %s" % e)
             return []
-    
+
         finally:
             # Close it out, best effort
             try:

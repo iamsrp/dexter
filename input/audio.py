@@ -348,7 +348,7 @@ class AudioInput(Input):
                 queue = self._decode_queue
                 if queue is None:
                     break
-            
+
                 # Anything?
                 if len(queue) > 0:
                     item = queue.popleft()
@@ -371,7 +371,7 @@ class AudioInput(Input):
             except Exception as e:
                 # Be robust but log it
                 LOG.error("Got an error in the decoder queue: %s" % (e,))
-                
+
             # Don't busy-wait
             time.sleep(0.001)
 
