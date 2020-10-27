@@ -120,7 +120,7 @@ def run(conn):
 
 # Set up the logger
 logging.basicConfig(
-    format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
+    format='[%(asctime)s %(threadName)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
     level=logging.INFO
 )
 
