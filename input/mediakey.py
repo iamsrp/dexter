@@ -23,7 +23,7 @@ class MediaKeyInput(Input):
     def __init__(self,
                  state,
                  prefix  ='Dexter',
-                 play_key='play pause',
+                 play_key='play or pause',
                  stop_key='stop',
                  next_key='next song',
                  prev_key='previous song'):

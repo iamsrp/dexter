@@ -5,7 +5,7 @@ Base class for various music playing services.
 from   dexter.core.log          import LOG
 from   dexter.core.media_index  import MusicIndex, AudioEntry
 from   dexter.core.player       import SimpleMP3Player
-from   dexter.core.util         import to_letters
+from   dexter.core.util         import homonize
 from   dexter.service           import Service, Handler, Result
 
 from   fuzzywuzzy               import fuzz
@@ -24,7 +24,7 @@ class MusicService(Service):
         @type  platform: str
         @param platform:
             The name of the platform that this service streams music from, like
-            C{Spotify}, C{Pandora}, C{Edna}, C{}, etc.
+            C{Spotify}, C{Pandora}, C{Edna}, C{Local Disk}, etc.
         """
         super(MusicService, self).__init__(name, state)
 
@@ -36,15 +36,24 @@ class MusicService(Service):
         @see Service.evaluate()
         """
         # Get stripped text, for matching
-        words = [to_letters(w).lower() for w in self._words(tokens)]
+        words = [homonize(w) for w in self._words(tokens)]
 
-        # Look for specific control words, doing a fuzzy match
-        threshold = 80
+        # Look for specific control words, doing a fuzzy match for single
+        # tokens, but an exact match for the "special" phrases (since they
+        # typically come from an unambiguously rendering source).
         if len(words) == 1:
-            if self._matches(words[0], "stop"):
+            if   (self._matches(words[0], "stop") or
+                  self._matches(words[0], "pause")):
                 return self._get_stop_handler(tokens)
-            elif self._matches(words[0], "play"):
+            elif (self._matches(words[0], "play") or
+                  self._matches(words[0], "unpause")):
                 return self._get_play_handler(tokens)
+        elif words == ['next', 'song']:
+            return self._get_next_song_handler(tokens)
+        elif words == ['previous', 'song']:
+            return self._get_prev_song_handler(tokens)
+        elif words == ['play', 'or', 'pause']:
+            return self._get_toggle_pause_handler(tokens)
 
         # We expect to have something along the lines of:
         #  Play <song or album> on <platform>
@@ -92,8 +101,8 @@ class MusicService(Service):
                 # No match
                 artist = None
 
-        # See if it ends with a genre indicator. Don't do this is we matched an
-        # artist (since it could be "Sexy Music" by "Meat Puppets", for example.
+        # See if it ends with a genre indicator. Don't do this if we matched an
+        # artist (since it could be "Sexy Music" by "Meat Puppets", for example).
         if artist is None and len(words) > 1 and self._matches(words[-1], "music"):
             genre = tuple(words[:-1])
             words = []
@@ -139,7 +148,7 @@ class MusicService(Service):
 
     def _matches(self, words, target):
         """
-        Use fuzz.ratio  to match word tuples.
+        Use fuzz.ratio to match word tuples.
         """
         return fuzz.ratio(words, target) > 80
 
@@ -180,6 +189,45 @@ class MusicService(Service):
         """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
+
+
+    def _get_toggle_pause_handler(self, tokens):
+        """
+        Get the handler to pause playing whatever is playing, or start playing
+        whatever is paused; or nothing is neither is the case.
+
+        @type  tokens: tuple(L{Token})
+        @param tokens:
+            The tokens for which this handler was generated.
+        """
+        # To be implemented by subclasses
+        raise NotImplementedError("Abstract method called")
+
+
+    def _get_next_song_handler(self, tokens):
+        """
+        Get the handler to move to the next song, if we can.
+
+        @type  tokens: tuple(L{Token})
+        @param tokens:
+            The tokens for which this handler was generated.
+        """
+        # By default we do nothing for this since it might not be supported for
+        # certain players
+        return None
+
+
+    def _get_prev_song_handler(self, tokens):
+        """
+        Get the handler to go back to the previous song, if we can.
+
+        @type  tokens: tuple(L{Token})
+        @param tokens:
+            The tokens for which this handler was generated.
+        """
+        # By default we do nothing for this since it might not be supported for
+        # certain players
+        return None
 
 
     def _get_handler_for(self,
@@ -254,6 +302,34 @@ class _LocalMusicServiceUnpauseHandler(Handler):
         was_paused = self.service.is_paused()
         self.service.unpause()
         return Result(self, '', False, was_paused)
+
+
+class _LocalMusicServiceTogglePauseHandler(Handler):
+    def __init__(self, service, tokens):
+        """
+        @see Handler.__init__()
+        """
+        super(_LocalMusicServiceTogglePauseHandler, self).__init__(
+            service,
+            tokens,
+            1.0  if service.is_paused() or service.is_playing() else 0.0,
+            True if service.is_paused() or service.is_playing() else False,
+        )
+
+
+    def handle(self):
+        """
+        @see Handler.handle()`
+        """
+        if self.service.is_playing():
+            self.service.pause()
+            handled = True
+        elif self.service.is_paused():
+            self.service.unpause()
+            handled = True
+        else:
+            handled = False
+        return Result(self, '', False, handled)
 
 
 class _LocalMusicServicePlayHandler(Handler):
@@ -409,6 +485,13 @@ class LocalMusicService(MusicService):
         @see MusicService._get_play_handler()
         """
         return _LocalMusicServiceUnpauseHandler(self, tokens)
+
+
+    def _get_toggle_pause_handler(self, tokens):
+        """
+        @see MusicService._get_toggle_pause_handler()
+        """
+        return _LocalMusicServiceTogglePauseHandler(self, tokens)
 
 
     def _get_handler_for(self,

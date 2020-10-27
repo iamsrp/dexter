@@ -306,6 +306,9 @@ _HOMONYMS = {
     'oar'        : ('or',          False),
     'overdo'     : ('overdue',     False),
     'p'          : ('pea',         False),
+    'paws'       : ('pause',       False),
+    'pores'      : ('pause',       False),
+    'pours'      : ('pause',       False),
     'pail'       : ('pale',        True ),
     'pain'       : ('pane',        False),
     'pair'       : ('pear',        True ),
@@ -769,7 +772,7 @@ def homonize(word):
         return type_(map(homonize, word))
 
     # Get the stripped down version
-    alnum = to_alphanumeric(str(word))
+    alnum = to_alphanumeric(str(word).lower())
 
     # And give it back, or its homonym
     if alnum in _HOMONYMS:
