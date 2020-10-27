@@ -72,7 +72,7 @@ class SimpleMP3Player(object):
         @return:
            Whether the player is playing.
         """
-        return pygame.mixer.music.get_busy()
+        return pygame.mixer.music.get_busy() and not self._paused
 
 
     def is_paused(self):
@@ -135,7 +135,7 @@ class SimpleMP3Player(object):
         """
         Pause any currently playing music.
         """
-        if pygame.mixer.music.get_busy():
+        if self.is_playing():
             self._paused = True
             pygame.mixer.music.pause()
 
