@@ -243,7 +243,7 @@ class AudioInput(Input):
                 from_pctl = numpy.sort(from_levels)[int(len(from_levels) * 0.5)]
                 to_pctl   = numpy.sort(to_levels  )[int(len(to_levels  ) * 0.5)]
                 if now - last_log > 0.2:
-                    LOG.info("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
+                    LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
                     last_log = now
                 else:
                     LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
