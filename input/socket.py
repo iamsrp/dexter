@@ -32,7 +32,9 @@ class SocketInput(Input):
 
         self._port = int(port)
         if prefix and str(prefix).strip():
-            self._prefix = Token(prefix.strip(), 1.0, True)
+            self._prefix = [Token(word.strip(), 1.0, True)
+                            for word in str(prefix).strip().split()
+                            if word]
         else:
             self._prefix = None
 
@@ -118,7 +120,7 @@ class SocketInput(Input):
                 if c == b'\n':
                     if len(tokens) > 0:
                         if self._prefix:
-                            tokens.insert(0, self._prefix)
+                            tokens = self._prefix + tokens
                         self._output.append(tokens)
                         tokens = []
 
