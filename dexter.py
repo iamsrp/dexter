@@ -55,13 +55,15 @@ CONFIG = {
 
 # ------------------------------------------------------------------------------
 
+# Main entry point
 @argh.arg('--log-level', '-L',
           help="The logging level to use")
 @argh.arg('--config', '-c',
           help="The JSON configuration file to use")
 def main(log_level=None, config=None):
     """
-    Main entry point.
+    Dexter is a personal assistant which responds to natural language for its
+    commands.
     """
     # Set the log level, if supplied
     if log_level is not None:
