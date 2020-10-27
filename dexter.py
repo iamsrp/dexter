@@ -55,12 +55,21 @@ CONFIG = {
 
 # ------------------------------------------------------------------------------
 
+@argh.arg('--log-level', '-L',
+          help="The logging level to use")
 @argh.arg('--config', '-c',
           help="The JSON configuration file to use")
-def main(config=None):
+def main(log_level=None, config=None):
     """
     Main entry point.
     """
+    # Set the log level, if supplied
+    if log_level is not None:
+        try:
+            LOG.getLogger().setLevel(int(log_level))
+        except:
+            LOG.getLogger().setLevel(log_level.upper())
+
     # Load in any configuration
     if config is not None:
         try:
