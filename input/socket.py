@@ -113,7 +113,7 @@ class SocketInput(Input):
                 return
 
             if c in b' \t\n':
-                if len(cur) > 0:
+                if len(cur.strip()) > 0:
                     tokens.append(Token(cur.strip().decode(), 1.0, True))
                     cur = b''
 
