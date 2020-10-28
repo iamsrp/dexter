@@ -32,7 +32,7 @@
             [ "dexter.service.chronos.ClockService", {
             }],
 
-            [ "dexter.service.echo.EchoService", {
+            [ "dexter.service.dev.EchoService", {
             }],
 
             [ "dexter.service.volume.VolumeService", {

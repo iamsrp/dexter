@@ -6,6 +6,8 @@ import numpy
 import re
 
 from   dexter.core.log import LOG
+from   fuzzywuzzy      import fuzz
+from   fuzzywuzzy      import process as fuzz_process
 
 # ------------------------------------------------------------------------------
 
@@ -694,7 +696,7 @@ def number_to_words(value):
 
 def list_index(list_, sublist, start=0):
     """
-    Find the index of of a sublist in a list.
+    Find the index of a sublist in a list.
 
     >>> list_index(range(10), range(3, 5))
     3
@@ -711,17 +713,17 @@ def list_index(list_, sublist, start=0):
     >>> list_index(['what', 'is', 'a', 'fish'], ('what', 'is'))
     0
 
-    @type  list_: list
+    @type  list_: list or tuple
     @param list_:
         The list to look in.
-    @type  sublist: list
+    @type  sublist: list or tuple
     @param sublist:
         The list to look for.
     @type  start: int
     @param start:
         Where to start looking in the C{list}.
     """
-    # Make sure these are lists
+    # Turn the arguments into tuples
     if list_ is None:
         raise ValueError("list was None")
     if sublist is None:
@@ -755,6 +757,101 @@ def list_index(list_, sublist, start=0):
         # Move the offset to be after the first instance of sublist[0], so
         # that we may find the next one, if any
         offset = first + 1
+
+
+def fuzzy_list_range(list_, sublist, start=0, threshold=80):
+    """
+    Find the slice range of a sublist of strings within a list, using fuzzy
+    matching.
+
+    @type  list_: list<str> or tuple<str>
+    @param list_:
+        The list to look in.
+    @type  sublist: list<str> or tuple<str>
+    @param sublist:
+        The list to look for.
+    @type  start: int
+    @param start:
+        Where to start looking in the C{list}.
+    @type  threshold: int
+    @param threshold:
+        The fuzzy matching percentage threshold which the sublist must match
+        with.
+
+    @rtype: tuple
+    @return:
+        A tuple of C{start, end, score} where start and end are a half-inclusive
+        slice and score is the matching score.
+
+    >>> fuzzy_list_range('whot is a fash'.split(' '), 'a fish'.split(' '))
+    (2, 4, 83)
+    >>> fuzzy_list_range(['what', 'is', 'a', 'fish'], ('whit', 'is'))
+    (0, 2, 86)
+    """
+    # Sanity
+    if list_ is None:
+        raise ValueError("list was None")
+    if sublist is None:
+        raise ValueError("sublist was None")
+
+    # The empty list can't be in anything
+    if len(sublist) == 0:
+        raise ValueError("Empty sublist not in list")
+
+    # Since we're doing fuzzy matching let's make these into words
+    def as_word(entry):
+        try:
+            value = float(entry)
+            if value == int(value):
+                return number_to_words(int(value))
+            else:
+                return number_to_words(value)
+        except:
+            return to_alphanumeric(entry.lower())
+    subwords = tuple(as_word(e) for e in sublist)
+    words    = tuple(as_word(e) for e in list_  )
+    LOG.debug("Looking for '%s' in '%s'",
+              ' '.join(subwords), ' '.join(words[start:]))
+
+    # Look for the "best" match
+    best = None
+
+    # If we have a single thing then we have a simple case
+    if len(words) == 1:
+        # Extract it for simplicity
+        query = subwords[0]
+
+        # Look for an exact match first
+        try:
+            return words.index(query)
+        except ValueError:
+            pass
+
+        # Find the first and bestest match
+        for (index, entry) in enumerate(words):
+            if index < start:
+                continue
+            score = fuzz.ratio(query, entry)
+            if score >= threshold and (best is None or best[2] < score):
+                best = (index, len(words), score)
+    else:
+        # We have a multi-element sublist, we are going to look for the best
+        # matching sublist. This is going to be O(n^2) I'm afraid.
+        query = ' '.join(subwords)
+        for s in range(start, len(words)):
+            for e in range(s + 1, len(words) + 1):
+                phrase = ' '.join(words[s:e])
+                score = fuzz.ratio(query, phrase)
+                LOG.debug("Checking '%s' in [%d:%d] '%s' gives %d",
+                          query, s, e, phrase, score)
+                if score >= threshold and (best is None or best[2] < score):
+                    best = (s, e, score)
+
+    # Did we get anything?
+    if best is None:
+        raise ValueError("'%s' not found in %s'" % (sublist, list_))
+    else:
+        return best
 
 
 def homonize(word):

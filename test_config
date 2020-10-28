@@ -19,7 +19,16 @@
         ],
 
         "services" : [
-            [ "dexter.service.echo.EchoService", {
+            [ "dexter.service.dev.EchoService", {
+            }],
+
+            [ "dexter.service.dev.MatchService", {
+                "phrases" : [
+                    "Where is my other sock",
+                    "What is the meaning of life",
+                    "Why do birds suddenly appear",
+                    "How did you know that"
+                ]
             }]
         ]
     }

@@ -43,7 +43,7 @@ CONFIG = {
         ),
         'services' : (
             (
-                'dexter.service.echo.EchoService',
+                'dexter.service.dev.EchoService',
                 None
             ),
         ),
