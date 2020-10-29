@@ -6,7 +6,7 @@ import traceback
 
 from dexter.core.audio import set_volume
 from dexter.core.log   import LOG
-from dexter.core.util  import homonize, list_index, parse_number
+from dexter.core.util  import fuzzy_list_range, parse_number
 from dexter.service    import Service, Handler, Result
 
 class _Handler(Handler):
@@ -72,12 +72,10 @@ class VolumeService(Service):
         @see Service.evaluate()
         """
         words  = self._words(tokens)
-        prefix = homonize(('set', 'volume', 'to'))
+        prefix = ('set', 'volume', 'to')
         try:
-            index = list_index(homonize(words), prefix)
-            return _Handler(self,
-                            tokens,
-                            ' '.join(words[index + len(prefix):]))
+            (start, end, _) = fuzzy_list_range(words, prefix)
+            return _Handler(self, tokens, ' '.join(words[end:]))
         except:
             # Didn't find a match
             return None

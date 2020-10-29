@@ -5,7 +5,7 @@ Base class for various music playing services.
 from   dexter.core.log          import LOG
 from   dexter.core.media_index  import MusicIndex, AudioEntry
 from   dexter.core.player       import SimpleMP3Player
-from   dexter.core.util         import homonize
+from   dexter.core.util         import homonize, fuzzy_list_range
 from   dexter.service           import Service, Handler, Result
 
 from   fuzzywuzzy               import fuzz
@@ -55,6 +55,43 @@ class MusicService(Service):
         elif words == ['play', 'or', 'pause']:
             return self._get_toggle_pause_handler(tokens)
 
+        # Now some potentially fuzzier matches
+        for (get_handler, phrases) in (
+                (self._get_next_song_handler, (
+                    ('next', 'song'),
+                    ('play', 'next', 'song'),
+                    ('go',   'forward', 'a', 'song'),
+                    ('move', 'forward', 'a', 'song'),
+                    ('skip', 'forward', 'a', 'song'),
+                )),
+                (self._get_prev_song_handler, (
+                    ('previous', 'song'),
+                    ('play', 'previous', 'song'),
+                    ('go',   'back',      'a', 'song'),
+                    ('go',   'backwards', 'a', 'song'),
+                    ('move', 'back',      'a', 'song'),
+                    ('move', 'backwards', 'a', 'song'),
+                    ('skip', 'back',      'a', 'song'),
+                    ('skip', 'backwards', 'a', 'song'),
+                )),
+                (self._get_describe_song_handler, (
+                    ('identify', 'song'),
+                    ('whats', 'this', 'song'),
+                    ('what', 'is', ' this', 'song'),
+                    ('name', 'this', 'song'),
+                )),
+        ):
+            for phrase in phrases:
+                try:
+                    (s, e, _) = fuzzy_list_range(words, phrase)
+                    if s == 0 and e == len(phrase):
+                        return get_handler(tokens)
+                except ValueError:
+                    pass
+
+        # We didn't match on the stock phrases so move on to trying to see if
+        # this is a command to play a song.
+        #
         # We expect to have something along the lines of:
         #  Play <song or album> on <platform>
         #  Play <genre> music
@@ -220,6 +257,19 @@ class MusicService(Service):
     def _get_prev_song_handler(self, tokens):
         """
         Get the handler to go back to the previous song, if we can.
+
+        @type  tokens: tuple(L{Token})
+        @param tokens:
+            The tokens for which this handler was generated.
+        """
+        # By default we do nothing for this since it might not be supported for
+        # certain players
+        return None
+
+
+    def _get_describe_song_handler(self, tokens):
+        """
+        Get the handler to describe the song currently playing.
 
         @type  tokens: tuple(L{Token})
         @param tokens:

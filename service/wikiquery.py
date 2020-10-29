@@ -6,8 +6,9 @@ import wikipedia
 
 from   dexter.core      import Notifier
 from   dexter.core.log  import LOG
-from   dexter.core.util import list_index
+from   dexter.core.util import fuzzy_list_range
 from   dexter.service   import Service, Handler, Result
+from   fuzzywuzzy       import fuzz
 
 class _Handler(Handler):
     """
@@ -92,40 +93,51 @@ class WikipediaService(Service):
         words = self._words(tokens)
 
         # Look for these types of queston
-        prefices = (('what', 'is'),
-                    ('who', 'is'))
+        prefices = (('what', 'is', 'a'),
+                    ('what', 'is', 'the'),
+                    ('what', 'is'),
+                    ('who',  'is', 'the'),
+                    ('who',  'is'))
+        match = None
         for prefix in prefices:
             try:
                 # Look for the prefix in the words
-                index = list_index(words, prefix)
+                (start, end, score) = fuzzy_list_range(words, prefix)
+                LOG.debug("%s matches %s with from %d to %d with score %d",
+                          prefix, words, start, end, score)
+                if start == 0 and (match is None or match[2] < score):
+                    match = (start, end, score)
+            except ValueError:
+                pass
 
-                # If we got here then we found the prefix. Strip that from the
-                # query which we are about to make to Wikipedia.
-                thing = ' '.join(words[index + len(prefix):]).strip()
+        # If we got a good match then use it
+        if match:
+            (start, end, score) = match
+            thing = ' '.join(words[end:]).strip().lower()
 
-                # Let's look to see if Wikipedia returns anything when we search
-                # for this thing.
-                belief = 0.5
-                try:
-                    self._notify(Notifier.ACTIVE)
-                    results = [result.lower().strip()
-                               for result in wikipedia.search(thing)
-                               if result is not None and len(result) > 0]
-                    if thing in results:
-                        belief = 1.0
-                except Exception as e:
-                    LOG.error("Failed to query Wikipedia for '%s': %s" %
-                              (thing, e))
-                finally:
-                    self._notify(Notifier.IDLE)
-
-                # Turn the words into a string for the handler.
-                return _Handler(self, tokens, belief, thing)
-
+            # Let's look to see if Wikipedia returns anything when we search
+            # for this thing
+            best = None
+            try:
+                self._notify(Notifier.ACTIVE)
+                for result in wikipedia.search(thing):
+                    if result is None or len(result) == 0:
+                        continue
+                    score = fuzz.ratio(thing, result.lower())
+                    LOG.debug("'%s' matches '%s' with a score of %d",
+                              result, thing, score)
+                    if best is None or best[1] < score:
+                        best = (result, score)
             except Exception as e:
-                LOG.debug("%s not in %s: %s" % (prefix, words, e))
+                LOG.error("Failed to query Wikipedia for '%s': %s" %
+                          (thing, e))
+            finally:
+                self._notify(Notifier.IDLE)
 
+            # Turn the words into a string for the handler
+            if best is not None:
+                return _Handler(self, tokens, best[1] / 100, best[0])
 
-        # If we got here then it didn't look like a query for us.
+        # If we got here then it didn't look like a query for us
         return None
 

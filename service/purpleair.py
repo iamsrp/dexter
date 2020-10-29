@@ -3,7 +3,7 @@ Get data from Purple Air and render it.
 """
 
 from   dexter.core.log   import LOG
-from   dexter.core.util  import homonize, list_index
+from   dexter.core.util  import fuzzy_list_range
 from   dexter.service    import Service, Handler, Result
 
 import httplib2
@@ -186,7 +186,6 @@ class PurpleAirService(Service):
                  (('temperature',),
                   _TemperatureHandler),)
     _PREFICES = (('what', 'is', 'the',),
-                 ("what's", 'the',),
                  ('whats', 'the',),)
 
 
@@ -197,7 +196,7 @@ class PurpleAirService(Service):
         @param sensor_id:
             The device ID. This can usually be found by looking at the sensor
             information on the Purple Air map (e.g. in the "Get this widget"
-            tool-tip).
+            tool-tip). This is required.
         """
         super(PurpleAirService, self).__init__("PurpleAir", state)
 
@@ -211,11 +210,12 @@ class PurpleAirService(Service):
         @see Service.evaluate()
         """
         words = self._words(tokens)
-        for (tokens, handler) in self._HANDLERS:
+        for (what, handler) in self._HANDLERS:
             for prefix in self._PREFICES:
-                phrase = homonize(prefix + tokens)
+                phrase = (prefix + what)
                 try:
-                    if list_index(homonize(words), phrase) >= 0:
+                    (s, e, _) = fuzzy_list_range(words, phrase)
+                    if s == 0 and e == len(phrase):
                         return handler(self, tokens)
                 except Exception as e:
                     LOG.debug("Failed to handle '%s': %s" % (' '.join(words), e))

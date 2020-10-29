@@ -3,7 +3,7 @@ Services which simulate random processes (coins, dice, etc.).
 """
 
 from   dexter.core.log  import LOG
-from   dexter.core.util import homonize, list_index, parse_number
+from   dexter.core.util import fuzzy_list_range, parse_number
 from   dexter.service   import Service, Handler, Result
 
 import random
@@ -87,26 +87,37 @@ class RandomService(Service):
         """
         @see Service.evaluate()
         """
-        words  = self._words(tokens)
-        phrase = ' '.join(homonize(words))
+        # The incoming request
+        words = self._words(tokens)
 
-        if phrase in ("toss a coin", "flip a coin"):
-            return _CoinTossHandler(self, tokens)
-        elif phrase in ("roll a die", "roll a dice"):
-            return _DiceHandler(self, tokens, 6)
-        else:
+        # Binary random number
+        for phrase in ("toss a coin", "flip a coin"):
             try:
-                prefix = homonize(('give', 'me', 'a', 'number', 'between'))
-                index  = list_index(homonize(words), prefix)
-                offset = index + len(prefix)
-                if len(words) >= offset + 3:
-                    and_index = words.index('and')
-                    start     = parse_number(words[offset     :and_index])
-                    end       = parse_number(words[and_index+1:])
-                    if start is not None and end is not None:
-                        return _RangeHandler(self, tokens, start, end)
-            except Exception as e:
-                LOG.debug("Failed to handle '%s': %s" % (phrase, e))
+                fuzzy_list_range(words, phrase)
+                return _CoinTossHandler(self, tokens)
+            except ValueError:
+                pass
+
+        # A regular die
+        for phrase in ("roll a die", "roll a dice"):
+            try:
+                fuzzy_list_range(words, phrase)
+                return _DiceHandler(self, tokens, 6)
+            except ValueError:
+                pass
+            
+        # A generic request
+        try:
+            prefix = ('give', 'me', 'a', 'number', 'between')
+            (_, offset, _)  = fuzzy_list_range(words, prefix)
+            if len(words) >= offset + 3:
+                and_index = words.index('and')
+                start     = parse_number(words[offset     :and_index])
+                end       = parse_number(words[and_index+1:])
+                if start is not None and end is not None:
+                    return _RangeHandler(self, tokens, start, end)
+        except Exception as e:
+            LOG.debug("Failed to handle '%s': %s" % (phrase, e))
 
         # Not for us
         return None

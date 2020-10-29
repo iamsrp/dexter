@@ -759,7 +759,11 @@ def list_index(list_, sublist, start=0):
         offset = first + 1
 
 
-def fuzzy_list_range(list_, sublist, start=0, threshold=80):
+def fuzzy_list_range(list_,
+                     sublist,
+                     start         =0,
+                     threshold     =80,
+                     homonize_words=True):
     """
     Find the slice range of a sublist of strings within a list, using fuzzy
     matching.
@@ -777,6 +781,9 @@ def fuzzy_list_range(list_, sublist, start=0, threshold=80):
     @param threshold:
         The fuzzy matching percentage threshold which the sublist must match
         with.
+    @type  homoize_words: bool
+    @param homoize_words:
+        Whether to homonize the words before fuzzing.
 
     @rtype: tuple
     @return:
@@ -798,16 +805,28 @@ def fuzzy_list_range(list_, sublist, start=0, threshold=80):
     if len(sublist) == 0:
         raise ValueError("Empty sublist not in list")
 
+    # Say what we got before normalisation occurs
+    LOG.debug("Given '%s' tio look for in '%s'",
+              ' '.join(sublist), ' '.join(list_[start:]))
+
     # Since we're doing fuzzy matching let's make these into words
     def as_word(entry):
+        """
+        Perform normalisation on the given word.
+        """
         try:
             value = float(entry)
             if value == int(value):
-                return number_to_words(int(value))
+                value = number_to_words(int(value))
             else:
-                return number_to_words(value)
+                value = number_to_words(value)
         except:
-            return to_alphanumeric(entry.lower())
+            value = to_alphanumeric(entry.lower())
+        if homonize_words:
+            value = homonize(value)
+        return value
+
+    # Turn the given lists into words
     subwords = tuple(as_word(e) for e in sublist)
     words    = tuple(as_word(e) for e in list_  )
     LOG.debug("Looking for '%s' in '%s'",

@@ -34,6 +34,7 @@ class SimpleMP3Player(object):
         thread.daemon = True
         thread.start()
 
+
     def set_volume(self, volume):
         """
         Set the volume to a value between zero and eleven.

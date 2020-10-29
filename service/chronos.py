@@ -11,7 +11,7 @@ import wave
 
 from   dexter.core.log  import LOG
 from   dexter.core.util import (homonize,
-                                list_index,
+                                fuzzy_list_range,
                                 number_to_words,
                                 parse_number,
                                 to_letters)
@@ -101,18 +101,23 @@ class ClockService(Service):
         """
         @see Service.evaluate()
         """
-        # Get stripped text, for matching
-        text = ' '.join(to_letters(w) for w in self._words(tokens))
+        # Look to match what we were given on a number of different phrasings
+        words = self._words(tokens)
+        for want in (('whats', 'the', 'time'),
+                     ('what', 'is', 'the', 'time'),
+                     ('what', 'time', 'is', 'it')):
+            try:
+                # Match the different pharses on the input
+                (start, end, score) = fuzzy_list_range(words, want)
 
-        # See if it matches an expected string
-        for want in ('whats the time',
-                     'what is the time',
-                     'what time is it'):
-            if text == want:
-                LOG.info("Matched input on '%s'" % text)
-                return _ClockHandler(self, tokens)
+                # We want to match the full input, since we want to avoid people
+                # asking for the time with caveats
+                if start == 0 and end == len(words):
+                    LOG.info("Matched '%s' on '%s'" % (want, words))
+                    return _ClockHandler(self, tokens)
+            except ValueError:
+                pass
 
-        # If we got here, then we didn't get an exact match
         return None
 
 # ------------------------------------------------------------------------------
@@ -315,30 +320,21 @@ class TimerService(Service):
         # We use a number of different prefices here since the word "for" has a
         # homonyms of "four" and "set" apparently sounds like "said". Yes, I
         # know I could do a cross product here but...
-        words    = self._words(tokens)
-        prefices = (homonize(('set', 'a', 'timer', 'for')),
-                    homonize(('set', 'a', 'time',  'for')),)
-        for prefix in prefices:
-            try:
-                index = list_index(homonize(words), prefix)
-                return _SetTimerHandler(self,
-                                        tokens,
-                                        words[index + len(prefix):])
-            except Exception as e:
-                pass
+        words  = self._words(tokens)
+        phrase = ('set', 'a', 'timer', 'for')
+        try:
+            (start, end, score) = fuzzy_list_range(words, phrase)
+            return _SetTimerHandler(self, tokens, words[end:])
+        except Exception as e:
+            pass
 
         # And now for cancelling
-        prefices = (homonize(('cancel', 'timers')),
-                    homonize(('cancel', 'timer' )),
-                    homonize(('cancel', 'time'  )),)
-        for prefix in prefices:
-            try:
-                index = list_index(homonize(words), prefix)
-                return _CancelHandler(self,
-                                      tokens,
-                                      words)
-            except Exception as e:
-                pass
+        phrase = ('cancel', 'timer')
+        try:
+            index = fuzzy_list_range(words, prefix)
+            return _CancelHandler(self, tokens, words)
+        except Exception as e:
+            pass
 
         # Didn't find any of the prefices
         return None
