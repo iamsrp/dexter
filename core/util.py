@@ -794,6 +794,8 @@ def fuzzy_list_range(list_,
     (2, 4, 83)
     >>> fuzzy_list_range(['what', 'is', 'a', 'fish'], ('whit', 'is'))
     (0, 2, 86)
+    >>> fuzzy_list_range(['format', 'c', 'colon'], ('format', 'sea', 'colon'))
+    (0, 3, 100)
     """
     # Sanity
     if list_ is None:
@@ -806,7 +808,7 @@ def fuzzy_list_range(list_,
         raise ValueError("Empty sublist not in list")
 
     # Say what we got before normalisation occurs
-    LOG.debug("Given '%s' tio look for in '%s'",
+    LOG.debug("Given '%s' to look for in '%s'",
               ' '.join(sublist), ' '.join(list_[start:]))
 
     # Since we're doing fuzzy matching let's make these into words
