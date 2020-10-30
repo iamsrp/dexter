@@ -11,6 +11,12 @@ import random
 
 # ----------------------------------------------------------------------
 
+# The FortuneService expects the BSD fortune datafiles to be present.
+# These can typically be install by doing something like:
+#   sudo apt install fortune-mod fortunes
+# for Debian derivatives. The current location of the data-files is the
+# default value of the fortunes_dir argument.
+
 class _FortuneHandler(Handler):
     def __init__(self, service, tokens, fortune):
         """
@@ -34,17 +40,27 @@ class FortuneService(Service):
     """
     def __init__(self,
                  state,
-                 phrase="Tell me something",
-                 fortunes_dir='/usr/share/games/fortunes',
-                 max_length=200):
+                 phrase      ="Tell me something",
+                 fortunes_dir="/usr/share/games/fortunes",
+                 max_length  =200):
         """
         @see Service.__init__()
+        
+        @type phrase: str
+        @param phrase:
+            The key-phrase to look for as a trigger.
+        @type fortunes_dir: str
+        @param fortunes_dir:
+            The location of the fortune data files.
+        @type max_length: int
+        @param max_length:
+            The maximum length of a selected fortune, in bytes.
         """
         super(FortuneService, self).__init__("Fortune", state)
 
-        self._phrase  = phrase.strip().split()
+        self._phrase  = [word for word in phrase.split() if word]
         self._dir     = fortunes_dir
-        self._max_len = max_length
+        self._max_len = int(max_length)
 
 
     def evaluate(self, tokens):
@@ -67,7 +83,7 @@ class FortuneService(Service):
                 return _FortuneHandler(self, tokens, fortune)
 
         except ValueError:
-            # No matcnh
+            # No match
             pass
 
         # Not for us it seems
