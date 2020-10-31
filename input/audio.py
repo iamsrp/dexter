@@ -2,6 +2,12 @@
 Input using audio data from the microphone.
 """
 
+from   collections     import deque
+from   dexter.input    import Input, Token
+from   dexter.core     import Notifier
+from   dexter.core.log import LOG
+from   threading       import Thread
+
 import audioop
 import math
 import numpy
@@ -9,12 +15,6 @@ import os
 import pyaudio
 import time
 import wave
-
-from   collections     import deque
-from   dexter.input    import Input, Token
-from   dexter.core     import Notifier
-from   dexter.core.log import LOG
-from   threading       import Thread
 
 # ------------------------------------------------------------------------------
 
@@ -25,29 +25,29 @@ class AudioInput(Input):
     def __init__(self,
                  state,
                  chunk_size=512,
-                 format=pyaudio.paInt16,
-                 channels=1,
-                 rate=16000,
-                 wav_dir=None):
+                 format    =pyaudio.paInt16,
+                 channels  =1,
+                 rate      =16000,
+                 wav_dir   =None):
         """
-        @type  state: L{State}
-        @param state:
+        :type  state: L{State}
+        :param state:
             The State instance.
-        @type  chunk_size: int
-        @param chunk_size:
+        :type  chunk_size: int
+        :param chunk_size:
             The number of samples to read from the stream at once.
-        @type  format: int
-        @param format:
+        :type  format: int
+        :param format:
             The pyaudio format.
-        @type  channels: int
-        @param channels:
+        :type  channels: int
+        :param channels:
             The number of audio channels (typically 1).
-        @type  rate: int
-        @param rate:
+        :type  rate: int
+        :param rate:
             The sample rate. This is usually 16kHz for many speech to text
             systems.
-        @type  wav_dir: str
-        @param wav_dir:
+        :type  wav_dir: str
+        :param wav_dir:
             Where to save WAV files to, if we are doing so.
         """
         super(AudioInput, self).__init__(state)
@@ -101,8 +101,8 @@ class AudioInput(Input):
         """
         Save the raw bytes to a wav file.
 
-        @type  data: str
-        @param data:
+        :type  data: str
+        :param data:
             The bytes to save out.
         """
         if self._wav_dir is None:
@@ -122,8 +122,8 @@ class AudioInput(Input):
         """
         Feed a chunk of raw data to the decoder.
 
-        @type  data: str.
-        @param data:
+        :type  data: str.
+        :param data:
             The bytes to save decode.
         """
         # Subclasses should implement this
@@ -134,8 +134,8 @@ class AudioInput(Input):
         """
         Decode the raw fed data.
 
-        @rtype: tuple(L{Token})
-        @return:
+        :rtype: tuple(L{Token})
+        :return:
            The decoded tokens.
         """
         # Subclasses should implement this

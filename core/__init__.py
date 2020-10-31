@@ -2,18 +2,17 @@
 The heart of the system.
 """
 
+from dexter.core.audio  import get_volume, set_volume
+from dexter.core.event  import TimerEvent
+from dexter.core.log    import LOG
+from dexter.core.util   import to_letters, list_index
+from fuzzywuzzy.process import fuzz
+
 import heapq
 import queue
 import sys
 import time
 import traceback
-
-from dexter.core.audio  import get_volume, set_volume
-from dexter.core.event  import TimerEvent
-from dexter.core.log    import LOG
-from dexter.core.util   import to_letters, list_index
-
-from fuzzywuzzy.process import fuzz
 
 # ------------------------------------------------------------------------------
 
@@ -69,8 +68,8 @@ class Component(_Startable):
     """
     A part of the system.
 
-    @type  state: L{State}
-    @param state:
+    :type  state: L{State}
+    :param state:
         The overall state of the system.
     """
     def __init__(self, state):
@@ -176,8 +175,8 @@ class Dexter(object):
         """
         def __init__(self, notifiers):
             """
-            @type  notifiers: list(Notifier)
-            @param notifiers:
+            :type  notifiers: list(Notifier)
+            :param notifiers:
                 The other notifiers that we hold.
             """
             self._notifiers = tuple(notifiers)
@@ -250,11 +249,11 @@ class Dexter(object):
         """
         The the instance of the given L{Notifier}.
 
-        @type  full_classname: str
-        @param full_classname:
+        :type  full_classname: str
+        :param full_classname:
             The fully qualified classname, e.g. 'dexter.notifier.TheNotifier'
-        @type  kwargs: dict
-        @param kwargs:
+        :type  kwargs: dict
+        :param kwargs:
             The keyword arguments to use when calling the constructor.
         """
         try:
@@ -278,14 +277,14 @@ class Dexter(object):
         """
         The the instance of the given L{Component}.
 
-        @type  full_classname: str
-        @param full_classname:
+        :type  full_classname: str
+        :param full_classname:
             The fully qualified classname, e.g. 'dexter,input.AnInput'
-        @type  kwargs: dict
-        @param kwargs:
+        :type  kwargs: dict
+        :param kwargs:
             The keyword arguments to use when calling the constructor.
-        @type  notifier: L{Notifier}
-        @param notifier:
+        :type  notifier: L{Notifier}
+        :param notifier:
             The notifier for the L{Component}.
         """
         try:
@@ -309,8 +308,8 @@ class Dexter(object):
         """
         Turn a string into a tuple, without punctuation, as lowercase.
 
-        @type  phrase: str
-        @param phrase:
+        :type  phrase: str
+        :param phrase:
             The key-phrase to sanitise.
         """
         result = []
@@ -326,8 +325,8 @@ class Dexter(object):
 
     def __init__(self, config):
         """
-        @type  config: configuration
-        @param config:
+        :type  config: configuration
+        :param config:
             The configuration for the system.
         """
         # Set up the key-phrases, sanitising them
@@ -468,12 +467,12 @@ class Dexter(object):
         """
         Handle a list of L{Token}s from the input.
 
-        @type  tokens: list(L{Token})
-        @param tokens:
+        :type  tokens: list(L{Token})
+        :param tokens:
             The tokens to handle.
 
-        @rtype: str
-        @return:
+        :rtype: str
+        :return:
             The textual response, if any.
         """
         # Give back nothing if we have no tokens
@@ -659,8 +658,8 @@ class Dexter(object):
         """
         Given back the response to the user via the outputs.
 
-        @type  response: str
-        @param response:
+        :type  response: str
+        :param response:
             The text to send off to the user in the real world.
         """
         # Give back nothing if we have no response

@@ -4,7 +4,7 @@ How Dexter gets instructions from outside world.
 This might be via speech recognition, a network connection, etc.
 """
 
-from dexter.core  import Component
+from dexter.core import Component
 
 # ------------------------------------------------------------------------------
 
@@ -14,15 +14,15 @@ class Token(object):
     """
     def __init__(self, element, probability, verbal):
         """
-        @type  element: str
-        @param element:
+        :type  element: str
+        :param element:
             The thing which this token contains. This may be a word or it might
             be something like "<silence>". This depends on the input mechanism.
-        @type  probability: float
-        @param probability:
+        :type  probability: float
+        :param probability:
             The probability associated with this token.
-        @type  verbal: bool
-        @param verbal:
+        :type  verbal: bool
+        :param verbal:
             Whether the token is a verbal one, or else a semantic one (like
             "<silence>").
         """
@@ -78,8 +78,8 @@ class Input(Component):
 
         Each C{element} is either a L{str} representing a word or a L{Token}.
 
-        @rtype: tuple(C{element})
-        @return:
+        :rtype: tuple(C{element})
+        :return:
             The list of elements received from the outside world, or None if
             nothing was available.
         """

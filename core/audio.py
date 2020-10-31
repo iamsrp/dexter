@@ -1,13 +1,13 @@
 """
-Methods for dealing with audio manipulation.
+Methods for dealing with audio I/O manipulation.
 """
+
+from dexter.core.log import LOG
 
 try:
     import alsaaudio as pyalsaaudio
 except:
     import pyalsa    as pyalsaaudio
-
-from   dexter.core.log import LOG
 
 # ------------------------------------------------------------------------------
 
@@ -15,8 +15,8 @@ def set_volume(value):
     """
     Set the volume to a value between zero and eleven.
 
-    @type  value: float
-    @param value:
+    :type  value: float
+    :param value:
         The volume level to set. This should be between 0 and 11 inclusive.
     """
     volume = float(value)
@@ -37,8 +37,8 @@ def get_volume():
     """
     Get the current volume, as a value between zero and eleven.
 
-    @rtype: float
-    @return:
+    :rtype: float
+    :return:
         The volume level; between 0 and 11 inclusive.
     """
     # Get the ALSA mixer
@@ -52,8 +52,8 @@ def _get_alsa_mixer():
     """
     Get a handle on the ALSA mixer
 
-    @rtype: alsaaudio.Mixer
-    @return:
+    :rtype: alsaaudio.Mixer
+    :return:
         The mixer.
     """
     # Get the ALSA mixer. We should probably handle pulse audio at some point

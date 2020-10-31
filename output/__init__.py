@@ -4,7 +4,7 @@ How Dexter sends information to the outside world.
 This might be via speech synthesis, a display, logging, etc.
 """
 
-from   dexter.core import Component
+from dexter.core import Component
 
 # ------------------------------------------------------------------------------
 
@@ -14,8 +14,8 @@ class Output(Component):
     """
     def __init__(self, state):
         """
-        @type  state: L{State}
-        @param state:
+        :type  state: L{State}
+        :param state:
             The global State instance.
         """
         super(Output, self).__init__(state)
@@ -33,8 +33,8 @@ class Output(Component):
         """
         Send the given text to the outside world.
 
-        @type  text: str
-        @param text:
+        :type  text: str
+        :param text:
             What to write.
         """
         # Subclasses should implement this

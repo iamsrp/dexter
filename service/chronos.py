@@ -4,19 +4,18 @@ Chronos, the greek god of Thyme, and other select herbs.
 Various services related to the ticking of the clock.
 """
 
-import pyaudio
-import time
-import traceback
-import wave
-
 from   dexter.core.log  import LOG
-from   dexter.core.util import (homonize,
-                                fuzzy_list_range,
+from   dexter.core.util import (fuzzy_list_range,
                                 number_to_words,
                                 parse_number,
                                 to_letters)
 from   dexter.service   import Service, Handler, Result
 from   threading        import Thread
+
+import pyaudio
+import time
+import traceback
+import wave
 
 # ------------------------------------------------------------------------------
 

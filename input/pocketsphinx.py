@@ -2,11 +2,11 @@
 Input using PocketSphinx.
 """
 
-import os
-
 from dexter.input              import Token
 from dexter.input.audio        import AudioInput
 from pocketsphinx.pocketsphinx import *
+
+import os
 
 # ------------------------------------------------------------------------------
 

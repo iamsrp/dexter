@@ -2,12 +2,12 @@
 An input which listens from a socket.
 """
 
-import socket
-import time
-
 from   dexter.input    import Input, Token
 from   dexter.core.log import LOG
 from   threading       import Thread
+
+import socket
+import time
 
 # ------------------------------------------------------------------------------
 
@@ -21,11 +21,11 @@ class SocketInput(Input):
     def __init__(self, state, port=8008, prefix=None):
         """
         @see Input.__init__()
-        @type  port: int
-        @param port:
+        :type  port: int
+        :param port:
             The port to listen on.
-        @type  prefix: str
-        @param prefix:
+        :type  prefix: str
+        :param prefix:
             What to prefix to the beginning of any input.
         """
         super(SocketInput, self).__init__(state)

@@ -4,15 +4,14 @@ A notifier which utilises the Unicorn Hat HD on a Raspberry Pi.
 @see https://github.com/pimoroni/unicorn-hat-hd
 """
 
-import math
-import time
-
-import unicornhathd
-
 from   dexter.core     import Notifier
 from   dexter.core.log import LOG
 from   dexter.notifier import ByComponentNotifier
 from   threading       import Thread
+
+import math
+import time
+import unicornhathd
 
 # ------------------------------------------------------------------------------
 

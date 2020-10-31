@@ -46,14 +46,14 @@ class FortuneService(Service):
         """
         @see Service.__init__()
         
-        @type phrase: str
-        @param phrase:
+        :type phrase: str
+        :param phrase:
             The key-phrase to look for as a trigger.
-        @type fortunes_dir: str
-        @param fortunes_dir:
+        :type fortunes_dir: str
+        :param fortunes_dir:
             The location of the fortune data files.
-        @type max_length: int
-        @param max_length:
+        :type max_length: int
+        :param max_length:
             The maximum length of a selected fortune, in bytes.
         """
         super(FortuneService, self).__init__("Fortune", state)

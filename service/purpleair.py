@@ -192,8 +192,8 @@ class PurpleAirService(Service):
     def __init__(self, state, sensor_id=None):
         """
         @see Service.__init__()
-        @type  sensor_id: int
-        @param sensor_id:
+        :type  sensor_id: int
+        :param sensor_id:
             The device ID. This can usually be found by looking at the sensor
             information on the Purple Air map (e.g. in the "Get this widget"
             tool-tip). This is required.

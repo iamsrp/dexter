@@ -50,8 +50,8 @@ class _BespokeHandler(Handler):
         """
         @see Handler.__init__()
 
-        @type reply: str
-        @param reply:
+        :type reply: str
+        :param reply:
             What to respond with.
         """
         super(_BespokeHandler, self).__init__(service, tokens, 1.0, False)

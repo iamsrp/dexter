@@ -16,11 +16,11 @@ class Service(Component):
     """
     def __init__(self, name, state):
         """
-        @type  name: str
-        @param name:
+        :type  name: str
+        :param name:
             The name of this service.
-        @type  state: L{State}
-        @param state:
+        :type  state: L{State}
+        :param state:
             The global State instance.
         """
         super(Service, self).__init__(state)
@@ -41,11 +41,11 @@ class Service(Component):
         service believes that it can then it gives back a L{Handler}, else it
         returns C{None}.
 
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
-        @rtype: L{Handler} or None
-        @return:
+        :rtype: L{Handler} or None
+        :return:
              A L{Handler} for the given input tokens, or None.
         """
         # To be implemented by subclasses
@@ -75,18 +75,18 @@ class Handler(object):
     """
     def __init__(self, service, tokens, belief, exclusive):
         """
-        @type  service: L{Service}
-        @param service:
+        :type  service: L{Service}
+        :param service:
             The L{Service} instance which generated this L{Handler}.
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
-        @type  belief: float
-        @param belief:
+        :type  belief: float
+        :param belief:
             How much the service believes that it can handle the given input. A
             value between 0 and 1.
-        @type  exclusive: bool
-        @param exclusive:
+        :type  exclusive: bool
+        :param exclusive:
             Whether this handler should be the only one to be called.
         """
         super(Handler, self).__init__()
@@ -120,8 +120,8 @@ class Handler(object):
         """
         Handle the input. This will be called on the main thread.
 
-        @rtype: L{Result} or C{None}
-        @return:
+        :rtype: L{Result} or C{None}
+        :return:
             The result of responding to the query, or None if no response.
         """
         # To be implemented by subclasses
@@ -150,18 +150,18 @@ class Result(object):
     """
     def __init__(self, handler, text, is_query, exclusive):
         """
-        @type  handler: L{Handler}
-        @param handler
+        :type  handler: L{Handler}
+        :param handler
             The L{Handler} instance which generated this L{Response}.
-        @type  text: str
-        @param text:
+        :type  text: str
+        :param text:
             The text of the response.
-        @type  is_query: bool
-        @param is_query:
+        :type  is_query: bool
+        :param is_query:
             Whether or not this result is a query and expects the user to
             respond.
-        @type  exclusive: bool
-        @param exclusive:
+        :type  exclusive: bool
+        :param exclusive:
             Whether this response should prevent the processing of any further
             ones.
         """

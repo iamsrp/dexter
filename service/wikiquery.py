@@ -2,13 +2,14 @@
 Pull information from Wikipedia.
 """
 
-import wikipedia
-
 from   dexter.core      import Notifier
 from   dexter.core.log  import LOG
 from   dexter.core.util import fuzzy_list_range
 from   dexter.service   import Service, Handler, Result
 from   fuzzywuzzy       import fuzz
+
+import wikipedia
+
 
 class _Handler(Handler):
     """
@@ -18,8 +19,8 @@ class _Handler(Handler):
         """
         @see Handler.__init__()
 
-        @type  thing: str
-        @param thing:
+        :type  thing: str
+        :param thing:
             What, or who, is being asked about.
         """
         super(_Handler, self).__init__(service, tokens, belief, False)

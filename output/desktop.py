@@ -6,11 +6,11 @@ Output via desktop notifcations.
 #    sudo apt install python3-notify2
 #    pip3 install notify2
 
-import logging
-import notify2
-
 from   dexter.core.log import LOG
 from   dexter.output   import Output
+
+import logging
+import notify2
 
 # ------------------------------------------------------------------------------
 
@@ -20,8 +20,8 @@ class NotifierOutput(Output):
     """
     def __init__(self,
                  state,
-                 summary='Dexter says:',
-                 icon='im-message-new',
+                 summary   ='Dexter says:',
+                 icon      ='im-message-new',
                  timeout_ms=10000):
         """
         @see Output.__init__()

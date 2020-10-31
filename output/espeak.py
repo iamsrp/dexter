@@ -2,13 +2,13 @@
 Speech synthesis output using espeak.
 """
 
-import time
-
 from   dexter.core     import Notifier
 from   dexter.core.log import LOG
 from   dexter.output   import SpeechOutput
 from   espeak          import espeak
 from   threading       import Thread
+
+import time
 
 # ------------------------------------------------------------------------------
 
@@ -16,15 +16,18 @@ class EspeakOutput(SpeechOutput):
     """
     An output which logs as a particular level to the system's log.
     """
-    def __init__(self, state, rate=None, voice=None):
+    def __init__(self,
+                 state,
+                 rate =None,
+                 voice=None):
         """
         @see SpeechOutput.__init__()
-        @type  rate: int
-        @param rate:
+        :type  rate: int
+        :param rate:
             The speed at which to speek. An integer value between 0 and 450. The
             default rate is 175.
-        @type  voice: str
-        @param voice:
+        :type  voice: str
+        :param voice:
             The voice to use. See C{espeak.list_voices()}.
         """
         super(EspeakOutput, self).__init__(state)

@@ -7,7 +7,6 @@ from   dexter.core.media_index  import MusicIndex, AudioEntry
 from   dexter.core.player       import SimpleMP3Player
 from   dexter.core.util         import homonize, fuzzy_list_range
 from   dexter.service           import Service, Handler, Result
-
 from   fuzzywuzzy               import fuzz
 from   threading                import Thread
 
@@ -21,8 +20,8 @@ class MusicService(Service):
         """
         @see Service.__init__()
 
-        @type  platform: str
-        @param platform:
+        :type  platform: str
+        :param platform:
             The name of the platform that this service streams music from, like
             C{Spotify}, C{Pandora}, C{Edna}, C{Local Disk}, etc.
         """
@@ -163,8 +162,8 @@ class MusicService(Service):
         """
         Set the volume to a value between zero and eleven.
 
-        @type  value: float
-        @param value:
+        :type  value: float
+        :param value:
             The volume level to set. This should be between 0 and 11 inclusive.
         """
         # To be implemented by subclasses
@@ -175,8 +174,8 @@ class MusicService(Service):
         """
         Get the current volume, as a value between zero and eleven.
 
-        @rtype: float
-        @return:
+        :rtype: float
+        :return:
             The volume level; between 0 and 11 inclusive.
         """
         # To be implemented by subclasses
@@ -194,8 +193,8 @@ class MusicService(Service):
         """
         See if the given artist name tuple matches something we know about.
 
-        @type  artist: tuple(str)
-        @param artist:
+        :type  artist: tuple(str)
+        :param artist:
             The artist name, as a tuple of strings.
         """
         # To be implemented by subclasses
@@ -207,8 +206,8 @@ class MusicService(Service):
         Get the handler to stop playing whatever is playing. If nothing is playing
         then return C{None}.
 
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
         """
         # To be implemented by subclasses
@@ -220,8 +219,8 @@ class MusicService(Service):
         Get the handler to resume playing whatever was playing (and was previously
         stopped). If nothing was playing then return C{None}.
 
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
         """
         # To be implemented by subclasses
@@ -233,8 +232,8 @@ class MusicService(Service):
         Get the handler to pause playing whatever is playing, or start playing
         whatever is paused; or nothing is neither is the case.
 
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
         """
         # To be implemented by subclasses
@@ -245,8 +244,8 @@ class MusicService(Service):
         """
         Get the handler to move to the next song, if we can.
 
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
         """
         # By default we do nothing for this since it might not be supported for
@@ -258,8 +257,8 @@ class MusicService(Service):
         """
         Get the handler to go back to the previous song, if we can.
 
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
         """
         # By default we do nothing for this since it might not be supported for
@@ -271,8 +270,8 @@ class MusicService(Service):
         """
         Get the handler to describe the song currently playing.
 
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
         """
         # By default we do nothing for this since it might not be supported for
@@ -289,20 +288,20 @@ class MusicService(Service):
         """
         Get the handler for the given arguments, if any.
 
-        @type  tokens: tuple(L{Token})
-        @param tokens:
+        :type  tokens: tuple(L{Token})
+        :param tokens:
             The tokens for which this handler was generated.
-        @type  platform_match: bool
-        @param platform_match:
+        :type  platform_match: bool
+        :param platform_match:
             Whether the platform was specified.
-        @type  genre: tuple(str)
-        @param genre:
+        :type  genre: tuple(str)
+        :param genre:
             The music genre type, as a tuple of strings.
-        @type  artist: tuple(str)
-        @param artist:
+        :type  artist: tuple(str)
+        :param artist:
             The artist name, as a tuple of strings.
-        @type  song_or_album: tuple(str)
-        @param song_or_album:
+        :type  song_or_album: tuple(str)
+        :param song_or_album:
             The name of the song or album to play, as a tuple of strings.
         """
         # To be implemented by subclasses
@@ -387,14 +386,14 @@ class _LocalMusicServicePlayHandler(Handler):
         """
         @see Handler.__init__()
 
-        @type  what: str
-        @param what:
+        :type  what: str
+        :param what:
             What we are playing, like "Blah Blah by Fred"
-        @type  filenames: list(str)
-        @param filenames:
+        :type  filenames: list(str)
+        :param filenames:
             The list of filenames to play
-        @type  score: float
-        @param score:
+        :type  score: float
+        :param score:
             The match score out of 1.0.
         """
         # We deem ourselves exclusive since we had a match
@@ -425,8 +424,8 @@ class LocalMusicService(MusicService):
         """
         @see Service.__init__()
 
-        @type  dirname: str
-        @param dirname:
+        :type  dirname: str
+        :param dirname:
             The directory where all the music lives.
         """
         super(LocalMusicService, self).__init__("LocalMusic",
@@ -469,8 +468,8 @@ class LocalMusicService(MusicService):
         """
         Play the given list of filenames.
 
-        @type  filenames: tuple(str)
-        @param filenames:
+        :type  filenames: tuple(str)
+        :param filenames:
             The list of filenames to play.
         """
         self._player.play_files(filenames)
@@ -480,8 +479,8 @@ class LocalMusicService(MusicService):
         """
         Whether the player is playing.
 
-        @rtype: bool
-        @return:
+        :rtype: bool
+        :return:
            Whether the player is playing.
         """
         return self._player.is_playing()
@@ -491,8 +490,8 @@ class LocalMusicService(MusicService):
         """
         Whether the player is paused.
 
-        @rtype: bool
-        @return:
+        :rtype: bool
+        :return:
            Whether the player is paused.
         """
         return self._player.is_paused()

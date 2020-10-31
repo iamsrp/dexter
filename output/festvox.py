@@ -9,14 +9,14 @@ Speech synthesis output using festival.
 #
 # Other voices are available; see 'apt-cache search festvox'
 
-import select
-import subprocess
-import time
-
 from   dexter.core     import Notifier
 from   dexter.core.log import LOG
 from   dexter.output   import SpeechOutput
 from   threading       import Thread
+
+import select
+import subprocess
+import time
 
 # ------------------------------------------------------------------------------
 
@@ -27,11 +27,13 @@ class FestivalOutput(SpeechOutput):
     We run this in a subprocess since the in-process version tends to lock
     things up and also doesn't work outside the main thread.
     """
-    def __init__(self, state, voice='voice_cmu_us_slt_arctic_hts'):
+    def __init__(self,
+                 state,
+                 voice='voice_cmu_us_slt_arctic_hts'):
         """
         @see Output.__init__()
-        @type  voice: str
-        @param voice:
+        :type  voice: str
+        :param voice:
             The voice to use.
         """
         super(FestivalOutput, self).__init__(state)

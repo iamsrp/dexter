@@ -2,12 +2,12 @@
 Set the audio output volume. It goes up to 11.
 """
 
-import traceback
-
 from dexter.core.audio import set_volume
 from dexter.core.log   import LOG
 from dexter.core.util  import fuzzy_list_range, parse_number
 from dexter.service    import Service, Handler, Result
+
+import traceback
 
 class _Handler(Handler):
     def __init__(self, service, tokens, volume):

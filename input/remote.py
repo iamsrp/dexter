@@ -5,15 +5,15 @@ This can be used in conjunction with something like the C{deepspeech_server.py}
 script in order to have a fast machine do the actual speech-to-text decoding.
 """
 
+from   dexter.input       import Token
+from   dexter.input.audio import AudioInput
+from   dexter.core.log    import LOG
+
 import numpy
 import os
 import pyaudio
 import socket
 import struct
-
-from dexter.input       import Token
-from dexter.input.audio import AudioInput
-from dexter.core.log    import LOG
 
 # ------------------------------------------------------------------------------
 
@@ -23,17 +23,17 @@ class RemoteInput(AudioInput):
     """
     def __init__(self,
                  state,
-                 host='localhost',
-                 port=8008,
+                 host   ='localhost',
+                 port   =8008,
                  wav_dir=None):
         """
         @see AudioInput.__init__()
 
-        @type  host: str
-        @param host:
+        :type  host: str
+        :param host:
             The host to connect to.
-        @type  port: int
-        @param port:
+        :type  port: int
+        :param port:
             The port to connect to.
         """
         super(RemoteInput, self).__init__(state,

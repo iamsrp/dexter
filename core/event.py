@@ -2,10 +2,10 @@
 Events within the system.
 """
 
+from dexter.core.log import LOG
+
 import sys
 import time
-
-from dexter.core.log import LOG
 
 # ------------------------------------------------------------------------------
 
@@ -15,12 +15,12 @@ class Event(object):
     """
     def __init__(self, creation_time=None, runnable=None):
         """
-        @type  creation_time: float, or None
-        @param creation_time:
+        :type  creation_time: float, or None
+        :param creation_time:
             The time at which this event was created, or None if it should be
             now. In seconds since epoch.
-        @type  runnable: function () -> L{Event}
-        @param runnable:
+        :type  runnable: function () -> L{Event}
+        :param runnable:
             A lambda to invoke when this event is handled. It may return another
             L{Event} instance, or C{None}.
         """
@@ -41,8 +41,8 @@ class Event(object):
             """
             Invoke this event.
 
-            @rtype: Event, or None
-            @return:
+            :rtype: Event, or None
+            :return:
                 Invoke this event to do its job. It may return another event as
                 a result, which will be scheduled for handling.
             """
@@ -60,7 +60,7 @@ class TimerEvent(Event):
         """
         @see L{Event.__init__}
 
-        @type  schedule_time: float
+        :type  schedule_time: float
         @parse schedule_time:
             The time at which this event should fire. In seconds since epoch.
         """

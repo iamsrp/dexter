@@ -2,12 +2,12 @@
 A way to index media.
 """
 
+from   dexter.core.log import LOG
+from   fuzzywuzzy      import process
+
 import math
 import mutagen
 import os
-
-from   dexter.core.log import LOG
-from   fuzzywuzzy      import process
 
 # ------------------------------------------------------------------------------
 
@@ -17,8 +17,8 @@ class MusicIndex(object):
     """
     def __init__(self, roots):
         """
-        @type  roots: tuple(str)
-        @param roots:
+        :type  roots: tuple(str)
+        :param roots:
             The list of URLs to search for music on. In the simplest form these
             will likely just be a bunch of strings looking something like:
                 C{file:///home/pi/Music}
@@ -43,18 +43,18 @@ class MusicIndex(object):
         """
         Look up an entry by any given constraints.
 
-        @type  name: str
-        @param name:
+        :type  name: str
+        :param name:
             The name of the track.
-        @type  artist: str
-        @param artist:
+        :type  artist: str
+        :param artist:
             The artist of the track.
-        @type  album: str
-        @param album:
+        :type  album: str
+        :param album:
             The album the track is from.
 
-        @rtype: tuple<Entry>
-        @return:
+        :rtype: tuple<Entry>
+        :return:
            The potential entries, in order of likely match. Possibly empty.
         """
         # Look in all our indices. We will create lists of (Entry,score) pairs
@@ -107,8 +107,8 @@ class MusicIndex(object):
         """
         Build an index based on the given root.
 
-        @type  root: str
-        @param root:
+        :type  root: str
+        :param root:
             The URL of the root to build from.
         """
         if root is None:
@@ -127,8 +127,8 @@ class MusicIndex(object):
         """
         Build an index based on the given directory root.
 
-        @type  dirname: str
-        @param dirname:
+        :type  dirname: str
+        :param dirname:
             The directory name to build from.
         """
         # Walk the tree
@@ -155,8 +155,8 @@ class MusicIndex(object):
         """
         Add an entry to the index.
 
-        @type  entry: _Entry
-        @param entry:
+        :type  entry: _Entry
+        :param entry:
             The entry to add to the index.
         """
         # Ignore entries with no name
@@ -220,14 +220,14 @@ class _Entry(object):
 
     def __init__(self, name, url, file_type):
         """
-        @type  name: str
-        @param name:
+        :type  name: str
+        :param name:
             The name of this piece of media.
-        @type  url: str, or None
-        @param url:
+        :type  url: str, or None
+        :param url:
             The URL to access this piece of media, if any.
-        @type  file_type: str
-        @param file_type:
+        :type  file_type: str
+        :param file_type:
             The type of file.
         """
         self._name = _clean_string(name)
@@ -240,8 +240,8 @@ class _Entry(object):
         """
         The name of the entry, An audio track title, for example.
 
-        @rtype: str
-        @return:
+        :rtype: str
+        :return:
             The name of the entry.
         """
         return self._name
@@ -252,8 +252,8 @@ class _Entry(object):
         """
         The URL to access this entry, if any.
 
-        @rtype: str
-        @return:
+        :rtype: str
+        :return:
             The URL for the entry.
         """
         return self._url
@@ -264,8 +264,8 @@ class _Entry(object):
         """
         The type of data.
 
-        @rtype: str
-        @return:
+        :rtype: str
+        :return:
             The type of data which we hold.
         """
         return self._type
@@ -280,8 +280,8 @@ class AudioEntry(_Entry):
         """
         Factory method to create an entry from MP3 data.
 
-        @type  info: mutagen.mp3.MP3
-        @param info:
+        :type  info: mutagen.mp3.MP3
+        :param info:
             The mp3 tag information.
         """
         # Sanity
@@ -321,8 +321,8 @@ class AudioEntry(_Entry):
         """
         Factory method to create an entry from FLAC data.
 
-        @type  info: mutagen.flac.FLAC
-        @param info:
+        :type  info: mutagen.flac.FLAC
+        :param info:
             The flac tag information.
         """
         # Sanity
@@ -361,17 +361,17 @@ class AudioEntry(_Entry):
         """
         @see _Entry.__init__()
 
-        @type  name: str
-        @param name:
+        :type  name: str
+        :param name:
             The name of the track.
-        @type  track: interpretable as int, or None
-        @param track:
+        :type  track: interpretable as int, or None
+        :param track:
             The track number, if any
-        @type  album: str, or None
-        @param album:
+        :type  album: str, or None
+        :param album:
             The name of the album, of any.
-        @type  artist: str, or None
-        @param artist:
+        :type  artist: str, or None
+        :param artist:
             The name of the artist, if any
         """
         super(AudioEntry, self).__init__(name, url, file_type)
@@ -385,8 +385,8 @@ class AudioEntry(_Entry):
         """
         The track number of this entry, if any.
 
-        @rtype: int, or None
-        @return:
+        :rtype: int, or None
+        :return:
             The track index.
         """
         return self._track
@@ -397,8 +397,8 @@ class AudioEntry(_Entry):
         """
         The album name for this entry, if any.
 
-        @rtype: str
-        @return:
+        :rtype: str
+        :return:
             The album name.
         """
         return self._album
@@ -410,8 +410,8 @@ class AudioEntry(_Entry):
         The artist for this entry, if any. This may typically be the performer but
         might also be the composer.
 
-        @rtype: str
-        @return:
+        :rtype: str
+        :return:
             The artist name.
         """
         return self._artist
@@ -422,12 +422,12 @@ def _clean_string(string):
     """
     Turn empty strings into None and remove surrounding whitespace.
 
-    @type  string: str
-    @param string:
+    :type  string: str
+    :param string:
         The string to clean.
 
-    @rtype: str
-    @return:
+    :rtype: str
+    :return:
        The cleaned string, or None.
     """
     if string is None:
@@ -447,12 +447,12 @@ def _clean_int(integer):
     Turn a value into an integer, taking strings and yielding None where
     appropriate.
 
-    @type  integer: int
-    @param integer:
+    :type  integer: int
+    :param integer:
         The string to clean.
 
-    @rtype: int
-    @return:
+    :rtype: int
+    :return:
        The cleaned int, or None.
     """
     if isinstance(integer, int):
@@ -472,12 +472,12 @@ def _clean_filename(filename):
     """
     Ensure that a filename is good for our purposes.
 
-    @type  filename: str
-    @param filename:
+    :type  filename: str
+    :param filename:
         The filename to clean.
 
-    @rtype: str
-    @return:
+    :rtype: str
+    :return:
        The cleaned filename, or None.
     """
     filename = _clean_string(filename)

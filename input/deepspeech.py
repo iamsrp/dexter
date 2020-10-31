@@ -2,14 +2,14 @@
 Input using DeepSpeech.
 """
 
-import numpy
-import os
-import pyaudio
-
 from   deepspeech         import Model
 from   dexter.input       import Token
 from   dexter.input.audio import AudioInput
 from   dexter.core.log    import LOG
+
+import numpy
+import os
+import pyaudio
 
 # ------------------------------------------------------------------------------
 
@@ -36,13 +36,13 @@ class DeepSpeechInput(AudioInput):
     def __init__(self,
                  notifier,
                  wav_dir=None,
-                 model=os.path.join(_MODEL_DIR, 'models.pbmm'),
+                 model =os.path.join(_MODEL_DIR, 'models.pbmm'),
                  scorer=os.path.join(_MODEL_DIR, 'models.scorer')):
         """
         @see AudioInput.__init__()
 
-        @type  use_lm: bool
-        @param use_lm:
+        :type  use_lm: bool
+        :param use_lm:
             Whether to use the DeepSpeech language model for better predictions.
         """
         # If these don't exist then DeepSpeech will segfault when inferring!

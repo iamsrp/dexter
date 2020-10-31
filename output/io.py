@@ -2,10 +2,10 @@
 Simple IO-based output.
 """
 
-import logging
-
 from   dexter.core.log import LOG
 from   dexter.output   import Output
+
+import logging
 
 # ------------------------------------------------------------------------------
 
@@ -15,11 +15,11 @@ class _FileOutput(Output):
     """
     def __init__(self, state, handle):
         """
-        @type  notifier: L{Notifier}
-        @param notifier:
+        :type  notifier: L{Notifier}
+        :param notifier:
             The Notifier instance.
-        @type  handle: file
-        @param handle:
+        :type  handle: file
+        :param handle:
             The file handle to write to.
         """
         super(_FileOutput, self).__init__(state)
@@ -71,8 +71,8 @@ class LogOutput(Output):
     def __init__(self, state, level=logging.INFO):
         """
         @see Output.__init__()
-        @type  level: int or str
-        @param level:
+        :type  level: int or str
+        :param level:
             The level to log at.
         """
         super(LogOutput, self).__init__(state)

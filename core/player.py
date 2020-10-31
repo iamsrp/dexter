@@ -39,8 +39,8 @@ class SimpleMP3Player(object):
         """
         Set the volume to a value between zero and eleven.
 
-        @type  value: float
-        @param value:
+        :type  value: float
+        :param value:
             The volume level to set. This should be between 0 and 11 inclusive.
         """
         volume = float(value)
@@ -58,8 +58,8 @@ class SimpleMP3Player(object):
         """
         Get the current volume, as a value between zero and eleven.
 
-        @rtype: float
-        @return:
+        :rtype: float
+        :return:
             The volume level; between 0 and 11 inclusive.
         """
         return 11.0 * pygame.mixer.music.get_volume()
@@ -69,8 +69,8 @@ class SimpleMP3Player(object):
         """
         Return whether we are currently playing anything.
 
-        @rtype: bool
-        @return:
+        :rtype: bool
+        :return:
            Whether the player is playing.
         """
         return pygame.mixer.music.get_busy() and not self._paused
@@ -80,8 +80,8 @@ class SimpleMP3Player(object):
         """
         Return whether we are currently paused.
 
-        @rtype: bool
-        @return:
+        :rtype: bool
+        :return:
            Whether the player is paused.
         """
         return self._paused
@@ -91,8 +91,8 @@ class SimpleMP3Player(object):
         """
         Play a list of files.
 
-        @type  filenames: tuple(str)
-        @param filenames:
+        :type  filenames: tuple(str)
+        :param filenames:
             The list of filenames to play.
         """
         # First we stop everything

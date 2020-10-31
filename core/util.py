@@ -2,12 +2,11 @@
 Various utility methods.
 """
 
-import numpy
-import re
-
 from   dexter.core.log import LOG
 from   fuzzywuzzy      import fuzz
-from   fuzzywuzzy      import process as fuzz_process
+
+import numpy
+import re
 
 # ------------------------------------------------------------------------------
 
@@ -411,12 +410,12 @@ def _strip_to(string, alphabet):
     """
     Remove non-alphabet contents from a word.
 
-    @type   string: str
+    :type   string: str
     @parses string:
        The string to strip the chars from.
 
-    @rtype: str
-    @return:
+    :rtype: str
+    :return:
         The stripped string.
     """
     return ''.join(char
@@ -433,12 +432,12 @@ def to_letters(string):
     >>> to_letters(' a b c d ')
     'abcd'
 
-    @type   string: str
+    :type   string: str
     @parses string:
        The string to strip the chars from.
 
-    @rtype: str
-    @return:
+    :rtype: str
+    :return:
         The stripped string.
     """
     return _strip_to(string, _UPPER + _LOWER)
@@ -453,12 +452,12 @@ def to_alphanumeric(string):
     >>> to_alphanumeric(' a b c d ')
     'abcd'
 
-    @type   string: str
+    :type   string: str
     @parses string:
        The string to strip the chars from.
 
-    @rtype: str
-    @return:
+    :rtype: str
+    :return:
         The stripped string.
     """
     return _strip_to(string, _UPPER + _LOWER + _NUMBERS)
@@ -478,7 +477,7 @@ def parse_number(words):
     >>> parse_number('minus four point seven eight nine')
     -4.789
 
-    @type  words: str
+    :type  words: str
     @parse words:
         The string words to parse. E.g. C{'twenty seven'}.
     """
@@ -578,7 +577,7 @@ def number_to_words(value):
     >>> number_to_words(1000000)
     'one million'
 
-    @type  value: number
+    :type  value: number
     @parse value:
         The value to convert to words.
     """
@@ -713,14 +712,14 @@ def list_index(list_, sublist, start=0):
     >>> list_index(['what', 'is', 'a', 'fish'], ('what', 'is'))
     0
 
-    @type  list_: list or tuple
-    @param list_:
+    :type  list_: list or tuple
+    :param list_:
         The list to look in.
-    @type  sublist: list or tuple
-    @param sublist:
+    :type  sublist: list or tuple
+    :param sublist:
         The list to look for.
-    @type  start: int
-    @param start:
+    :type  start: int
+    :param start:
         Where to start looking in the C{list}.
     """
     # Turn the arguments into tuples
@@ -768,25 +767,25 @@ def fuzzy_list_range(list_,
     Find the slice range of a sublist of strings within a list, using fuzzy
     matching.
 
-    @type  list_: list<str> or tuple<str>
-    @param list_:
+    :type  list_: list<str> or tuple<str>
+    :param list_:
         The list to look in.
-    @type  sublist: list<str> or tuple<str>
-    @param sublist:
+    :type  sublist: list<str> or tuple<str>
+    :param sublist:
         The list to look for.
-    @type  start: int
-    @param start:
+    :type  start: int
+    :param start:
         Where to start looking in the C{list}.
-    @type  threshold: int
-    @param threshold:
+    :type  threshold: int
+    :param threshold:
         The fuzzy matching percentage threshold which the sublist must match
         with.
-    @type  homoize_words: bool
-    @param homoize_words:
+    :type  homoize_words: bool
+    :param homoize_words:
         Whether to homonize the words before fuzzing.
 
-    @rtype: tuple
-    @return:
+    :rtype: tuple
+    :return:
         A tuple of C{start, end, score} where start and end are a half-inclusive
         slice and score is the matching score.
 

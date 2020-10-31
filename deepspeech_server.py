@@ -11,6 +11,9 @@ cloud to process, then it seems only fair that we can do something like that
 too.
 """
 
+from   deepspeech import Model
+from   threading  import Thread
+
 import argparse
 import logging
 import numpy
@@ -19,11 +22,7 @@ import socket
 import struct
 import time
 
-from   deepspeech import Model
-from   threading  import Thread
-
 # ------------------------------------------------------------------------------
-
 
 def handle(conn):
     """

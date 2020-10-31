@@ -2,15 +2,15 @@
 An input which listens from a socket.
 """
 
-import dbus
-import socket
-import time
-
 from   dexter.input       import Input, Token
 from   dexter.core.log    import LOG
 from   dbus.mainloop.glib import DBusGMainLoop
 from   gi.repository      import GLib
 from   threading          import Thread
+
+import dbus
+import socket
+import time
 
 # ------------------------------------------------------------------------------
 
@@ -29,20 +29,20 @@ class MediaKeyInput(Input):
                  prev_key='previous song'):
         """
         @see Input.__init__()
-        @type  prefix: str
-        @param prefix:
+        :type  prefix: str
+        :param prefix:
             The prefix to use when sending the inputs.
-        @type  play_key: str
-        @param play_key:
+        :type  play_key: str
+        :param play_key:
             What string to send when the Play key is pressed.
-        @type  stop_key: str
-        @param stop_key:
+        :type  stop_key: str
+        :param stop_key:
             What string to send when the Stop key is pressed.
-        @type  next_key: str
-        @param next_key:
+        :type  next_key: str
+        :param next_key:
             What string to send when the Next key is pressed.
-        @type  prev_key: str
-        @param prev_key:
+        :type  prev_key: str
+        :param prev_key:
             What string to send when the Previous key is pressed.
         """
         super(MediaKeyInput, self).__init__(state)
