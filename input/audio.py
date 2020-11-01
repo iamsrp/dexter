@@ -59,8 +59,9 @@ class AudioInput(Input):
         self._width      = pyaudio.get_sample_size(pyaudio.paInt16) * channels
         self._rate       = rate
 
-        # How we hand off to another thread to decode asynchronously
-        self._decode_queue = deque()
+        # How we hand off to another thread to decode and handle asynchronously
+        self._decode_queue    = deque()
+        self._max_queue_lenth = 100
 
         # Where to save the wav files, if anywhere. This should already exist.
         if wav_dir is not None and not os.path.isdir(wav_dir):
@@ -209,15 +210,6 @@ class AudioInput(Input):
                 talking       = False
                 talking_start = 0
 
-            # Only look to see if someone is speaking if the system is
-            # not. Otherwise we will likely hear ourselves.
-            if self._state.is_speaking():
-                if talking:
-                    LOG.info("Ignoring talking since audio is being output")
-                    talking = False
-                    speech = None
-                continue
-
             # We are looking for the background levels. If we think that someone
             # is talking then the background sound going to be at the end of the
             # levels, else it will be at the start.
@@ -289,10 +281,6 @@ class AudioInput(Input):
                 # someone just stopped talking.
                 LOG.info("Finished recording")
 
-                # Turn the audio data into text (hopefully!)
-                self._notify(Notifier.WORKING)
-                start = time.time()
-
                 # Turn the stream into a list of bytes and junk the speech
                 # buffer
                 audio  = b''.join(speech)
@@ -301,33 +289,14 @@ class AudioInput(Input):
                 # Maybe save then as a wav file
                 self._save_bytes(audio)
 
-                # Now decode. We do this by passing over a future and awaiting
-                # its result.
-                LOG.info("Decoding %0.2fs seconds of audio" %
-                         (len(audio) / self._width / self._rate))
-                future = _Future()
-                self._decode_queue.append(future)
-                tokens = future.get_result()
-                LOG.info("Finished decoding audio after %0.2fs: %s" %
-                         (time.time() - start, ([str(x) for x in tokens])))
-
-                # Add then to the output
-                self._output.append(tokens)
-
-                # Flush anything accumulated while we were parsing the phrase,
-                # so that we don't fall behind
-                available = stream.get_read_available()
-                while (available > self._chunk_size):
-                    LOG.debug("Junking backlog of %d", available)
-                    stream.read(available)
-                    available = stream.get_read_available()
+                # Now decode. We do this by denoting the end of the audio with a None.
+                self._decode_queue.append(None)
 
                 # Clear out the level buffer so that it can settle again
                 level_buf.clear()
 
                 # And we're back to listening
                 LOG.info("Listening")
-                self._notify(Notifier.IDLE)
 
         # If we got here then _running was set to False and we're done
         LOG.info("Done listening")
@@ -354,12 +323,13 @@ class AudioInput(Input):
                 if len(queue) > 0:
                     item = queue.popleft()
                     LOG.debug("Got a %s" % type(item))
-                    if isinstance(item, _Future):
-                        # This means the sender wants a result
-                        try:
-                            item.set_result(self._decode())
-                        except Exception as e:
-                            item.set_result(e)
+                    if item is None:
+                        # A None denotes the end of the data so we look to
+                        # decode what we've been given
+                        LOG.info("Decoding audio")
+                        self._notify(Notifier.WORKING)
+                        self._output.append(self._decode())
+                        self._notify(Notifier.IDLE)
                     elif isinstance(item, bytes):
                         # Something to feed the decoder
                         self._feed_raw(item)
