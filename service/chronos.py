@@ -55,7 +55,7 @@ class _ClockHandler(Handler):
         now = time.localtime(time.time())
         hh  = time.strftime("%I", now)
         mm  = time.strftime("%M", now)
-        p   = time.strftime("%p", now)
+        p   = time.strftime("%p", now).lower()
 
         # We strip any leading zero from the HH, which you expect for a HH:MM
         # format. For MM we replace it with 'oh' for a more natural response.
