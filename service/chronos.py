@@ -204,7 +204,7 @@ class _SetTimerHandler(Handler):
 
         except Exception:
             LOG.error("Problem parsing timer '%s':\n%s" %
-                      (self._timer, traceback.format_exc()))
+                      (self._times, traceback.format_exc()))
             return Result(
                 self,
                 "Sorry, I don't know how to set the timer for %s" %
