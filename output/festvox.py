@@ -1,13 +1,11 @@
 """
 Speech synthesis output using festival.
 
+For other voices are try something like `apt-cache search festvox`, depending on
+your distribution.
+
 @see http://www.cstr.ed.ac.uk/projects/festival/
 """
-
-# For this you will need:
-#  sudo apt install festival festvox-rablpc16k
-#
-# Other voices are available; see 'apt-cache search festvox'
 
 from   dexter.core     import Notifier
 from   dexter.core.log import LOG
