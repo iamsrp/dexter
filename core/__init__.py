@@ -229,7 +229,7 @@ class Dexter(object):
             """
             # See if this is a speaker, if so then we have to account for that
             if component.is_speech:
-                if status == Notifier.IDLE:
+                if status in (Notifier.IDLE, Notifier.INIT):
                     if component in self._speakers:
                         self._speakers.remove(component)
                         LOG.info("%s is no longer speaking" % (component,))
