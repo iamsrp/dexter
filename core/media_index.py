@@ -8,6 +8,7 @@ from   fuzzywuzzy      import process
 import math
 import mutagen
 import os
+import time
 
 # ------------------------------------------------------------------------------
 
@@ -36,7 +37,10 @@ class MusicIndex(object):
 
         if roots is not None:
             for root in roots:
+                start = time.time()
                 self._build(root)
+                end  = time.time()
+                LOG.info("Indexed %s in %0.1f seconds", root, e - s)
 
 
     def lookup(self, name=None, artist=None, album=None):
