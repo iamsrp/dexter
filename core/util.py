@@ -621,7 +621,7 @@ def number_to_words(value):
         result += "sixty"
         remainder = int_value - 60
     elif int_value >= 50:
-        result += "fifty "
+        result += "fifty"
         remainder = int_value - 50
     elif int_value >= 40:
         result += "forty"
