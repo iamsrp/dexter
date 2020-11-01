@@ -6,8 +6,6 @@
 
     "notifiers" : [
         [ "dexter.notifier.logging.LogNotifier", {
-        }],
-        [ "dexter.notifier.unicorn_hat.UnicornHatNotifier", {
         }]
     ],
 
@@ -35,12 +33,21 @@
         "services" : [
             [ "dexter.service.chronos.ClockService", {
             }],
-            [ "dexter.service.wikiquery.WikipediaService", {
+
+            [ "dexter.service.chronos.TimerService", {
             }],
+            
+            [ "dexter.service.music.LocalMusicService", {
+                "dirname" : "${HOME}/Music"
+            }],
+            
+            [ "dexter.service.randomness.RandomService", {
+            }],
+            
             [ "dexter.service.volume.VolumeService", {
             }],
-            [ "dexter.service.music.LocalMusicService", {
-                "dirname" : "/home/pi/music"
+
+            [ "dexter.service.wikiquery.WikipediaService", {
             }]
         ]
     }
