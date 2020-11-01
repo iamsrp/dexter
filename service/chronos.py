@@ -55,10 +55,12 @@ class _ClockHandler(Handler):
         now = time.localtime(time.time())
         hh  = time.strftime("%I", now)
         mm  = time.strftime("%M", now)
-        p   = time.strftime("%p", now).lower()
+        p   = time.strftime("%p", now)
 
         # We strip any leading zero from the HH, which you expect for a HH:MM
-        # format. For MM we replace it with 'oh' for a more natural response.
+        # format. For MM we replace it with 'oh' for a more natural response. AM
+        # and PM need to be spelt out so that speech output doesn't say "am" (as
+        # in "I am he!") instead of "ay em".
         if hh.startswith('0'):
             hh = hh.lstrip('0')
         hh = number_to_words(int(hh))
@@ -68,6 +70,10 @@ class _ClockHandler(Handler):
             mm = 'oh %s' % number_to_words(int(mm))
         else:
             mm = number_to_words(int(mm))
+        if p == "AM":
+            p = "ay em"
+        elif p == "PM":
+            p = "pee em"
 
         # Now we can hand it back
         return Result(
