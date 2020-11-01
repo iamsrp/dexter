@@ -46,6 +46,14 @@ class EspeakOutput(SpeechOutput):
         espeak.synth(text)
 
 
+    def interrupt(self):
+        """
+        @see Output.interrupt()
+        """
+        # Stop any pending speech
+        espeak.cancel()
+
+
     def _start(self):
         """
         @see Component._start()

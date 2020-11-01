@@ -74,7 +74,8 @@ class Component(_Startable):
     """
     def __init__(self, state):
         super(Component, self).__init__()
-        self._state = state
+        self._state  = state
+        self._status = None
 
 
     @property
@@ -109,10 +110,25 @@ class Component(_Startable):
         return False
 
 
+    @property
+    def status(self):
+        """
+        Get the status of this component.
+
+        :etype: Notifier._Status
+        """
+        return self._status
+
+
     def _notify(self, status):
         """
         Notify of a status change.
+
+        :type  status: Notifier._Status
+        :param status:
+            The new status of this component.
         """
+        self._status = status
         if self._state is not None:
             self._state.update_status(self, status)
 
@@ -566,6 +582,27 @@ class Dexter(object):
 
             # Nothing more to do until we hear the rest of the command
             return None
+
+        # Special handling if we have active outputs and someone said "stop"
+        if offset == len(words) - 1 and words[-1] == "stop":
+            stopped = False
+            for output in self._outputs:
+                # If this output is busy doing something then we tell it to stop
+                # doing that thing with interrupt(). (stop() means shutdown.)
+                if output.status in (Notifier.ACTIVE, Notifier.WORKING):
+                    try:
+                        # Best effort
+                        LOG.info("Interrupting %s", output)
+                        output.interrupt()
+                        stopped = True
+                    except:
+                        pass
+
+            # If we managed to stop one of the output components then we're
+            # done. We don't want another component to pick up this command.
+            if stopped:
+                return None
+
 
         # See which services want them
         handlers = []

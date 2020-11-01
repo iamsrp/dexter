@@ -41,6 +41,15 @@ class Output(Component):
         raise NotImplementedError("Abstract method called")
 
 
+    def interrupt(self):
+        """
+        Interrupt the output, stopping what it's doing.
+        """
+        # Not everything will support/need this so we make it a NOP for the
+        # general case
+        pass
+
+
 class SpeechOutput(Output):
     """
     An output which generates audio speech.

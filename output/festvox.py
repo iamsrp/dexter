@@ -49,6 +49,15 @@ class FestivalOutput(SpeechOutput):
             self._queue.append(str(text))
 
 
+    def interrupt(self):
+        """
+        @see Output.interrupt
+        """
+        if self._subproc:
+            # We do this by effectively sending a CTRL-C to it, via a signal
+            self._subproc.send_signal(subprocess.signal.SIGINT)
+
+
     def _readlines(self):
         """
         Do a read until something comes out on _subproc's stdout. We block until we
