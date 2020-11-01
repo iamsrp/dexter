@@ -86,9 +86,12 @@ class MediaKeyInput(Input):
         """
         @see Component.start()
         """
-        # Configure the main loop
-        DBusGMainLoop(set_as_default=True)
-        bus = dbus.Bus(dbus.Bus.TYPE_SESSION)
+        # Configure the main loop. We use the GLib one here by default but we
+        # could also look to use the QT one, dbus.mainloop.qt.DBusQtMainLoop, if
+        # people need that. Mixing mainloop types between components (e.g. this
+        # and NotifierOutput) can cause breakage.
+        DBusGMainLoop()
+        bus = dbus.Bus(dbus.Bus.TYPE_SESSION, mainloop=DBusGMainLoop())
         obj = bus.get_object('org.gnome.SettingsDaemon',
                              '/org/gnome/SettingsDaemon/MediaKeys')
 
