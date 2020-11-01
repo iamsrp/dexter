@@ -211,10 +211,11 @@ class AudioInput(Input):
 
             # Only look to see if someone is speaking if the system is
             # not. Otherwise we will likely hear ourselves.
-            if self._state.is_speaking() and talking:
-                LOG.info("Ignoring talking since audio is being output")
-                talking = False
-                speech  = None
+            if self._state.is_speaking():
+                if talking:
+                    LOG.info("Ignoring talking since audio is being output")
+                    talking = False
+                    speech = None
                 continue
 
             # We are looking for the background levels. If we think that someone
