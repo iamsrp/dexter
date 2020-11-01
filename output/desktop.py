@@ -64,7 +64,7 @@ class NotifierOutput(Output):
             try:
                 n = notify2.Notification(self._summary,
                                          message=text,
-                                         icon=self._icon)
+                                         icon   =self._icon)
                 if self._timeout > 0:
                     n.set_timeout(self._timeout)
                 n.show()
