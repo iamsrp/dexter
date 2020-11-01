@@ -40,7 +40,7 @@ class MusicIndex(object):
                 start = time.time()
                 self._build(root)
                 end  = time.time()
-                LOG.info("Indexed %s in %0.1f seconds", root, e - s)
+                LOG.info("Indexed %s in %0.1f seconds", root, end - start)
 
 
     def lookup(self, name=None, artist=None, album=None):
