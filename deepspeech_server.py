@@ -61,6 +61,7 @@ def run(conn):
         context = model.createStream()
 
         # Keep pulling in the data until we get an empty chunk
+        total_size = 0
         while True:
             # How big is this incoming chunk?
             length_bytes = b''
@@ -89,9 +90,11 @@ def run(conn):
             # Feed it in
             audio = numpy.frombuffer(data, numpy.int16)
             context.feedAudioContent(audio)
+            total_size += len(data)
 
         # Finally, decode it
-        logging.info("Decoding")
+        logging.info("Decoding %0.2f seconds of audio",
+                     total_size / rate / width / channels)
         words = context.finishStream()
         logging.info("Got: '%s'" % (words,))
 
