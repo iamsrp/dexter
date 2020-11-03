@@ -167,8 +167,8 @@ _LOWER   = ''.join(chr(i) for i in range(ord('a'), ord('z') + 1))
 _UPPER   = _LOWER.upper()
 _NUMBERS = ''.join(str(i) for i in range(0, 10))
 
-# The list of homonyms, and whether the key can match as a plural
-_HOMONYMS = {
+# The list of homophones, and whether the key can match as a plural
+_HOMOPHONES = {
     'aloud'      : ('allowed',     False),
     'altar'      : ('alter',       True ),
     'ant'        : ('aunt',        True ),
@@ -387,7 +387,7 @@ _HOMONYMS = {
     'weather'    : ('whether',     False),
     'weigh'      : ('way',         True ),
     'wether'     : ('whether',     False),
-    'where'      : ('wear',        True ),
+    'whey'       : ('way',         True ),
     'which'      : ('witch',       False),
     'whole'      : ('hole',        False),
     'whos'       : ('whose',       False),
@@ -876,8 +876,8 @@ def fuzzy_list_range(list_,
 
 def homonize(word):
     """
-    Given a word, return its homonym. Case and punctuation will not be
-    preserved.
+    Given a word, return its "normlised" homophone. Case and punctuation will
+    not be preserved.
     """
     # Empty breeds empty
     if not word:
@@ -891,20 +891,20 @@ def homonize(word):
     # Get the stripped down version
     alnum = to_alphanumeric(str(word).lower())
 
-    # And give it back, or its homonym
-    if alnum in _HOMONYMS:
+    # And give it back, or its homophone
+    if alnum in _HOMOPHONES:
         # Simple match
-        return _HOMONYMS[alnum][0]
+        return _HOMOPHONES[alnum][0]
 
     # See if it looks like a plural and try to match on the singular version, if
     # that's allowed
     if alnum.endswith('s' ) and not alnum.endswith('ss'):
         singular = alnum[:-1]
-        if singular in _HOMONYMS:
-            (homonym, allowed) = _HOMONYMS[singular]
+        if singular in _HOMOPHONES:
+            (homophone, allowed) = _HOMOPHONES[singular]
             if allowed:
                 # Plural match
-                return homonym
+                return homophone
 
     # No match, give back the stripped form
     return alnum
