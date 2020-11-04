@@ -56,6 +56,8 @@ def run(conn):
         if model.sampleRate() != rate:
             raise ValueError("Given sample rate, %d, differs from desired rate, %d" %
                              (rate, model.sampleRate()))
+        if width not in (1, 2, 4, 8):
+            raise ValueError("Unhandled width: %d" % width)
 
         # Decode as we go
         context = model.createStream()
@@ -88,7 +90,10 @@ def run(conn):
                 data += got
 
             # Feed it in
-            audio = numpy.frombuffer(data, numpy.int16)
+            if   width == 1: audio = numpy.frombuffer(data, numpy.int8)
+            elif width == 2: audio = numpy.frombuffer(data, numpy.int16)
+            elif width == 4: audio = numpy.frombuffer(data, numpy.int32)
+            elif width == 8: audio = numpy.frombuffer(data, numpy.int64)
             context.feedAudioContent(audio)
             total_size += len(data)
 
