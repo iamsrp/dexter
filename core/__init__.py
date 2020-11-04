@@ -254,7 +254,7 @@ class Dexter(object):
 
 
     # How long to wait for a command after being primed with just the keyphrase
-    _KEY_PHRASE_ONLY_TIMEOUT = 5
+    _KEY_PHRASE_ONLY_TIMEOUT = 10
 
     # The volume to set to when listening after being prompted by the keyphrase
     _LISTENING_VOLUME = 2
