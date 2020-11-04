@@ -545,8 +545,10 @@ class Dexter(object):
 
         # If we have the keyphrase and no more then we just got a priming
         # command, we should be ready for the rest of it to follow
-        if offset == len(words):
+        if offset == len(words) - 1:
             # Remember that we were primed
+            LOG.info("Just got keyphrase, "
+                     "lowering volume while we wait for more")
             self._last_keyphrase_only = now
 
             # Drop the volume down on any services so that we can hear what's
