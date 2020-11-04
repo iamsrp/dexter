@@ -11,13 +11,9 @@
 
     "components" : {
         "inputs" : [
-            [ "dexter.input.socket.SocketInput", {
-                "port" : "8008"
-            }],
-
-            [ "dexter.input.remote.RemoteInput", {
-                "host" : "server_name",
-                "port" : "8008"
+            [ "dexter.input.deepspeech.DeepSpeechInput", {
+                "model"   : "${HOME}/deepspeech/deepspeech-0.9.0-models.tflite",
+                "scorer"  : "${HOME}/deepspeech/deepspeech-0.9.0-models.scorer"
             }]
         ],
 

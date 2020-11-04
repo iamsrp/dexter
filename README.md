@@ -72,7 +72,7 @@ There are three types of component in the system. You may have any number of eac
 
 The inputs are ways to get requests into the system. A simple socket-based one is provided in `test_config`, which you can telnet to and type into.
 
-Inputs which convert spoken audio into text are also provided. These can be quite compute-intensive however, and so you might want to consider off-loading some of the work to a machine with decent horse-power, if your client is something like a Raspberry Pi. See the `RemoteInput` class for doing that. The `PocketSphinxInput` class works with decent speed on a Raspberry Pi, but its accuracy isn't great. The `DeepSpeechInput` class has great accuracy but takes about 35s for each second of input audio on a Pi3; it's *about* realtime (1s per 1s) on a recent x86_64 machine.
+Inputs which convert spoken audio into text are also provided. The `DeepSpeechInput` class has great accuracy but be sure to be using the versions which use TensorFlowLite (0.9.0 and up) since the prior versions are super slow. If the client is too slow then you might want to consider off-loading some of the work to a machine with decent horse-power; see the `RemoteInput` class for doing that. The `PocketSphinxInput` class works with decent speed on a Raspberry Pi, but its accuracy isn't great. 
 
 It is only recommended that you have a single audio input.
 
