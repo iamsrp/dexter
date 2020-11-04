@@ -29,27 +29,27 @@ class Event(object):
         self._runnable = runnable
 
 
-        @property
-        def creation_time(self):
-            """
-            The time at which this event was created, in seconds since epoch.
-            """
-            return self._creation_time
+    @property
+    def creation_time(self):
+        """
+        The time at which this event was created, in seconds since epoch.
+        """
+        return self._creation_time
 
 
-        def invoke(self):
-            """
-            Invoke this event.
+    def invoke(self):
+        """
+        Invoke this event.
 
-            :rtype: Event, or None
-            :return:
-                Invoke this event to do its job. It may return another event as
-                a result, which will be scheduled for handling.
-            """
-            if self._runnable is not None:
-                return self._runnable()
-            else:
-                return None
+        :rtype: Event, or None
+        :return:
+            Invoke this event to do its job. It may return another event as
+            a result, which will be scheduled for handling.
+        """
+        if self._runnable is not None:
+            return self._runnable()
+        else:
+            return None
 
 
 class TimerEvent(Event):
@@ -64,14 +64,14 @@ class TimerEvent(Event):
         @parse schedule_time:
             The time at which this event should fire. In seconds since epoch.
         """
-        super(Event, self).__init__(runnable=runnable)
+        super(TimerEvent, self).__init__(runnable=runnable)
         self._schedule_time = float(schedule_time)
 
 
-        @property
-        def schedule_time(self):
-            """
-            The time at which this event should be scheduled, in seconds since
-            epoch.
-            """
-            return self._schedule_time
+    @property
+    def schedule_time(self):
+        """
+        The time at which this event should be scheduled, in seconds since
+        epoch.
+        """
+        return self._schedule_time

@@ -56,9 +56,12 @@ def _get_alsa_mixer():
     :return:
         The mixer.
     """
-    # Get the ALSA mixer. We should probably handle pulse audio at some point
-    # too I guess.
-    try:
-        return pyalsaaudio.Mixer()
-    except:
-        return pyalsaaudio.Mixer('PCM')
+    # Get the ALSA mixer by going in the order that they are listed
+    for mixer in pyalsaaudio.mixers():
+        try:
+            return pyalsaaudio.Mixer(mixer)
+        except:
+            pass
+
+    # With no mixer we can't do anything
+    raise ValueError("No mixer found")

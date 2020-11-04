@@ -398,6 +398,8 @@ class Dexter(object):
 
                 # Handle any events. First check to see if any time events are
                 # pending and need to be scheduled.
+                LOG.debug("Timer event queue length is %d",
+                          len(self._timer_events))
                 while len(self._timer_events) > 0 and \
                       self._timer_events[0].schedule_time <= now:
                     self._events.put(heapq.heappop(self._timer_events))
@@ -545,48 +547,46 @@ class Dexter(object):
 
         # If we have the keyphrase and no more then we just got a priming
         # command, we should be ready for the rest of it to follow
-        if offset == len(words) - 1:
+        if offset == len(words):
             # Remember that we were primed
-            LOG.info("Just got keyphrase, "
-                     "lowering volume while we wait for more")
+            LOG.info("Just got keyphrase")
             self._last_keyphrase_only = now
 
-            # Drop the volume down on any services so that we can hear what's
-            # coming. We'll need a capturing function to do this.
-            def make_fn(s, v):
+            # To drop the volume down so that we can hear what's coming. We'll
+            # need a capturing function to do this.
+            def make_fn(v):
                 def fn():
-                    s.set_volume(v)
+                    set_volume(v)
                     return None
+                return fn
 
-            # Look at all the services and see which have volume controls
-            for service in self._services:
-                if not (hasattr(service, 'get_volume') and
-                        hasattr(service, 'set_volume')):
-                    continue
-
+            try:
                 # Get the current volume
-                try:
-                    volume = service.get_volume()
-                except Exception:
-                    continue
+                volume = get_volume()
 
-                # If it's too loud then drop it down, and schedule an event to
-                # bump it back up in a little bit,
+                # If the volume is too high then we will need to lower it
                 if volume > Dexter._LISTENING_VOLUME:
-                    service.set_volume(Dexter._LISTENING_VOLUME)
+                    # And schedule an event to bump it back up in a little while
+                    LOG.info(
+                        "Lowering volume from %d to %d while we wait for more",
+                        volume, Dexter._LISTENING_VOLUME
+                    )
+                    set_volume(Dexter._LISTENING_VOLUME)
                     heapq.heappush(
-                        self._timer_events.put,
+                        self._timer_events,
                         TimerEvent(
                             now + Dexter._KEY_PHRASE_ONLY_TIMEOUT,
-                            make_fn(service, volume)
+                            runnable=make_fn(volume)
                         )
                     )
+            except Exception as e:
+                LOG.warning("Failed to set listening volume: %s", e)
 
             # Nothing more to do until we hear the rest of the command
             return None
 
         # Special handling if we have active outputs and someone said "stop"
-        if offset == len(words) - 1 and words[-1] == "stop":
+        if offset == len(words) - 2 and words[-1] == "stop":
             stopped = False
             for output in self._outputs:
                 # If this output is busy doing something then we tell it to stop
