@@ -2,8 +2,9 @@
 How we play media (like music).
 """
 
-from   dexter.core.log import LOG
-from   threading       import Thread
+from   dexter.core.audio import MIN_VOLUME, MAX_VOLUME
+from   dexter.core.log   import LOG
+from   threading         import Thread
 
 import pygame
 import queue
@@ -41,15 +42,17 @@ class SimpleMP3Player(object):
 
         :type  value: float
         :param value:
-            The volume level to set. This should be between 0 and 11 inclusive.
+            The volume level to set. This should be between `MIN_VOLUME` and
+            `MAX_VOLUME` inclusive.
         """
         volume = float(value)
 
-        if volume < 0 or volume > 11:
-            raise ValueError("Volume out of [0..11] range: %s" % value)
+        if volume < MIN_VOLUME or volume > MAX_VOLUME:
+            raise ValueError("Volume out of [%d..%d] range: %s" %
+                             (MIN_VOLUME, MAX_VOLUME, value))
 
         # Set as a fraction of 1
-        v = (volume / 11)
+        v = (volume / MAX_VOLUME)
         LOG.info("Setting volume to %0.2f" % v)
         pygame.mixer.music.set_volume(v)
 
@@ -60,9 +63,9 @@ class SimpleMP3Player(object):
 
         :rtype: float
         :return:
-            The volume level; between 0 and 11 inclusive.
+            The volume level; between `MIN_VOLUME` and `MAX_VOLUME` inclusive.
         """
-        return 11.0 * pygame.mixer.music.get_volume()
+        return MAX_VOLUME * pygame.mixer.music.get_volume()
 
 
     def is_playing(self):

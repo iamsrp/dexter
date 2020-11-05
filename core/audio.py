@@ -11,24 +11,31 @@ except:
 
 # ------------------------------------------------------------------------------
 
+MIN_VOLUME =  0
+MAX_VOLUME = 11
+
+# ------------------------------------------------------------------------------
+
 def set_volume(value):
     """
     Set the volume to a value between zero and eleven.
 
     :type  value: float
     :param value:
-        The volume level to set. This should be between 0 and 11 inclusive.
+        The volume level to set. This should be between `MIN_VOLUME` and 
+        `MAX_VOLUME` inclusive.
     """
     volume = float(value)
 
-    if volume < 0 or volume > 11:
-        raise ValueError("Volume out of [0..11] range: %s" % value)
+    if volume < MIN_VOLUME or volume > MAX_VOLUME:
+        raise ValueError("Volume out of [%d..%d] range: %s" %
+                         (MIN_VOLUME, MAX_VOLUME, value))
 
     # Get the ALSA mixer
     m = _get_alsa_mixer()
 
     # Set as a percentage
-    pct = int((volume / 11) * 100)
+    pct = int((volume / MAX_VOLUME) * 100)
     LOG.info("Setting volume to %d%%" % pct)
     m.setvolume(pct)
 
@@ -45,7 +52,7 @@ def get_volume():
     m = _get_alsa_mixer()
 
     # And give it back, assuming the we care about the highest value
-    return 11.0 * min(100, max((0,) + tuple(m.getvolume()))) / 100.0
+    return float(MAX_VOLUME) * min(100, max((0,) + tuple(m.getvolume()))) / 100.0
 
 
 def _get_alsa_mixer():

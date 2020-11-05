@@ -2,6 +2,7 @@
 Base class for various music playing services.
 """
 
+from   dexter.core.audio        import MIN_VOLUME, MAX_VOLUME
 from   dexter.core.log          import LOG
 from   dexter.core.media_index  import MusicIndex, AudioEntry
 from   dexter.core.player       import SimpleMP3Player
@@ -164,7 +165,8 @@ class MusicService(Service):
 
         :type  value: float
         :param value:
-            The volume level to set. This should be between 0 and 11 inclusive.
+            The volume level to set. This should be between `MIN_VOLUME` and
+            `MAX_VOLUME` inclusive.
         """
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
