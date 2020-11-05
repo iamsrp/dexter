@@ -1,5 +1,5 @@
 """
-An input which listens from a socket.
+An input which uses the Media Keys via dbus.
 """
 
 from   dexter.input       import Input, Token
@@ -9,8 +9,6 @@ from   gi.repository      import GLib
 from   threading          import Thread
 
 import dbus
-import socket
-import time
 
 # ------------------------------------------------------------------------------
 
