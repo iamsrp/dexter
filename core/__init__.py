@@ -503,6 +503,12 @@ class Dexter(object):
                  if token.verbal]
         LOG.info("Handling: \"%s\"" % ' '.join(words))
 
+        # Anything?
+        if len(words) == 0:
+            LOG.info("Nothing to do")
+            return None
+            
+
         # See if the key-phrase is in the tokens and use it to determine the
         # offset of the command.
         offset = None
