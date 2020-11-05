@@ -8,4 +8,4 @@
        python3-espeak python3-fuzzywuzzy python3-mutagen python3-argh python3-pygame \
        libpocketsphinx3 pocketsphinx-en-us libpulse-dev libasound2-dev \
        festival festvox-us-slt-hts
-  pip3 install deepspeech pocketsphinx pyalsaaudio wikipedia
+  pip3 install deepspeech pyalsaaudio wikipedia
