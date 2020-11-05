@@ -2,10 +2,11 @@
 Set the audio output volume. It goes up to 11.
 """
 
-from dexter.core.audio import MIN_VOLUME, MAX_VOLUME, get_volume, set_volume
-from dexter.core.log   import LOG
-from dexter.core.util  import fuzzy_list_range, parse_number
-from dexter.service    import Service, Handler, Result
+from   dexter.core.audio import MIN_VOLUME, MAX_VOLUME, get_volume, set_volume
+from   dexter.core.log   import LOG
+from   dexter.core.util  import fuzzy_list_range, parse_number
+from   dexter.service    import Service, Handler, Result
+from   fuzzywuzzy        import fuzz
 
 import traceback
 
@@ -85,7 +86,11 @@ class _AdjustHandler(Handler):
             if cur != new:
                 # Acknowledge that it happened
                 set_volume(new)
-                return Result(self, "Up", False, True)
+                direction = "Up" if self._delta > 0 else "Down"
+                return Result(self, direction, False, True)
+            else:
+                # Nothing to do
+                return None
 
         except Exception:
             LOG.error("Problem setting changing the volume by %s:\n%s" %
@@ -148,7 +153,7 @@ class VolumeService(Service):
             try:
                 (start, end, _) = fuzzy_list_range(words, prefix, threshold=85)
                 if start == 0 and end == len(words):
-                    return _AdjustHandler(self, tokens, 1)
+                    return _AdjustHandler(self, tokens, -1)
             except:
                 # Didn't find a match
                 pass
