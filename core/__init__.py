@@ -592,7 +592,7 @@ class Dexter(object):
             return None
 
         # Special handling if we have active outputs and someone said "stop"
-        if offset == len(words) - 2 and words[-1] == "stop":
+        if offset == len(words) - 1 and words[-1] == "stop":
             stopped = False
             for output in self._outputs:
                 # If this output is busy doing something then we tell it to stop
