@@ -21,7 +21,7 @@ This is very much a toy project and should be considered work in progress right 
 ## Prerequisites
 
 * [Python 3](https://www.python.org/).
-* Around 1G of extra disk space, if you want to use PocketSphinx, DeepSpeech and so forth.
+* Around 1G of extra disk space, if you want to use DeepSpeech and so forth.
 * What is listed in the `requirements` file.
 
 You'll also need the trained data from [DeepSpeech](https://github.com/mozilla/DeepSpeech). For more information on setting up DeepSpeech read their [project page](https://github.com/mozilla/DeepSpeech) and [documentation](https://deepspeech.readthedocs.io/).
@@ -79,7 +79,7 @@ It is only recommended that you have a single audio input.
 
 ### Outputs
 
-These are ways to get Dexter's responses back to the user. This might be simple logging via the `LogOutput` or an audio one, like `EspeakOutput`.
+These are ways to get Dexter's responses back to the user. This might be simple logging via the `LogOutput` but there are also speech-to-text ones which use ESpeak and [Festival](http://www.cstr.ed.ac.uk/projects/festival/).
 
 ### Services
 
@@ -87,16 +87,19 @@ The services are what actually handle the user requests. These might be things l
 
 ### Notifiers
 
-The Notifiers are how Dexter tells the user what it's doing. There are two right now: a simple logging notifier, and one which uses the [Pimoroni Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd).
+The Notifiers are how Dexter tells the user what it's doing. For example, if it has started listening or if it's querying an outside service, then it will effectively say so via simple means.
+
+There are at least three right now:
+ * A simple logging notifier.
+ * One for the [Pimoroni Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd).
+ * One for the [Pimoroni Scroll HAT Mini](https://shop.pimoroni.com/products/scroll-hat-mini).
 
 
 ## Notes
 
 This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It's designed to work on a Raspberry Pi running Raspbian, but also works on Ubuntu (as of 20.04.1).
 
-Currently it uses DeepSpeech or PocketSphynx to handle the voice to text rendering. However, these run *really slowly* on a Raspberry Pi so I wound up running a simple server for DeepSpeech on a more powerful machine (still local), and handing off to that from the Raspberry Pi, to perform the actual voice to text.
-
-Right now, a bunch of basic services are there, like asking about things and playing music. That's pretty much most people tend to use their home assistant for anyhow it seems...
+Right now, a bunch of basic services are there like setting timers, asking about things and playing music. That's pretty much most people tend to use their home assistant for anyhow it seems...
 
 ## Bugs
 
