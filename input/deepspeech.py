@@ -35,15 +35,25 @@ class DeepSpeechInput(AudioInput):
     """
     def __init__(self,
                  notifier,
+                 rate=None,
                  wav_dir=None,
                  model =os.path.join(_MODEL_DIR, 'models.pbmm'),
                  scorer=os.path.join(_MODEL_DIR, 'models.scorer')):
         """
         @see AudioInput.__init__()
 
-        :type  use_lm: bool
-        :param use_lm:
-            Whether to use the DeepSpeech language model for better predictions.
+        :type  rate:
+        :param rate:
+            The override for the rate, if not the model's one.
+        :type  wav_dir:
+        :param wav_dir:
+            Where to save the wave files, if anywhere.
+        :type  model:
+        :param model:
+            The path to the DeepSpeech model file.
+        :type  scorer:
+        :param scorer:
+            The path to the DeepSpeech scorer file.
         """
         # If these don't exist then DeepSpeech will segfault when inferring!
         if not os.path.exists(model):
@@ -56,12 +66,16 @@ class DeepSpeechInput(AudioInput):
             LOG.info("Loading scorer from %s" % (scorer,))
             self._model.enableExternalScorer(scorer)
 
+        # Handle any rate override
+        if rate is None:
+            rate = self._model.sampleRate()
+
         # Wen can now init the superclass
         super(DeepSpeechInput, self).__init__(
             notifier,
             format=pyaudio.paInt16,
             channels=1,
-            rate=self._model.sampleRate(),
+            rate=rate,
             wav_dir=wav_dir
         )
 
