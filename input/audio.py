@@ -178,6 +178,9 @@ class AudioInput(Input):
         max_secs = 10
         last_log =  0
 
+        # Init is done, we start off idle
+        self._notify(Notifier.IDLE)
+
         # Keep listening until we are stopped
         while self.is_running:
             # We'll need this here and there below
