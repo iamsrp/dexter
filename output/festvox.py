@@ -36,9 +36,10 @@ class FestivalOutput(SpeechOutput):
         """
         super(FestivalOutput, self).__init__(state)
 
-        self._voice   = voice
-        self._queue   = []
-        self._subproc = None
+        self._voice       = voice
+        self._queue       = []
+        self._subproc     = None
+        self._interrupted = False
 
 
     def write(self, text):
@@ -53,6 +54,8 @@ class FestivalOutput(SpeechOutput):
         """
         @see Output.interrupt
         """
+        self._interrupted = True
+
         if self._subproc is not None:
             # We do this by sending it a signal
             signal = subprocess.signal.SIGINT
@@ -60,66 +63,21 @@ class FestivalOutput(SpeechOutput):
             self._subproc.send_signal(signal)
 
 
-    def _readlines(self, blocking=True):
-        """
-        Do a read until something comes out on _subproc's stdout. By default we
-        block until we have at least one line's worth of output.
-        """
-        result = ''
-        while True:
-            # Wait for something to be ready out the stdout file descriptor
-            got = ''
-            while (select.select([self._subproc.stdout], [], [], 0.1)[0] != []):
-                got += self._subproc.stdout.read(1)
-            LOG.debug("Got '%s'", got)
-
-            # Did that yield anything?
-            if len(got) == 0:
-                # Got nothing, are we done?
-                if not blocking or '\n' in result:
-                    break
-            else:
-                # Append what we got
-                result += got
-
-        # Give back the result, broken up by newlines
-        return result.split('\n')
-
-
     def _start(self):
         """
         @see Component._start()
         """
-        # Start the subprocess here so that it can die directly (for whatever
+        # Start the subprocess here so that it can die directly (for whaterv
         # reason) rather than in the thread
         self._subproc = subprocess.Popen(('festival', '--interactive'),
-                                         bufsize=0,
-                                         stdin=subprocess.PIPE,
-                                         stdout=subprocess.PIPE,
+                                         stdin =subprocess.PIPE,
+                                         stdout=subprocess.DEVNULL,
+                                         stderr=subprocess.DEVNULL,
                                          universal_newlines=True)
+        self._subproc.stdin.write("(%s)\n" % self._voice)
+        self._subproc.stdin.flush()
 
-        # Configure it in a side-thread. Set the voice and make sure that the
-        # output is synchronous so that it can be interrupted
-        def config():
-            for command in ("(%s)\n" % self._voice,
-                            "(audio_mode 'sync)\n",
-                            "(SayText \"\")\n"):
-                LOG.info("Configuring with: %s", command.strip())
-                self._subproc.stdin.write(command)
-                self._subproc.stdin.flush()
-
-            # Get back the results
-            start = time.time()
-            while time.time() < start + 1:
-                result = self._readlines(blocking=False)
-                if result and all(result):
-                    LOG.info("Read configuration response: %s", result)
-            LOG.info("Conguration complete")
-        thread = Thread(target=config)
-        thread.daemon = True
-        thread.start()
-
-        # Now spawn the worker thread to actually handle the output
+        # Now spawn the worker thread
         thread = Thread(target=self._run)
         thread.daemon = True
         thread.start()
@@ -155,6 +113,10 @@ class FestivalOutput(SpeechOutput):
                     LOG.info("Nothing to say...")
                     continue
 
+                # We're about to say something, clear any interrupted flag ready
+                # for any new one
+                self._interrupted = False
+
                 # I've got something to say (it's better to burn out, than to
                 # fade away...)
                 command = '(SayText "%s")\n' % text
@@ -163,9 +125,13 @@ class FestivalOutput(SpeechOutput):
                 self._subproc.stdin.write(command)
                 self._subproc.stdin.flush()
 
-                # And read in the result, which should mean it's done
-                for line in self._readlines():
-                    LOG.info("Received: %s" % line)
+                # Wait for an approximate amount of time that we think it will
+                # take to say what we were told to. Yes, this isn't great but we
+                # don't have a good way to tell when festival has done talking
+                # owing to the fact it buffers its output when it's piping.
+                while (not self._interrupted and
+                       time.time() - start < len(text) * 0.04):
+                    time.sleep(0.1)
 
             except Exception as e:
                 LOG.error("Failed to say '%s': %s" % (text, e))
@@ -173,7 +139,7 @@ class FestivalOutput(SpeechOutput):
             finally:
                 self._notify(Notifier.IDLE)
 
-        # Kill off any child
+        # Kill off the child
         try:
             if self._subproc is not None:
                 self._subproc.terminate()
