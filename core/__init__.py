@@ -393,15 +393,12 @@ class Dexter(object):
         LOG.info("Entering main loop")
         while self._running:
             try:
-                # What time is love?
-                now = time.time()
-
                 # Handle any events. First check to see if any time events are
                 # pending and need to be scheduled.
                 LOG.debug("Timer event queue length is %d",
                           len(self._timer_events))
                 while len(self._timer_events) > 0 and \
-                      self._timer_events[0].schedule_time <= now:
+                      self._timer_events[0].schedule_time <= time.time():
                     self._events.put(heapq.heappop(self._timer_events))
 
                 # Now handle the actual events
