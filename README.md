@@ -23,7 +23,7 @@ This is very much a toy project and should be considered work in progress. That 
 If you quickly want to get up and running then:
  - Do a git clone of the repo
  - Install the prerequisites
- - MAke sure that the appropriate model and scorer files are in `${HOME}/deepspeech`
+ - Make sure that the appropriate model and scorer files are in `${HOME}/deepspeech`
  - Make sure you have a microphone and speaker
  - Try running dexter.py with the appropriate config file for your distro (either `pi_config` or `ubunutu_config`)
  You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
@@ -131,7 +131,7 @@ Right now, a bunch of basic services are there like setting timers, asking about
 
 Writing components for Dexter should, in theory, be simple and intuitive. Most of the time you'll probably wind up writing services for it, though other types of notifier might be handy too. I generally find that you can get a beta version of something up and running in an hour or so. Of course, you then spend three more hours fiddling with it in various ways; that is probably the way of *most* coding projects though.
 
-When it comes to getting Dexter working "right" the main thing I wind up doing is getting the sound quality good on the audio input. Some microphones are impressively bad and it's amazing that DeepSpeech works at all with what they produce. So if you're having trouble, try setting the `wav_dir` argument of the audio input (e.g. to be `/tmp`) and listen to what it's getting. It will create files of the form `1604895798.wav`, where the number is seconds-since-epoch. You can then fiddle with the microphone settings (or use different microphones) until you get something which sounds okay.
+When it comes to getting Dexter working "right" the main thing I wind up doing is getting the sound quality good on the audio input. Some microphones are impressively bad and it's impressive that DeepSpeech works at all with what they produce. So if you're having trouble, try setting the `wav_dir` argument of the audio input (e.g. to be `/tmp`) and listen to what it's getting. It will create files of the form `1604895798.wav`, where the number is seconds-since-epoch. You can then fiddle with the microphone settings (or use different microphones) until you get something which sounds okay.
 
 It's far from perfect, and you will probably have to ask it to do something three times, but it's still kind of amazing that you can do all this on a $35 computer..! (Oh, with a $50 microphone, $15 HAT, $20 speaker, ...)
 
