@@ -156,9 +156,9 @@ class PyFestivalOutput(SpeechOutput):
     You might be able to pip install it, but I had to build it by hand using
     source from ``https://github.com/techiaith/pyfestival`` to make it work.
 
-    Note that pyfestival seems to hold on to the GIL while it's running and so
-    none of the rest of the system can do anything. This isn't really great
-    either.
+    Note that the current version holds on to the GIL. There's a fork in
+    ``https://github.com/iamsrp/pyfestival`` which fixes this; a pull request
+    has been made.
     """
     def __init__(self,
                  state,
