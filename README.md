@@ -56,7 +56,7 @@ pcm.!default {
         } 
 }
 ```
-You can see the different hardware devices in `alsamixer`. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference.
+You can see the different hardware devices in `alsamixer`, via F6. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference.
 
 For input, DeepSpeech 0.9.0 onwards supports Tensorflow Light and it does a pretty decent job of recognition in near realtime. 
 
