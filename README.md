@@ -40,6 +40,8 @@ When it comes to recording, make sure that you have a decent microphone with no 
 
 ### Raspberry Pi Specifics
 
+Dexter has been tested and developed using, most recently a 2Gb Raspberry Pi 4.
+
 If you're running Dexter on a Raspberry Pi then make sure that ALSA is working by testing `aplay` and `arecord`, tweaking volume and recording levels with `alsamixer`. If it is not then you may well get strange errors from `pyaudio`. You might also want a `/home/pi/.asoundrc` file which looks something like this:
    ```
 pcm.!default {
