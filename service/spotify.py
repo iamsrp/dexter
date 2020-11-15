@@ -1,9 +1,32 @@
 """
-A simple Spotify client, using ``spotipy`` under the hood.
+A simple Spotify controller client, using ``spotipy`` under the hood. This
+should be considered to be beta quality right now.
 
-This code is currently alpha quality and doesn't actually work yet.
+This doesn't actually play music itself but, instead, allows you to control a
+player.
+
+In order to make this work you will need Spotify Premium, and to set up an
+"application" via the ``My Dashboard`` on the Spotify developer webpages. This
+will require getting the following::
+  * Client ID
+  * Client Secret
+  * Redirect URI
+The Redirect URI which should include a port, e.g. ``http://localhost:8765``, to
+make things work more seamlessly with this client. Otherwise you wind up having
+to copy & paste things from a pop-up browser page.
+
+This is all explained pretty well in the Spotipy docs:
+    https://spotipy.readthedocs.io/
+
+In terms of players, it will pick up whatever it finds to be the current
+"default" device. As well as the Spotify web player, there are various other
+ones like::
+  * https://github.com/hrkfdn/ncspot
+  * https://github.com/dtcooper/raspotify
+  * https://github.com/Spotifyd/spotifyd
 """
 
+from   dexter.core.audio        import MIN_VOLUME, MAX_VOLUME
 from   dexter.core.log          import LOG
 from   dexter.core.util         import homonize, fuzzy_list_range
 from   dexter.service           import Service, Handler, Result
@@ -33,9 +56,12 @@ class _SpotifyServicePauseHandler(Handler):
         """
         @see Handler.handle()`
         """
-        was_playing = self.service.is_playing()
-        self.service.pause()
-        return Result(self, '', False, was_playing)
+        try:
+            was_playing = self.service.is_playing()
+            self.service.pause()
+            return Result(self, '', False, was_playing)
+        except:
+            return Result(self, '', False, False)
 
 
 class _SpotifyServiceUnpauseHandler(Handler):
@@ -46,8 +72,8 @@ class _SpotifyServiceUnpauseHandler(Handler):
         super(_SpotifyServiceUnpauseHandler, self).__init__(
             service,
             tokens,
-            1.0  if service.is_paused() else 0.0,
-            True if service.is_paused() else False,
+            1.0,
+            True
         )
 
 
@@ -55,9 +81,11 @@ class _SpotifyServiceUnpauseHandler(Handler):
         """
         @see Handler.handle()`
         """
-        was_paused = self.service.is_paused()
-        self.service.unpause()
-        return Result(self, '', False, was_paused)
+        try:
+            self.service.unpause()
+            return Result(self, '', False, True)
+        except:
+            return Result(self, '', False, False)
 
 
 class _SpotifyServiceTogglePauseHandler(Handler):
@@ -68,8 +96,8 @@ class _SpotifyServiceTogglePauseHandler(Handler):
         super(_SpotifyServiceTogglePauseHandler, self).__init__(
             service,
             tokens,
-            1.0  if service.is_paused() or service.is_playing() else 0.0,
-            True if service.is_paused() or service.is_playing() else False,
+            1.0,
+            True
         )
 
 
@@ -77,15 +105,14 @@ class _SpotifyServiceTogglePauseHandler(Handler):
         """
         @see Handler.handle()`
         """
-        if self.service.is_playing():
-            self.service.pause()
-            handled = True
-        elif self.service.is_paused():
-            self.service.unpause()
-            handled = True
-        else:
-            handled = False
-        return Result(self, '', False, handled)
+        try:
+            if self.service.is_playing():
+                self.service.pause()
+            else:
+                self.service.unpause()
+            return Result(self, '', False, True)
+        except Exception as e:
+            return Result(self, '', False, False)
 
 
 class _SpotifyServicePlayHandler(Handler):
@@ -127,16 +154,27 @@ class SpotifyService(MusicService):
     """
     Music service for local files.
     """
-    def __init__(self, state, client_id=None, client_secret=None):
+    def __init__(self, state,
+                 client_id=None, client_secret=None, redirect_uri=None):
         """
         @see Service.__init__()
+
+        For the real meanings of the kwargs, read the Spotipy documentation:
+            https://spotipy.readthedocs.io
+        You can also set them as the environment variables::
+          * ``SPOTIPY_CLIENT_ID``
+          * ``SPOTIPY_CLIENT_SECRET``
+          * ``SPOTIPY_REDIRECT_URI``
 
         :type  client_id: str
         :param client_id:
             The Spotify client ID.
         :type  client_secret: str
         :param client_secret:
-            The Spotify client secret,
+            The Spotify client secret.
+        :type  redirect_uri: str
+        :param redirect_uri:
+            The Spotify redirect URI.
         """
         super(SpotifyService, self).__init__("SpotifyService",
                                              state,
@@ -144,6 +182,7 @@ class SpotifyService(MusicService):
 
         self._client_id     = client_id
         self._client_secret = client_secret
+        self._redirect_uri  = redirect_uri
         self._spotify       = None
         self._volume        = None
 
@@ -152,19 +191,48 @@ class SpotifyService(MusicService):
         """
         @see Startable.start()
         """
-        # Create the client
-        auth_manager = SpotifyOAuth(scope=(','.join(('user-library-read',
-                                                     'user-read-playback-state',
-                                                     'user-modify-playback-state'))))
+        # This is what we need to be able to do
+        scope = ','.join(('user-library-read',
+                          'user-read-playback-state',
+                          'user-modify-playback-state'))
+
+        # Create the authorization manager, and then use that to create the
+        # client
+        auth_manager = SpotifyOAuth(client_id    =self._client_id,
+                                    client_secret=self._client_secret,
+                                    redirect_uri =self._redirect_uri,
+                                    scope        =scope)
         self._spotify = Spotify(auth_manager=auth_manager)
+
+        # See what devices we have to hand
+        try:
+            devices = self._spotify.devices()
+            for device in devices['devices']:
+                # Say what we see
+                name   = device['name']
+                type_  = device['type']
+                active = device['is_active']
+                vol    = device['volume_percent']
+                LOG.info("Found %sactive %s device: %s",
+                         '' if active else 'in', type_, name)
+                if active and self._volume is None:
+                    self._volume = vol / 100.0 * MAX_VOLUME
+                    
+        except Exception as e:
+            LOG.warning("Unable to determine active Spoify devices: %s", e)
 
 
     def set_volume(self, volume):
         """
         @see MusicService.set_volume()
         """
-        # Not supported, just record it
-        self._volume = volume
+        if MIN_VOLUME <= volume <= MAX_VOLUME:
+            self._volume = volume
+            self._spotify.volume(
+                100.0 * (volume - MIN_VOLUME) / (MAX_VOLUME - MIN_VOLUME)
+            )
+        else:
+            raise ValueError("Bad volume: %s", volume)
 
 
     def get_volume():
@@ -182,14 +250,18 @@ class SpotifyService(MusicService):
         :return:
            Whether the player is playing.
         """
-        return self._spotify.currently_playing() is not None
+        try:
+            cur = self._spotify.currently_playing()
+            return cur['is_playing']
+        except:
+            return False
 
 
     def play(self, uris):
         """
         Set the list of URIs playing.
         """
-        LOG.error("Playing: %s", ' '.join(uris))
+        LOG.info("Playing: %s", ' '.join(uris))
         self._spotify.start_playback(uris=uris)
 
 

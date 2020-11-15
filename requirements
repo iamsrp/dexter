@@ -2,10 +2,11 @@
 # on whether you don't care about certain modules. On Raspberry Pi OS and Ubuntu
 # the following should work.
 
-  sudo apt install -y \
-       swig \
-       python3-pip python3-numpy python3-scipy python3-pyaudio python3-argh \
-       python3-espeak python3-fuzzywuzzy python3-mutagen python3-argh python3-pygame \
-       libpocketsphinx3 pocketsphinx-en-us libpulse-dev libasound2-dev \
-       festival festvox-us-slt-hts
-  pip3 install deepspeech pyalsaaudio wikipedia
+sudo apt install -y \
+     swig \
+     python3-pip python3-numpy python3-scipy python3-pyaudio python3-argh \
+     python3-espeak python3-fuzzywuzzy python3-mutagen python3-argh python3-pygame \
+     libpocketsphinx3 pocketsphinx-en-us libpulse-dev libasound2-dev \
+     festival festvox-us-slt-hts
+
+pip3 install deepspeech pyalsaaudio wikipedia spotipy
