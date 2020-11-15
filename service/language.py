@@ -197,7 +197,7 @@ class SpellingService(Service):
 
         # Look for these prefixes
         prefices = (('spell',),
-                 ('how', 'do', 'you', 'spell'),)
+                    ('how', 'do', 'you', 'spell'))
         match = None
         for prefix in prefices:
             try:
@@ -220,11 +220,3 @@ class SpellingService(Service):
         else:
             # Nope, we got nothing
             return None
-
-
-    def meaning(self, word):
-        """
-        Look up the meanings of the given word.
-        """
-        # Simple hand-off
-        return self._dict.meaning(word)
