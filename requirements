@@ -9,4 +9,4 @@ sudo apt install -y \
      libpocketsphinx3 pocketsphinx-en-us libpulse-dev libasound2-dev \
      festival festvox-us-slt-hts
 
-pip3 install deepspeech pyalsaaudio wikipedia spotipy
+pip3 install deepspeech pyalsaaudio wikipedia spotipy pydictionary
