@@ -1,5 +1,7 @@
 """
 A simple Spotify client, using ``spotipy`` under the hood.
+
+This code is currently alpha quality and doesn't actually work yet.
 """
 
 from   dexter.core.log          import LOG
