@@ -11,9 +11,14 @@ will require getting the following::
   * Client ID
   * Client Secret
   * Redirect URI
-The Redirect URI which should include a port, e.g. ``http://localhost:8765``, to
-make things work more seamlessly with this client. Otherwise you wind up having
-to copy & paste things from a pop-up browser page.
+The Redirect URI should include a port, e.g. ``http://localhost:8765``, to make
+things work more seamlessly with this client. When you first start a session you
+will need to authenticate you'll see a ``https://accounts.spotify.com/...`` URL
+which, when opened, will redirect to a URL which starts with the Redirect
+URI. If a browser pops up (on the local machine's display) then it will have
+queried the client and you should be set. Else you can simply do that via
+``curl 'http://localhost:...``. Once you've authenticate once then you will have
+a `.cache` file which will be used next time around.
 
 This is all explained pretty well in the Spotipy docs:
     https://spotipy.readthedocs.io/
