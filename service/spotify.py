@@ -222,7 +222,7 @@ class SpotifyService(MusicService):
                          '' if active else 'in', type_, name)
                 if active and self._volume is None:
                     self._volume = vol / 100.0 * MAX_VOLUME
-                    
+
         except Exception as e:
             LOG.warning("Unable to determine active Spoify devices: %s", e)
 
