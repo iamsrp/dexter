@@ -193,41 +193,6 @@ class SpotifyService(MusicService):
         self._volume        = None
 
 
-    def start(self):
-        """
-        @see Startable.start()
-        """
-        # This is what we need to be able to do
-        scope = ','.join(('user-library-read',
-                          'user-read-playback-state',
-                          'user-modify-playback-state'))
-
-        # Create the authorization manager, and then use that to create the
-        # client
-        auth_manager = SpotifyOAuth(client_id    =self._client_id,
-                                    client_secret=self._client_secret,
-                                    redirect_uri =self._redirect_uri,
-                                    scope        =scope)
-        self._spotify = Spotify(auth_manager=auth_manager)
-
-        # See what devices we have to hand
-        try:
-            devices = self._spotify.devices()
-            for device in devices['devices']:
-                # Say what we see
-                name   = device['name']
-                type_  = device['type']
-                active = device['is_active']
-                vol    = device['volume_percent']
-                LOG.info("Found %sactive %s device: %s",
-                         '' if active else 'in', type_, name)
-                if active and self._volume is None:
-                    self._volume = vol / 100.0 * MAX_VOLUME
-
-        except Exception as e:
-            LOG.warning("Unable to determine active Spoify devices: %s", e)
-
-
     def set_volume(self, volume):
         """
         @see MusicService.set_volume()
@@ -283,6 +248,41 @@ class SpotifyService(MusicService):
         Resume any currently paused music.
         """
         self._spotify.start_playback()
+
+
+    def _start(self):
+        """
+        @see Startable._start()
+        """
+        # This is what we need to be able to do
+        scope = ','.join(('user-library-read',
+                          'user-read-playback-state',
+                          'user-modify-playback-state'))
+
+        # Create the authorization manager, and then use that to create the
+        # client
+        auth_manager = SpotifyOAuth(client_id    =self._client_id,
+                                    client_secret=self._client_secret,
+                                    redirect_uri =self._redirect_uri,
+                                    scope        =scope)
+        self._spotify = Spotify(auth_manager=auth_manager)
+
+        # See what devices we have to hand
+        try:
+            devices = self._spotify.devices()
+            for device in devices['devices']:
+                # Say what we see
+                name   = device['name']
+                type_  = device['type']
+                active = device['is_active']
+                vol    = device['volume_percent']
+                LOG.info("Found %sactive %s device: %s",
+                         '' if active else 'in', type_, name)
+                if active and self._volume is None:
+                    self._volume = vol / 100.0 * MAX_VOLUME
+
+        except Exception as e:
+            LOG.warning("Unable to determine active Spoify devices: %s", e)
 
 
     def _match_artist(self, artist):

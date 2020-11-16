@@ -262,6 +262,13 @@ class Timer(object):
         self._cancelled = False
 
 
+    def cancel(self):
+        """
+        Cancel this timer.
+        """
+        self._cancelled = True
+
+
     def start(self):
         """
         Start this timer.
@@ -269,13 +276,6 @@ class Timer(object):
         thread = Thread(target=self._run)
         thread.daemon = True
         thread.start()
-
-
-    def cancel(self):
-        """
-        Cancel this timer.
-        """
-        self._cancelled = True
 
 
     def _run(self):
