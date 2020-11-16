@@ -1,5 +1,5 @@
 """
-A simple Spotify controller client, using ``spotipy`` under the hood. This
+A simple Spotify controller client, using `spotipy` under the hood. This
 should be considered to be beta quality right now.
 
 This doesn't actually play music itself but, instead, allows you to control a
@@ -154,10 +154,11 @@ class _SpotifyServicePlayHandler(Handler):
         self.service.play(self._uris)
         return Result(self, '', False, True)
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 class SpotifyService(MusicService):
     """
-    Music service for local files.
+    Spotify client music service.
     """
     def __init__(self, state,
                  client_id=None, client_secret=None, redirect_uri=None):
