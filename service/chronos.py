@@ -297,7 +297,7 @@ class TimerService(Service):
     """
     A service for setting timers and alarms.
     """
-    def __init__(self, state, timer_wave=None):
+    def __init__(self, state, timer_wav=None):
         """
         @see Service.__init__()
         """
@@ -306,8 +306,8 @@ class TimerService(Service):
         self._timers  = []
         self._pyaudio = pyaudio.PyAudio()
 
-        if timer_wave is not None:
-            with wave.open(timer_wave, 'rb') as wf:
+        if timer_wav is not None:
+            with wave.open(timer_wav, 'rb') as wf:
                 self._timer_audio = {
                     'channels' : wf.getnchannels(),
                     'width'    : wf.getsampwidth(),
