@@ -4,7 +4,7 @@ How we play media (like music).
 
 from   dexter.core.audio import MIN_VOLUME, MAX_VOLUME
 from   dexter.core.log   import LOG
-from   dexter.core.util  import get_pygame()
+from   dexter.core.util  import get_pygame
 from   threading         import Thread
 
 import queue
