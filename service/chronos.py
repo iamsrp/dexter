@@ -6,16 +6,15 @@ Various services related to the ticking of the clock.
 
 from   dexter.core.log  import LOG
 from   dexter.core.util import (fuzzy_list_range,
+                                get_pygame,
                                 number_to_words,
                                 parse_number,
                                 to_letters)
 from   dexter.service   import Service, Handler, Result
 from   threading        import Thread
 
-import pyaudio
 import time
 import traceback
-import wave
 
 # ------------------------------------------------------------------------------
 
@@ -304,16 +303,9 @@ class TimerService(Service):
         super(TimerService, self).__init__("Timer", state)
 
         self._timers  = []
-        self._pyaudio = pyaudio.PyAudio()
 
         if timer_wav is not None:
-            with wave.open(timer_wav, 'rb') as wf:
-                self._timer_audio = {
-                    'channels' : wf.getnchannels(),
-                    'width'    : wf.getsampwidth(),
-                    'rate'     : wf.getframerate(),
-                    'data'     : wf.readframes(-1)
-                }
+            self._timer_audio = get_pygame().mixer.Sound(timer_wav)
         else:
             self._timer_audio = None
 
@@ -375,26 +367,19 @@ class TimerService(Service):
         Ring the alarm for the given timer.
         """
         # Let the terminal know
-        LOG.info("DING DING DING!!! Timer %s has expired..." % (timer,))
+        LOG.info("DING DING DING!!! Timer '%s' has expired..." % (timer,))
 
         # Play any sound...
         if self._timer_audio is not None:
+            LOG.info("Playing timer sound")
+
             # ...for about 5 seconds
             end = time.time() + 5
             while time.time() < end:
                 try:
-                    stream = self._pyaudio.open(
-                        format  =self._pyaudio.get_format_from_width(
-                            self._timer_audio['width']
-                        ),
-                        channels=self._timer_audio['channels'],
-                        rate    =self._timer_audio['rate'],
-                        output  =True
-                    )
-                    stream.write(self._timer_audio['data'])
-                    stream.close()
+                    self._timer_audio.play()
                 except Exception as e:
-                    LOG.warning("Failed to play timer sound: %s" % e)
+                    LOG.warning("Failed to play timer sound: %s", e)
 
         # And remove the timer (this should not fail but...)
         try:

@@ -4,8 +4,10 @@ Various utility methods.
 
 from   dexter.core.log import LOG
 from   fuzzywuzzy      import fuzz
+from   threading       import Lock
 
 import numpy
+import pygame
 import re
 
 # ------------------------------------------------------------------------------
@@ -160,6 +162,8 @@ class _WordsToNumbers():
         return num
 
 # ------------------------------------------------------------------------------
+
+_PYGAME_LOCK = Lock()
 
 _WORDS_TO_NUMBERS = _WordsToNumbers()
 
@@ -421,6 +425,17 @@ _HOMOPHONES = {
 }
 
 # ------------------------------------------------------------------------------
+
+
+def get_pygame():
+    """
+    Get a handle on the pygame module, ensuring that it's been init()'d.
+    """
+    with _PYGAME_LOCK:
+        pygame.init()
+        pygame.mixer.init()
+        return pygame
+
 
 def _strip_to(string, alphabet):
     """

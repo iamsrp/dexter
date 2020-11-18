@@ -16,6 +16,7 @@ MAX_VOLUME = 11
 
 # ------------------------------------------------------------------------------
 
+
 def set_volume(value):
     """
     Set the volume to a value between zero and eleven.

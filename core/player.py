@@ -4,9 +4,9 @@ How we play media (like music).
 
 from   dexter.core.audio import MIN_VOLUME, MAX_VOLUME
 from   dexter.core.log   import LOG
+from   dexter.core.util  import get_pygame()
 from   threading         import Thread
 
-import pygame
 import queue
 import time
 
@@ -25,10 +25,6 @@ class SimpleMP3Player(object):
 
         # If we're paused
         self._paused = False
-
-        # Tell pygame to get ready
-        pygame.init()
-        pygame.mixer.init()
 
         # Set the controller thread going
         thread = Thread(target=self._controller)
@@ -54,7 +50,7 @@ class SimpleMP3Player(object):
         # Set as a fraction of 1
         v = (volume / MAX_VOLUME)
         LOG.info("Setting volume to %0.2f" % v)
-        pygame.mixer.music.set_volume(v)
+        get_pygame().mixer.music.set_volume(v)
 
 
     def get_volume(self):
@@ -65,7 +61,7 @@ class SimpleMP3Player(object):
         :return:
             The volume level; between `MIN_VOLUME` and `MAX_VOLUME` inclusive.
         """
-        return MAX_VOLUME * pygame.mixer.music.get_volume()
+        return MAX_VOLUME * get_pygame().mixer.music.get_volume()
 
 
     def is_playing(self):
@@ -76,7 +72,7 @@ class SimpleMP3Player(object):
         :return:
            Whether the player is playing.
         """
-        return pygame.mixer.music.get_busy() and not self._paused
+        return get_pygame().mixer.music.get_busy() and not self._paused
 
 
     def is_paused(self):
@@ -109,9 +105,8 @@ class SimpleMP3Player(object):
         # propagate.
         filename = filenames[0]
         LOG.info("Playing %s", filename)
-        pygame.mixer.init()
-        pygame.mixer.music.load(filename)
-        pygame.mixer.music.play()
+        get_pygame().mixer.music.load(filename)
+        get_pygame().mixer.music.play()
 
         # And enqueue the rest
         for filename in filenames[1:]:
@@ -130,7 +125,7 @@ class SimpleMP3Player(object):
 
         # Tell pygame to stop playing any current music
         try:
-            pygame.mixer.music.stop()
+            get_pygame().mixer.music.stop()
         except:
             pass
 
@@ -141,7 +136,7 @@ class SimpleMP3Player(object):
         """
         if self.is_playing():
             self._paused = True
-            pygame.mixer.music.pause()
+            get_pygame().mixer.music.pause()
 
 
     def unpause(self):
@@ -149,7 +144,7 @@ class SimpleMP3Player(object):
         Resume any currently paused music.
         """
         self._paused = False
-        pygame.mixer.music.unpause()
+        get_pygame().mixer.music.unpause()
 
 
     def _controller(self):
@@ -162,7 +157,7 @@ class SimpleMP3Player(object):
             time.sleep(0.1)
 
             # Do nothing while the song is playing.
-            if pygame.mixer.music.get_busy():
+            if get_pygame().mixer.music.get_busy():
                 continue
 
             # Get the next song to play, this will block
@@ -171,7 +166,7 @@ class SimpleMP3Player(object):
 
             # Attempt to play it
             try:
-                pygame.mixer.music.load(song)
-                pygame.mixer.music.play()
+                get_pygame().mixer.music.load(song)
+                get_pygame().mixer.music.play()
             except Exception as e:
                 LOG.warning("Failed to play %s: %s", song, e)
