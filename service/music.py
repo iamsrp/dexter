@@ -570,7 +570,6 @@ class LocalMusicService(MusicService):
 
         # Try using the song_or_album as the song name
         entries = self._media_index.lookup(name=name, artist=artist)
-
         if len(entries) > 0:
             # Just pick the first
             entries = entries[:1]
@@ -578,22 +577,30 @@ class LocalMusicService(MusicService):
 
             # Score by the song name (this is out of 100)
             score = fuzz.ratio(entry.name, name)
+            if score < 50:
+                # Not a good enough match, blank the list and try more below
+                entries = []
+            else:
+                # What we are playing
+                what = entry.name
+                if entry.artist is not None:
+                    what += ' by ' + entry.artist
 
-            # What we are playing
-            what = entry.name
-            if entry.artist is not None:
-                what += ' by ' + entry.artist
-        else:
-            # That failed so fall back to it being the album name
-            entries = self._media_index.lookup(name=name, artist=artist)
-
-            # Score by the album name (this is out of 100)
-            score = fuzz.ratio(entries[0].album, name)
-
-            # What we are playing
-            what = entries[0].album
-            if entries[0].artist is not None:
-                what += ' by ' + entries[0].artist
+        
+        # If that failed then fall back to it being the album name
+        if len(entries) == 0:
+            entries = self._media_index.lookup(album=name, artist=artist)
+            if len(entries) > 0:
+                # Score by the album name (this is also out of 100)
+                score = fuzz.ratio(entries[0].album, name)
+                if score < 50:
+                    # Not a good enough match, blank the list
+                    entries = []
+                else:
+                    # What we are playing
+                    what = entries[0].album
+                    if entries[0].artist is not None:
+                        what += ' by ' + entries[0].artist
 
         # Strip out any entries which aren't MP3 files
         entries = [entry
@@ -610,3 +617,5 @@ class LocalMusicService(MusicService):
                 [entry.url[7:] for entry in entries],
                 score / 100.0
             )
+        else:
+            return None
