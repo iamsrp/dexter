@@ -114,7 +114,10 @@ class SocketInput(Input):
 
             if c in b' \t\n':
                 if len(cur.strip()) > 0:
-                    tokens.append(Token(cur.strip().decode(), 1.0, True))
+                    try:
+                        tokens.append(Token(cur.strip().decode(), 1.0, True))
+                    except Exception as e:
+                        LOG.error("Error handling '%s': %s", cur, e)
                     cur = b''
 
                 if c == b'\n':
