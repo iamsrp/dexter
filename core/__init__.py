@@ -650,8 +650,8 @@ class Dexter(object):
                         if h.exclusive]
 
         # Now try each of the handlers
-        response = []
-        error    = False
+        response      = []
+        error_service = None
         for handler in handlers:
             try:
                 # Update the status of this handler's service to "working" while
@@ -673,7 +673,7 @@ class Dexter(object):
                     break
 
             except:
-                error = True
+                error_service = handler.service
                 LOG.error(
                     "Handler %s with tokens %s for service %s yielded:\n%s" %
                     (handler,
@@ -688,8 +688,8 @@ class Dexter(object):
                                           Notifier.IDLE)
 
         # Give back whatever we had, if anything
-        if error:
-            return "Sorry, there was a problem"
+        if error_service:
+            return "Sorry, there was a problem with %s" % (error_service,)
         elif len(response) > 0:
             return '\n'.join(response)
         else:
