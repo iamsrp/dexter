@@ -296,16 +296,20 @@ class TimerService(Service):
     """
     A service for setting timers and alarms.
     """
-    def __init__(self, state, timer_wav=None):
+    def __init__(self, state, timer_sound=None):
         """
         @see Service.__init__()
+
+        :type  timer_sound: str
+        :param timer_sound:
+            The path to the sound to play when the timer goes off.
         """
         super(TimerService, self).__init__("Timer", state)
 
         self._timers  = []
 
-        if timer_wav is not None:
-            self._timer_audio = get_pygame().mixer.Sound(timer_wav)
+        if timer_sound is not None:
+            self._timer_audio = get_pygame().mixer.Sound(timer_sound)
         else:
             self._timer_audio = None
 
