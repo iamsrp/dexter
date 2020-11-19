@@ -447,7 +447,7 @@ class SpotifyService(MusicService):
                 break
 
         # Otherwise assume that it's an artist
-        if len(uris) == 0:
+        if len(uris) == 0 and artist is None:
             LOG.info("Looking for '%s' as an artist", name)
             result = self._spotify.search(name, type='artist')
             LOG.debug("Got: %s", result)
