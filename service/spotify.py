@@ -23,12 +23,24 @@ a `.cache` file which will be used next time around.
 This is all explained pretty well in the Spotipy docs:
     https://spotipy.readthedocs.io/
 
-In terms of players, it will pick up whatever it finds to be the current
-"default" device. As well as the Spotify web player, there are various other
-ones like::
-  * https://github.com/hrkfdn/ncspot
+In terms of players, if the ``device_name`` is not set then it will pick up
+whatever it finds to be the current "default" active device. As well as the
+Spotify web player, there are various other ones like::
   * https://github.com/dtcooper/raspotify
+  * https://github.com/hrkfdn/ncspot
   * https://github.com/Spotifyd/spotifyd
+
+The raspotify package, as is claimed, basically "Just Works" on a Raspberry
+Pi. However you might need to do the following to make it "Just Work" for
+Dexter:
+  1. If the audio doesn't work then you might need to put your ALSA config 
+     into ``/etc/asoundrc``. See also the Troubleshooting section of the
+     package's README.
+  2. If you want to always connect to that instance (likely) then you should
+     set the ``device_name`` something like this:
+       ``"device_name"   : "raspotify (${HOSTNAME})"``
+     where that name is the default. You can also set a specific name in the
+     ``/etc/default/raspotify`` file and use that too.
 """
 
 from   dexter.core.audio        import MIN_VOLUME, MAX_VOLUME
@@ -161,7 +173,10 @@ class SpotifyService(MusicService):
     Spotify client music service.
     """
     def __init__(self, state,
-                 client_id=None, client_secret=None, redirect_uri=None):
+                 client_id    =None,
+                 client_secret=None,
+                 redirect_uri =None,
+                 device_name  =None):
         """
         @see Service.__init__()
 
@@ -181,6 +196,9 @@ class SpotifyService(MusicService):
         :type  redirect_uri: str
         :param redirect_uri:
             The Spotify redirect URI.
+        :type  device_name: str
+        :param device_name:
+            The name of the device to control, if not the default one.
         """
         super(SpotifyService, self).__init__("SpotifyService",
                                              state,
@@ -189,6 +207,8 @@ class SpotifyService(MusicService):
         self._client_id     = client_id
         self._client_secret = client_secret
         self._redirect_uri  = redirect_uri
+        self._device_name   = device_name
+        self._device_id     = None        
         self._spotify       = None
         self._volume        = None
 
@@ -200,7 +220,8 @@ class SpotifyService(MusicService):
         if MIN_VOLUME <= volume <= MAX_VOLUME:
             self._volume = volume
             self._spotify.volume(
-                100.0 * (volume - MIN_VOLUME) / (MAX_VOLUME - MIN_VOLUME)
+                100.0 * (volume - MIN_VOLUME) / (MAX_VOLUME - MIN_VOLUME),
+                device_id=self._device_id
             )
         else:
             raise ValueError("Bad volume: %s", volume)
@@ -233,21 +254,22 @@ class SpotifyService(MusicService):
         Set the list of URIs playing.
         """
         LOG.info("Playing: %s", ' '.join(uris))
-        self._spotify.start_playback(uris=uris)
+        self._spotify.start_playback(uris     =uris,
+                                     device_id=self._device_id)
 
 
     def pause(self):
         """
         Pause any currently playing music.
         """
-        self._spotify.pause_playback()
+        self._spotify.pause_playback(device_id=self._device_id)
 
 
     def unpause(self):
         """
         Resume any currently paused music.
         """
-        self._spotify.start_playback()
+        self._spotify.start_playback(device_id=self._device_id)
 
 
     def _start(self):
@@ -269,20 +291,50 @@ class SpotifyService(MusicService):
 
         # See what devices we have to hand
         try:
+            if self._device_name is not None:
+                LOG.info("Looking for device named '%s'", self._device_name)
+
             devices = self._spotify.devices()
             for device in devices['devices']:
                 # Say what we see
                 name   = device['name']
+                id_    = device['id']
                 type_  = device['type']
                 active = device['is_active']
                 vol    = device['volume_percent']
-                LOG.info("Found %sactive %s device: %s",
+                LOG.info("Found %sactive %s device: '%s'",
                          '' if active else 'in', type_, name)
-                if active and self._volume is None:
-                    self._volume = vol / 100.0 * MAX_VOLUME
+
+                # See if we're looking for a specific device, if not just snoop
+                # the volume from the first active one
+                if self._device_name is not None:
+                    if name == self._device_name:
+                        LOG.info("Matched '%s' to ID '%s'", name, id_)
+                        self._device_id = id_
+                        self._volume    = vol / 100.0 * MAX_VOLUME
+                else:
+                    if active and self._volume is None:
+                        self._volume = vol / 100.0 * MAX_VOLUME
 
         except Exception as e:
             LOG.warning("Unable to determine active Spoify devices: %s", e)
+
+        # If we were looking for a specific device then make sure that we found
+        # it in the list
+        if self._device_name is not None and self._device_id is None:
+            raise ValueError("Failed to find device with name '%s'" %
+                             (self._device_name,))
+
+
+    def _stop(self):
+        """
+        @see Startable._stop()
+        """
+        try:
+            self._spotify.pause_playback(device_id=self._device_id)
+        except:
+            # Best effort
+            pass
 
 
     def _match_artist(self, artist):

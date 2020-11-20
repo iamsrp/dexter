@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import argh
+import getpass
 import logging
 import json
 import os
+import socket
 import sys
 
 sys.path[0] += '/..'
@@ -95,12 +97,24 @@ def main(log_level=None, config=None):
                 value = kwargs[name]
                 try:
                     while True:
-                        start   = value.index('${')
-                        end     = value.index('}', start)
-                        varname = value[start+2:end]
-                        value   = (value[:start] +
-                                   os.environ.get(varname, '') +
-                                   value[end+1:])
+                        # Pull out the variable name, if it exists
+                        start    = value.index('${')
+                        end      = value.index('}', start)
+                        varname  = value[start+2:end]
+                        varvalue = os.environ.get(varname, '')
+
+                        # Special handling for some variables
+                        if not varvalue:
+                            # These are not always set in the environment but
+                            # people tend to expect it to be, so we are nice and
+                            # provide them
+                            if varname == "HOSTNAME":
+                                varvalue = socket.gethostname()
+                            elif varname == "USER":
+                                varvalue = getpass.getuser()
+
+                        # And replace it
+                        value = (value[:start] + varvalue + value[end+1:])
                 except:
                     # This means we failed to find the opening or closing
                     # varname container in the string, so we're done
