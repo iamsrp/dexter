@@ -27,8 +27,8 @@ In terms of players, if the ``device_name`` is not set then it will pick up
 whatever it finds to be the current "default" active device. As well as the
 Spotify web player, there are various other ones like::
   * https://github.com/dtcooper/raspotify
-  * https://github.com/hrkfdn/ncspot
   * https://github.com/Spotifyd/spotifyd
+  * https://github.com/hrkfdn/ncspot [untested]
 
 The raspotify package, as is claimed, basically "Just Works" on a Raspberry
 Pi. However you might need to do the following to make it "Just Work" for
@@ -41,6 +41,25 @@ Dexter:
        ``"device_name"   : "raspotify (${HOSTNAME})"``
      where that name is the default. You can also set a specific name in the
      ``/etc/default/raspotify`` file and use that too.
+
+On Ubuntu spotifyd works fine to. Only setting the following variables in the
+config file seems to be sufficient::
+ * username
+ * password
+ * backend
+ * mixer
+ * on_song_change_hook
+ * device_name
+ * bitrate
+ * no_audio_cache
+ * initial_volume
+ * volume_normalisation
+ * normalisation_pregain
+ * device_type
+I used the defaults in the README for everything except username and password.
+To point Dexter at it you can set the device name to something like this:
+  ``"device_name"   : "Spotifyd@${HOSTNAME}"``
+It then basically Just Works too.
 """
 
 from   dexter.core.audio        import MIN_VOLUME, MAX_VOLUME
