@@ -350,7 +350,7 @@ class AudioInput(Input):
             time.sleep(0.001)
 
         # And we're done!
-        LOG.info("Stopping decoding handler")
+        LOG.info("Stopped decoding handler")
 
 
 class _Future(object):
