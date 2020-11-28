@@ -6,6 +6,7 @@ from   dexter.core.log import LOG
 from   dexter.output   import Output
 
 import logging
+import socket
 
 # ------------------------------------------------------------------------------
 
@@ -91,3 +92,53 @@ class LogOutput(Output):
         """
         if text:
             LOG.log(self._level, str(text))
+
+
+class SocketOutput(Output):
+    """
+    An output which sends text to a simple remote socket.
+
+    Each block of text will be sent and terminated by a ``NUL`` char.
+    """
+    def __init__(self, state, host=None, port=None):
+        """
+        @see Output.__init__()
+        :type  host: ste
+        :param host:
+            The remote host to connect to.
+        :type  port: int
+        :param port:
+            The port to connect to on the remote host.
+        """
+        super(SocketOutput, self).__init__(state)
+        self._host   = str(host)
+        self._port   = int(port)
+        self._socket = None
+
+
+    def write(self, text):
+        """
+        @see Output.write
+        """
+        if text:
+            self._socket.send(str(text + '\0').encode())
+
+
+    def _start(self):
+        """
+        @see Startable._start()
+        """
+        # Create the socket
+        LOG.info("Opening socket to %s:%d" % (self._host, self._port))
+        self._socket = socket.socket()
+        self._socket.connect((self._host, self._port))
+
+
+    def _stop(self):
+       """
+       @see Startable._stop()
+       """
+       try:
+           self._socket.close()
+       except:
+           pass
