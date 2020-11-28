@@ -24,7 +24,7 @@ class AudioInput(Input):
     """
     def __init__(self,
                  state,
-                 chunk_size=512,
+                 chunk_secs=0.1,
                  format    =pyaudio.paInt16,
                  channels  =1,
                  rate      =16000,
@@ -33,9 +33,9 @@ class AudioInput(Input):
         :type  state: L{State}
         :param state:
             The State instance.
-        :type  chunk_size: int
-        :param chunk_size:
-            The number of samples to read from the stream at once.
+        :type  chunk_secs: float
+        :param chunk_secs:
+            The length of a read chunk.
         :type  format: int
         :param format:
             The pyaudio format.
@@ -53,11 +53,14 @@ class AudioInput(Input):
         super(AudioInput, self).__init__(state)
 
         # Microphone stream config
-        self._chunk_size = chunk_size
         self._format     = format
         self._channels   = channels
         self._width      = pyaudio.get_sample_size(pyaudio.paInt16) * channels
         self._rate       = rate
+        self._chunk_size = int(chunk_secs     *
+                               self._channels *
+                               self._width    *
+                               self._rate) # makes chunk_size in bytes
 
         # How we hand off to another thread to decode and handle asynchronously
         self._decode_queue    = deque()
@@ -176,7 +179,6 @@ class AudioInput(Input):
         speech   = None  # What we will process as speech data
         min_secs =  4
         max_secs = 10
-        last_log =  0
 
         # Init is done, we start off idle
         self._notify(Notifier.IDLE)
@@ -188,7 +190,7 @@ class AudioInput(Input):
 
             # Read in the next lump of data and get its average volume
             chunk = stream.read(self._chunk_size, exception_on_overflow=False)
-            level = numpy.sqrt(abs(audioop.avg(chunk, self._width)))
+            level = abs(audioop.avg(chunk, self._width))
 
             # Accumulate into our buffers
             audio_buf.append(chunk)
@@ -217,37 +219,30 @@ class AudioInput(Input):
             # is talking then the background sound going to be at the end of the
             # levels, else it will be at the start.
 
+            # Get the median level as we transition
+            from_levels = levels[        :-avg_idx] # From start to avg_idx
+            to_levels   = levels[-avg_idx:        ] # From avg_idx to end
+            from_median = numpy.sort(from_levels)[int(len(from_levels) * 0.5)]
+            to_median   = numpy.sort(to_levels  )[int(len(to_levels  ) * 0.5)]
+            LOG.debug("Levels are from=%0.2f to=%0.2f", from_median, to_median)
+
             # Different detection based on what we are looking for
             if not talking:
                 # Looking for a step up in the latter part
-                from_levels = levels[        :-avg_idx] # From start to avg_idx
-                to_levels   = levels[-avg_idx:        ] # From avg_idx to end
-                from_pctl = numpy.sort(from_levels)[int(len(from_levels) * 0.5)]
-                to_pctl   = numpy.sort(to_levels  )[int(len(to_levels  ) * 0.6)]
-                LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
-                if from_pctl * 1.5 < to_pctl:
+                if from_median * 1.5 < to_median:
                     LOG.info("Detected start of speech "
                              "with levels going from %0.2f to %0.2f" %
-                             (from_pctl, to_pctl))
+                             (from_median, to_median))
                     talking = True
                     talking_start = now
-                    start_pctl = from_pctl
+                    start_median = from_median
             else:
                 # Looking for a step down in the latter part
-                from_levels = levels[        :avg_idx] # From start to avg_idx
-                to_levels   = levels[avg_idx:        ] # From avg_idx to end
-                from_pctl = numpy.sort(from_levels)[int(len(from_levels) * 0.5)]
-                to_pctl   = numpy.sort(to_levels  )[int(len(to_levels  ) * 0.5)]
-                if now - last_log > 0.2:
-                    LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
-                    last_log = now
-                else:
-                    LOG.debug("Levels are from=%0.2f to=%0.2f", from_pctl, to_pctl)
                 if (now - talking_start > min_secs and
-                    (from_pctl > to_pctl * 1.25 or to_pctl < start_pctl * 1.1)):
+                    (from_median > to_median * 1.25 or to_median < start_median * 1.1)):
                     LOG.info("Detected end of speech "
                              "with levels going from %0.2f to %0.2f" %
-                             (from_pctl, to_pctl))
+                             (from_median, to_median))
                     talking = False
 
             # If the talking has been going on too long then just stop it. Quite
@@ -325,7 +320,6 @@ class AudioInput(Input):
                 # Anything?
                 if len(queue) > 0:
                     item = queue.popleft()
-                    LOG.debug("Got a %s" % type(item))
                     if item is None:
                         # A None denotes the end of the data so we look to
                         # decode what we've been given
@@ -335,6 +329,7 @@ class AudioInput(Input):
                         self._notify(Notifier.IDLE)
                     elif isinstance(item, bytes):
                         # Something to feed the decoder
+                        LOG.debug("Feeding %d bytes" % len(item))
                         self._feed_raw(item)
                     else:
                         LOG.warning("Ignoring junk on decode queue: %r" % (item,))
