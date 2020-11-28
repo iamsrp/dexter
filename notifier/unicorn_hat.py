@@ -1,6 +1,7 @@
 """
-A notifier which utilises the Unicorn Hat HD on a Raspberry Pi.
+Notifiers which utilise the Unicorn HATs on a Raspberry Pi.
 
+@see https://github.com/pimoroni/unicornhatmini-python
 @see https://github.com/pimoroni/unicorn-hat-hd
 """
 
@@ -11,26 +12,21 @@ from   threading       import Thread
 
 import math
 import time
-import unicornhathd
 
 # ------------------------------------------------------------------------------
 
-class UnicornHatNotifier(ByComponentNotifier):
+class _UnicornHatNotifier(ByComponentNotifier):
     """
-    A notifier which can do different things depending on the type of component
-    which is giving it input.
+    A notifier for the Unicorn HAT family from Pimoroni.
     """
-    def __init__(self):
+    def __init__(self, brightness):
         """
         @see ByComponentNotifier.__init__()
         """
-        super(UnicornHatNotifier, self).__init__()
+        super(_UnicornHatNotifier, self).__init__()
 
-        # Unicorn settings
-        unicornhathd.rotation(0)
-        (w, h) = unicornhathd.get_shape()
-        self._width  = w
-        self._height = h
+        # Used when we start
+        self._start_brightness = brightness
 
         # The time, since epoch, when each component type stopped being active
         self._input_time   = 0
@@ -63,45 +59,97 @@ class UnicornHatNotifier(ByComponentNotifier):
             if self._is_input(component):
                 if component in self._inputs:
                     self._inputs.remove(component)
-                if len(self._inputs) == 0:
-                    self._input_time = 0
-                    self._input_dir  = 0
+                if len(self._inputs)   == 0:
+                    self._input_time    = 0
+                    self._input_dir     = 0
             if self._is_service(component):
                 if component in self._services:
                     self._services.remove(component)
                 if len(self._services) == 0:
-                    self._service_time = 0
-                    self._service_dir  = 0
+                    self._service_time  = 0
+                    self._service_dir   = 0
             if self._is_output(component):
                 if component in self._outputs:
                     self._outputs.remove(component)
-                if len(self._outputs) == 0:
-                    self._output_time = 0
-                    self._output_dir  = 0
+                if len(self._outputs)  == 0:
+                    self._output_time   = 0
+                    self._output_dir    = 0
         else:
             # Gone non-idle, add it to the appropriate group and reset the time
             if self._is_input(component):
                 self._inputs.add(component)
-                self._input_time = time.time()
-                self._input_dir  = 1 if status is Notifier.ACTIVE else -1
+                self._input_time   = time.time()
+                self._input_dir    = 1 if status is Notifier.ACTIVE else -1
             if self._is_service(component):
                 self._services.add(component)
                 self._service_time = time.time()
                 self._service_dir  = 1 if status is Notifier.ACTIVE else -1
             if self._is_output(component):
                 self._outputs.add(component)
-                self._output_time = time.time()
-                self._output_dir  = 1 if status is Notifier.ACTIVE else -1
+                self._output_time  = time.time()
+                self._output_dir   = 1 if status is Notifier.ACTIVE else -1
+
+
+    def set_brightness(self, brightness):
+        """
+        Set the brightness, this should be a value in the range ``[0.0, 1.0]``.
+        """
+        self._brightness(max(0.0, min(1.0, brightness)))
 
 
     def _start(self):
         """
         @see Notifier._start()
         """
+        # Set things up
+        self._brightness(self._start_brightness)
+
         # The thread which will maintain the display
         thread = Thread(target=self._updater)
         thread.deamon = True
         thread.start()
+
+
+    def _get_shape(self):
+        """
+        Get the width and height of the display, as a tuple.
+        """
+        raise NotImplementedError("Abstract method called")
+
+
+    def _brightness(self, brightness):
+        """
+        Set the brightness to a value in the range ``[0.0, 1.0]``.
+        """
+        raise NotImplementedError("Abstract method called")
+
+
+    def _rotation(self, rotation):
+        """
+        Set the rotation, to one of: ``0``, ``90``, ``180``, ``270``
+        """
+        raise NotImplementedError("Abstract method called")
+
+
+    def _set_pixel(self, x, y, r, g, b):
+        """
+        Set the pixel at ``(x,y)`` to the given ``(r,g,b)`` value.
+        """
+        raise NotImplementedError("Abstract method called")
+
+
+    def _show(self):
+        """
+        Show the display.
+        """
+        raise NotImplementedError("Abstract method called")
+
+
+    def _off(self):
+        """
+        Turn off the display.
+        """
+        raise NotImplementedError("Abstract method called")
 
 
     def _updater(self):
@@ -115,6 +163,11 @@ class UnicornHatNotifier(ByComponentNotifier):
         i_dir = 0.0
         s_dir = 0.0
         o_dir = 0.0
+
+        # We need to know these for later
+        (w, h) = self._get_shape()
+        mid_w  = w / 2
+        mid_h  = h / 2
 
         # And off we go!
         LOG.info("Started update thread")
@@ -153,12 +206,17 @@ class UnicornHatNotifier(ByComponentNotifier):
             o_dir  = (1.0 - f) * o_dir  + f * self._output_dir
 
             # And actually update the display
-            for y in range(self._height):
-                for x in range(self._width):
+            for y in range(h):
+                for x in range(w):
+                    # Swirl expects the values to be relative to a centred
+                    # origin of 0,0
+                    rx = x - mid_w
+                    ry = y - mid_h
+
                     # The pixel brightnesses, according to the pattern
-                    i_s = self._swirl(x, y, i_index, i_dir)
-                    s_s = self._swirl(x, y, s_index, s_dir)
-                    o_s = self._swirl(x, y, o_index, o_dir)
+                    i_s = self._swirl(rx, ry, i_index, i_dir)
+                    s_s = self._swirl(rx, ry, s_index, s_dir)
+                    o_s = self._swirl(rx, ry, o_index, o_dir)
 
                     # The RGB values
                     r = int(max(0, min(255, o_s * o_mult)))
@@ -166,27 +224,24 @@ class UnicornHatNotifier(ByComponentNotifier):
                     b = int(max(0, min(255, i_s * i_mult)))
 
                     # And set them
-                    unicornhathd.set_pixel(x, y, r, g, b)
+                    self._set_pixel(x, y, r, g, b)
 
-            unicornhathd.show()
+            self._show()
 
         # And we're done
-        unicornhathd.off()
+        self._off()
         LOG.info("Stopped update thread")
 
 
     def _swirl(self, x, y, index, direction):
         """
-        Get the intensity for the given coordinates at the given time index.
+        Get the intensity for the given coordinates, centered at (0,0), at the given
+        time index.
 
-        Adapted from the hat example code (see github link above).
+        Adapted from the HD HAT example code in::
+            https://github.com/pimoroni/unicorn-hat-hd
         """
-        x -= (self._width  / 2)
-        y -= (self._height / 2)
-
-        dist = math.sqrt(pow(x, 2) +
-                         pow(y, 2)) / 2.0
-
+        dist  = math.sqrt(pow(x, 2) + pow(y, 2)) / 2.0
         angle = (direction * index / 10.0) + (dist * 1.5)
 
         s = math.sin(angle);
@@ -200,3 +255,120 @@ class UnicornHatNotifier(ByComponentNotifier):
         r -= 20
 
         return r
+
+
+class UnicornHatHdNotifier(_UnicornHatNotifier):
+    """
+    A notifier for the Unicorn HAT HD.
+    """
+    def __init__(self, brightness=0.5):
+        """
+        @see _UnicornHatNotifier.__init__()
+        """
+        super(UnicornHatHdNotifier, self).__init__(brightness=brightness)
+
+        import unicornhathd
+        self._hat = unicornhathd
+
+
+    def _brightness(self, brightness):
+        """
+        @see _UnicornHatNotifier._brightness
+        """
+        # This is inconsistently named between the github and pip versions
+        if hasattr(self._hat, "set_brightness"):
+            self._hat.set_brightness(brightness)
+        elif hasattr(self._hat, "brightness"):
+            self._hat.brightness(brightness)
+
+
+    def _rotation(self, rotation):
+        """
+        @see _UnicornHatNotifier._rotation
+        """
+        self._hat.set_rotation(rotation)
+
+
+    def _get_shape(self):
+        """
+        @see _UnicornHatNotifier._get_shape
+        """
+        return self._hat.get_shape()
+
+
+    def _set_pixel(self, x, y, r, g, b):
+        """
+        @see _UnicornHatNotifier._set_pixel
+        """
+        self._hat.set_pixel(x, y, r, g, b)
+
+
+    def _show(self):
+        """
+        @see _UnicornHatNotifier._show
+        """
+        self._hat.show()
+
+
+    def _off(self):
+        """
+        @see _UnicornHatNotifier._off
+        """
+        self._hat.off()
+
+
+class UnicornHatMiniNotifier(_UnicornHatNotifier):
+    """
+    A notifier for the Unicorn HAT Mini.
+    """
+    def __init__(self, brightness=0.5):
+        """
+        @see _UnicornHatNotifier.__init__()
+        """
+        super(UnicornHatMiniNotifier, self).__init__(brightness=brightness)
+
+        from unicornhatmini import UnicornHATMini
+        self._hat = UnicornHATMini()
+
+
+    def _brightness(self, brightness):
+        """
+        @see _UnicornHatNotifier._brightness
+        """
+        self._hat.set_brightness(brightness)
+
+
+    def _rotation(self, rotation):
+        """
+        @see _UnicornHatNotifier._rotation
+        """
+        self._hat.set_rotation(rotation)
+
+
+    def _get_shape(self):
+        """
+        @see _UnicornHatNotifier._get_shape
+        """
+        return self._hat.get_shape()
+
+
+    def _set_pixel(self, x, y, r, g, b):
+        """
+        @see _UnicornHatNotifier._set_pixel
+        """
+        self._hat.set_pixel(x, y, r, g, b)
+
+
+    def _show(self):
+        """
+        @see _UnicornHatNotifier._show
+        """
+        self._hat.show()
+
+
+    def _off(self):
+        """
+        @see _UnicornHatNotifier._off
+        """
+        self._hat.clear()
+        self._hat.show()
