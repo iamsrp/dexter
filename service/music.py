@@ -114,7 +114,7 @@ class MusicService(Service):
         if self._matches(words[-2], "on"):
             # Handle partial matches on the service name since, for example,
             # "spotify" often gets interpreted as "spotty"
-            if fuzz.ratio(words[-1], self._platform.lower()) > 50
+            if fuzz.ratio(words[-1], self._platform.lower()) > 50:
                 # This is definitely for us
                 platform_match = True
 
