@@ -63,19 +63,19 @@ class MusicIndex(object):
         """
         # Look in all our indices. We will create lists of (Entry,score) pairs
         # for each.
-        if name is not None:
+        if name is not None and len(self._by_name) > 0:
             key, score = process.extractOne(name, self._by_name.keys())
             by_name    = [(entry, score) for entry in self._by_name[key]]
         else:
             by_name = None
 
-        if artist is not None:
+        if artist is not None and len(self._by_artist) > 0:
             key, score = process.extractOne(artist, self._by_artist.keys())
             by_artist  = [(entry, score) for entry in self._by_artist[key]]
         else:
             by_artist = None
 
-        if album is not None:
+        if album is not None and len(self._by_album) > 0:
             key, score = process.extractOne(album, self._by_album.keys())
             by_album   = [(entry, score) for entry in self._by_album[key]]
         else:
