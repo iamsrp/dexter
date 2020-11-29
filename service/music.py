@@ -202,7 +202,7 @@ class MusicService(Service):
             The artist name, as a tuple of strings.
         """
         # To be implemented by subclasses
-        raise NotImplementedError("Abstract method called")2
+        raise NotImplementedError("Abstract method called")
 
 
     def _get_stop_handler(self, tokens):
