@@ -18,7 +18,9 @@ which, when opened, will redirect to a URL which starts with the Redirect
 URI. If a browser pops up (on the local machine's display) then it will have
 queried the client and you should be set. Else you can simply do that via
 ``curl 'http://localhost:...``. Once you've authenticate once then you will have
-a `.cache` file which will be used next time around.
+a ``.cache`` file which will be used next time around. The ``.cache`` file can
+also be copied from machine to machine, so it can work to authenticate on one
+with a web browser and copy file to one without.
 
 This is all explained pretty well in the Spotipy docs:
     https://spotipy.readthedocs.io/
