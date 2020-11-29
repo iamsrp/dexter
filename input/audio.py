@@ -188,9 +188,10 @@ class AudioInput(Input):
             # We'll need this here and there below
             now = time.time()
 
-            # Read in the next lump of data and get its average volume
+            # Read in the next lump of data and get its volume. It looks like
+            # rms() is the the best measure of this but I could be wrong.
             chunk = stream.read(self._chunk_size, exception_on_overflow=False)
-            level = abs(audioop.avg(chunk, self._width))
+            level = abs(audioop.rms(chunk, self._width))
 
             # Accumulate into our buffers
             audio_buf.append(chunk)
