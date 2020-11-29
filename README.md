@@ -31,7 +31,7 @@ If you quickly want to get up and running then:
 ## Prerequisites
 
 * [Python 3](https://www.python.org/).
-* Around 1G of extra disk space, if you want to use DeepSpeech and so forth.
+* Around 1G of free disk space, if you want to use DeepSpeech and so forth.
 * Most of what is listed in the `requirements` file. What you actually need will depend on what components you add.
 
 You'll also need the trained models and scorer from [DeepSpeech](https://github.com/mozilla/DeepSpeech). For more information on setting up DeepSpeech read their [project page](https://github.com/mozilla/DeepSpeech) and [documentation](https://deepspeech.readthedocs.io/).
@@ -53,12 +53,12 @@ pcm.!default {
         capture.pcm {
                 type plug
                 slave.pcm "hw:1,0"
-        } 
+        }
 }
 ```
 You can see the different hardware devices in `alsamixer`, via F6. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference.
 
-For input, DeepSpeech 0.9.0 onwards supports Tensorflow Light and it does a pretty decent job of recognition in near realtime. 
+For input, DeepSpeech 0.9.0 onwards supports Tensorflow Light and it does a pretty decent job of recognition in near realtime.
 
 The Pi also has some really great, and cheap, HATs which can be used for user feedback on status (see below). The current code supports a couple of these but adding support for new ones is pretty easy, should you be feeling keen.
 
@@ -87,10 +87,11 @@ cd the_checkout_directory
 
 The Notifiers are how Dexter tells the user what it's doing. For example, if it has started listening or if it's querying an outside service, then it will effectively say so via simple means.
 
-There are at least three right now:
+There are at least these right now:
  * A simple logging notifier, which writes to the console.
- * One for the [Pimoroni Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd), which does whirly things.
+ * Ones for the [Pimoroni Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd) and [Pimoroni Unicorn HAT Mini](https://shop.pimoroni.com/products/unicorn-hat-mini), which also do whirly things.
  * One for the [Pimoroni Scroll HAT Mini](https://shop.pimoroni.com/products/scroll-hat-mini), which does pulsey things.
+ * A Gnome task tray icon, which appears when Dexter is busy.
 
 ## Components
 
@@ -104,23 +105,43 @@ The inputs are ways to get requests into the system. A simple **unsecured** sock
 
 Inputs which convert spoken audio into text are also provided. The `DeepSpeechInput` class has great accuracy but be sure to be using the versions which use TensorFlowLite (0.9.0 and up), since the prior versions are super slow. The default configutations look for the model and scorer files in `${HOME}/deepspeech`.
 
-If the client is too slow at speech-to-text then you might want to consider off-loading some of the work to a machine with decent horse-power; see the `RemoteInput` class for doing that. The `PocketSphinxInput` class works with decent speed on a Raspberry Pi, but its accuracy isn't great. 
+If the client is too slow at speech-to-text then you might want to consider off-loading some of the work to a machine with decent horse-power; see the `RemoteInput` class for doing that. The `PocketSphinxInput` class works with decent speed on a Raspberry Pi, but its accuracy isn't great.
 
 It is recommended that you have only a single audio input. The reason for this is left as an exercise for the reader.
 
+There are other simple input types mostly for physical interaction:
+ * MediaKeyInput: This binds certain phrases to the media keys (Play, Stop, Next Track, Previous Track)
+ * GPIO: Which binds certain phrases to the buttons on some HATs
+
 ### Outputs
 
-These are ways to get Dexter's responses back to the user. This might be simple logging via the `LogOutput`, but there are also speech-to-text ones which use [Festival](http://www.cstr.ed.ac.uk/projects/festival/) and [ESpeak](http://espeak.sourceforge.net/).
+These are ways to get Dexter's responses back to the user. These currently:
+ * Speech-to-text via [Festival](http://www.cstr.ed.ac.uk/projects/festival/) and [ESpeak](http://espeak.sourceforge.net/).
+ * Simple logging via the `LogOutput`
+ * Transmission to an unsecured remote socket
 
 ### Services
 
 The services are what actually handle the user requests. These might be things like playing music, telling you what the weather is, or setting some sort of timer. A simple `EchoService` is a basic example, and just says back to you what you said to it (quelle surprise!).
 
+A quick overview of the current set of service modules is:
+ * Bespoke: Canned responses to certain phrases
+ * Chronos: Services to do with time (timers etc.)
+ * Developer: Simple services to help with Dexter development work
+ * Fortune: Pulls fortunes out of BSD Fortune
+ * Language: Looking up words in a dictionary etc.
+ * Music & Spotify: Play music from local disk, Spotify, etc.
+ * PurpleAir: Look up stats from the [Purple Air](https://purpleair.com/) air sensors
+ * Randomness: Various random generators
+ * Volume: Sound control
+ * WikiQuery: Look up things on Wikipedia
+
 ## Hardware
 
 When using a Raspberry Pi 4 to drive Dexter I've found the following work for me:
  * [Samson Go Mic Portable USB Condenser Microphone](https://www.sweetwater.com/store/detail/GoMic--samson-go-mic-portable-usb-condenser-microphone)
- * One of these is useful:
+ * One of these is useful to tell you what it's thinking (and the Mini HATs have buttons, which can be handy):
+   - [Pimoroni Unicorn HAT Mini](https://shop.pimoroni.com/products/unicorn-hat-mini)
    - [Pimoroni Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd)
    - [Pimoroni Scroll HAT Mini](https://shop.pimoroni.com/products/scroll-hat-mini)
  * Any old speaker!
@@ -147,4 +168,8 @@ Fatal Python error: (pygame parachute) Segmentation Fault
 ```
 If that's the case, then simply unset the `DISPLAY` when running, e.g. with `env -u DISPLAY ./dexter.py -c config`.
 
-Detection of the start and end of speaking could also use some work. This has mainly been derived via a lot of trial and error; there is no doubt a better way to do this.
+The speech recognition could do with some work:
+ * Not perfect at detecting the start and end of speech
+ * It would be better if it continuously listened and picked up instructions as it went along
+
+Some of the underlying libraries can hit fatal errors, causing the whole thing to `abort()` and die.
