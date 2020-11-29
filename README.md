@@ -36,6 +36,8 @@ If you quickly want to get up and running then:
 
 You'll also need the trained models and scorer from [DeepSpeech](https://github.com/mozilla/DeepSpeech). For more information on setting up DeepSpeech read their [project page](https://github.com/mozilla/DeepSpeech) and [documentation](https://deepspeech.readthedocs.io/).
 
+Some of the components need extra package installed to make them work (e.g. Spotify needs various magic); this is generally documented in the module's PyDoc.
+
 When it comes to recording, make sure that you have a decent microphone with no noise; try listening to some `arecord` output to make sure it sounds clear. You can also provide a `wav_dir` argument for some of the audio input components, like `dexter.input.deepspeech.DeepSpeechInput`.
 
 ### Raspberry Pi Specifics
