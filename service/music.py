@@ -112,7 +112,9 @@ class MusicService(Service):
         # us specificaly.
         platform_match = False
         if self._matches(words[-2], "on"):
-            if words[-1] == self._platform.lower():
+            # Handle partial matches on the service name since, for example,
+            # "spotify" often gets interpreted as "spotty"
+            if fuzz.ratio(words[-1], self._platform.lower()) > 50
                 # This is definitely for us
                 platform_match = True
 
@@ -200,7 +202,7 @@ class MusicService(Service):
             The artist name, as a tuple of strings.
         """
         # To be implemented by subclasses
-        raise NotImplementedError("Abstract method called")
+        raise NotImplementedError("Abstract method called")2
 
 
     def _get_stop_handler(self, tokens):
