@@ -174,11 +174,13 @@ class AudioInput(Input):
                         input            =True,
                         frames_per_buffer=self._chunk_size)
 
-        # State etc.
-        talking  = None  # True when we have detect talking
-        speech   = None  # What we will process as speech data
-        min_secs =  4
-        max_secs = 10
+        # State
+        talking = None  # True when we have detect talking
+        speech  = None  # What we will process as speech data
+
+        # Limits on recording
+        min_secs =  2 # <-- Enough for the key-phrase only
+        max_secs = 10 # <-- Plenty?
 
         # Init is done, we start off idle
         self._notify(Notifier.IDLE)
