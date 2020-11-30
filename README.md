@@ -85,6 +85,8 @@ cd the_checkout_directory
 ./dexter.py -c test_config
 ```
 
+You can then stop it with a `CTRL-c` or by sending it a `SIGINT`.
+
 ### Notifiers
 
 The Notifiers are how Dexter tells the user what it's doing. For example, if it has started listening or if it's querying an outside service, then it will effectively say so via simple means.
