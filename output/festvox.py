@@ -277,12 +277,13 @@ class PyFestivalOutput(SpeechOutput):
                 self._notify(Notifier.WORKING)
 
                 # Break up the text into bits and say them so that we can
-                # interrupt the output. Then say each part. We break on natural
-                # pauses in the speech.
+                # interrupt the output. Then say each non-empty part. We break
+                # on natural pauses in the speech.
                 for part in re.split(r'[\.,;:]', text):
                     if self._interrupted:
                         break
-                    festival.sayText(part)
+                    if part:
+                        festival.sayText(part)
 
             except Exception as e:
                 LOG.error("Failed to say '%s': %s" % (text, e))
