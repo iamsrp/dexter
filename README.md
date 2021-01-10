@@ -157,7 +157,7 @@ When using a Raspberry Pi 4 to drive Dexter I've found the following work for me
 
 ## Notes and Musings
 
-This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS, but also works on x86_64 Ubuntu (as of 20.04.1). I've not tried it on Ubuntu on a Pi.
+This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS, but also works on x86-64 Ubuntu (as of 20.04.1). I've not tried it on Ubuntu on a Pi.
 
 Right now, a bunch of basic services are there like setting timers, asking about things and playing music. That's pretty much most people tend to use their home assistant for anyhow it seems.
 
