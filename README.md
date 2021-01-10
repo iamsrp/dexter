@@ -2,6 +2,8 @@
 
 Dexter is a voice controlled assistant, akin to Google Home and Alexa. Dexter's your right hand person (in theory).
 
+Originally developed for Raspberry Pi OS, it also works on Ubuntu.
+
 This is very much a toy project and should be considered work in progress. That being said, it kinda works for me; it might for you too.
 
 **Table of Contents**
@@ -26,10 +28,13 @@ If you quickly want to get up and running then:
  - Make sure that the appropriate model and scorer files are in `${HOME}/deepspeech`
  - Make sure you have a microphone and speaker
  - Try running dexter.py with the appropriate config file for your distro (either `pi_config` or `ubunutu_config`)
- You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
+You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
 
 ## Prerequisites
 
+* Linux:
+  - Raspberry Pi OS (on a Raspberry Pi)
+  - Ubuntu (on an x64-86 box)
 * [Python 3](https://www.python.org/).
 * Around 1G of free disk space, if you want to use DeepSpeech and so forth.
 * Most of what is listed in the `requirements` file. What you actually need will depend on what components you add.
