@@ -1,6 +1,9 @@
 """
 A simple Pandora client, using `pydora` under the hood. 
 
+This doesn't really work right now, it seems that you can't shut it up. However,
+it's here for completeness, and in the vain hope that one day I'll fix it.
+
 Before you can use this you will need to run ``pydora-configure`` to, err,
 configure `pydora`.
 """
