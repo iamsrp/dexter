@@ -18,6 +18,7 @@ This is very much a toy project and should be considered work in progress. That 
   - [Services](#services)
   - [Notifiers](#notifiers)
 - [Notes](#notes)
+- [Related work](#related)
 - [Bugs](#bugs)
 
 ## Quick start
@@ -157,7 +158,7 @@ When using a Raspberry Pi 4 to drive Dexter I've found the following work for me
 
 ## Notes and Musings
 
-This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS, but also works on x86-64 Ubuntu (as of 20.04.1). I've not tried it on Ubuntu on a Pi.
+This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS, but also works on x86- 64 Ubuntu (as of 20.04.1). I've not tried it on Ubuntu on a Pi.
 
 Right now, a bunch of basic services are there like setting timers, asking about things and playing music. That's pretty much most people tend to use their home assistant for anyhow it seems.
 
@@ -166,6 +167,15 @@ Writing components for Dexter should, in theory, be simple and intuitive. Most o
 When it comes to getting Dexter working "right" the main thing I wind up doing is getting the sound quality good on the audio input. Some microphones are impressively bad and it's impressive that DeepSpeech works at all with what they produce. So if you're having trouble, try setting the `wav_dir` argument of the audio input (e.g. to be `/tmp`) and listen to what it's getting. It will create files of the form `1604895798.wav`, where the number is seconds-since-epoch. You can then fiddle with the microphone settings (or use different microphones) until you get something which sounds okay.
 
 It's far from perfect, and you will probably have to ask it to do something three times, but it's still kind of amazing that you can do all this on a $35 computer..! (Oh, with a $50 microphone, $15 HAT, $20 speaker, ...)
+
+## Related work
+
+Of course, Dexter isn't the only implementation of this idea. Other implementations out there are:
+ * [Jasper](https://jasperproject.github.io/)
+ * [Mycroft](https://mycroft.ai/)
+ * [Rhasspy](https://github.com/rhasspy/rhasspy)
+
+How is Dexter different. Well, that's in the eye of the beholder really. The basic idea is the same, and they all have support for adding services (or equivalent) on your own. Of course, I can say without a hint of bias, that Dexter is the most awesome-est of the bunch. Like, I mean, dude: you can make it do swirly things with lights when it's listening to you or doing work. Who could ask for more?!
 
 ## Bugs
 
