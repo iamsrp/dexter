@@ -155,11 +155,11 @@ class FortuneService(Service):
                         if seek_offset > 0:
                             fh.seek(seek_offset)
 
-                        # Now look for the bracketing '%'s. Read in a nice big
-                        # chunk and hunt for it in there.
-                        chunk = fh.read(min(10 * self._max_len, 1024 * 1024))
-
                         try:
+                            # Now look for the bracketing '%'s. Read in a nice
+                            # big chunk and hunt for it in there.
+                            chunk = fh.read(min(10 * self._max_len, 1024 * 1024))
+
                             # The file could start with a bracketer and we want
                             # to catch that
                             if seek_offset == 0 and chunk.startswith('%\n'):
