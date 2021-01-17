@@ -11,7 +11,7 @@ import time
 
 # ------------------------------------------------------------------------------
 
-class ScrollHatMiniInput(Input):
+class _HatMiniInput(Input):
     """
     A way to get input from the the Pimoroni Scroll HAT Mini.
     """
@@ -45,7 +45,7 @@ class ScrollHatMiniInput(Input):
         :param y_button:
             What string to send when the Y button is pressed.
         """
-        super(ScrollHatMiniInput, self).__init__(state)
+        super(_HatMiniInput, self).__init__(state)
 
         def tokenize(string):
             if string and str(string).strip():
@@ -124,3 +124,19 @@ class ScrollHatMiniInput(Input):
         tokens = self._bindings.get(number, [])
         if len(tokens) > 0:
             self._output.append(tuple(self._prefix + tokens))
+
+
+
+class ScrollHatMiniInput(_HatMiniInput):
+    """
+    A way to get input from the the Pimoroni Scroll HAT Mini.
+    """
+    pass
+
+
+
+class UnicornHatMiniInput(_HatMiniInput):
+    """
+    A way to get input from the the Pimoroni Unicorn HAT Mini.
+    """
+    pass
