@@ -1,6 +1,6 @@
 # Dexter, A Voice Controlled Assistant
 
-Dexter is a voice controlled assistant, akin to Google Home and Alexa. Dexter's your right hand person (in theory).
+Dexter is a voice controlled assistant, akin to Google Home and Alexa. Dexter's your right hand (in theory).
 
 Originally developed for Raspberry Pi OS, it also works on Ubuntu.
 
