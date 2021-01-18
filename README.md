@@ -78,7 +78,7 @@ The file is expected to have three main dict entries: `key_phrases`, `notifiers`
 
 The `notifiers` are ways in which Dexter let's the user know what it's currently doing (e.g. actively listening, speaking back to you, etc.).
 
-The `components` should be a dict with the following entires: `inputs`, `outputs` and `services`; each of these is a list of component definitions. Each component defition is a `[string,dict]` pair. The string is the fully-qualified name of the component class; the dict is a list of keyword arguments (kwargs; variable name & value pairs) which will be used to instantiate the class. The values in the kwargs may contain environment variables enclosed by dollar-sign-denoted curly braces, of the form `${VARIABLE_NAME}`.
+The `components` should be a dict with the following entires: `inputs`, `outputs` and `services`; each of these is a list of component definitions. Each component definition is a `[string,dict]` pair. The string is the fully-qualified name of the component class; the dict is a list of keyword arguments (kwargs; variable name & value pairs) which will be used to instantiate the class. The values in the kwargs may contain environment variables enclosed by dollar-sign-denoted curly braces, of the form `${VARIABLE_NAME}`.
 
 See the `test_config` file as a simple example, and the platform specific ones which are more fleshed out.
 
