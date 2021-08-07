@@ -157,14 +157,22 @@ class AudioInput(Input):
         # to many entries in a buffer constitute a second's worth of data.
         read_rate = self._rate / self._chunk_size
 
-        # The buffer of historical audio data
-        audio_buf = deque(maxlen=int(1.0 * read_rate))
-        level_buf = deque(maxlen=int(2.0 * read_rate))
+        # The buffer of historical audio data. We use the level buffer
+        # to see how the sound is changing.
+        level_buf = deque(maxlen=int(4.0 * read_rate))
 
-        # The index at which we cut the level buffer for the purposes of looking
-        # for a change in the audio going from background to noisy, or vice
-        # versa. This is what we are looking for when detecting speech.
+        # The index from the level buffer's end at which we cut the
+        # level buffer for the purposes of looking for a change in the
+        # audio going from background to noisy, or vice versa. This is
+        # what we are looking for when detecting to start or end of
+        # speech input.
         avg_idx = level_buf.maxlen // 3
+
+        # The audio buffer captures the sound up to before we decide
+        # to start recording, so that we ensure we've captured
+        # enough. We use the detected start of speech as the size, or
+        # a second, whichever is the bigger.
+        audio_buf = deque(maxlen=max(avg_idx, int(1.0 * read_rate)))
 
         # Start pulling in the audio stream
         p      = pyaudio.PyAudio()
@@ -232,7 +240,9 @@ class AudioInput(Input):
             # Different detection based on what we are looking for
             if not talking:
                 # Looking for a step up in the latter part
-                if from_median * 1.5 < to_median:
+                if self._state.is_speaking():
+                    LOG.debug("System is speaking so ignoring audio input")
+                elif from_median * 2.0 < to_median:
                     LOG.info("Detected start of speech "
                              "with levels going from %0.2f to %0.2f" %
                              (from_median, to_median))
@@ -242,10 +252,10 @@ class AudioInput(Input):
             else:
                 # Looking for a step down in the latter part
                 if (now - talking_start > min_secs and
-                    (from_median > to_median * 1.25 or to_median < start_median * 1.1)):
+                    (from_median > to_median * 1.5 or to_median < start_median * 1.1)):
                     LOG.info("Detected end of speech "
-                             "with levels going from %0.2f to %0.2f" %
-                             (from_median, to_median))
+                             "with levels going from %0.2f to %0.2f (start %0.2f)" %
+                             (from_median, to_median, start_median))
                     talking = False
 
             # If the talking has been going on too long then just stop it. Quite
@@ -292,9 +302,6 @@ class AudioInput(Input):
 
                 # Now decode. We do this by denoting the end of the audio with a None.
                 self._decode_queue.append(None)
-
-                # Clear out the level buffer so that it can settle again
-                level_buf.clear()
 
                 # And we're back to listening
                 LOG.info("Listening")
