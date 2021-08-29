@@ -19,6 +19,7 @@ This is very much a toy project and should be considered work in progress. That 
   - [Notifiers](#notifiers)
 - [Notes](#notes)
 - [Related work](#related)
+- [Project status](#status)
 - [Bugs](#bugs)
 
 ## Quick start
@@ -176,6 +177,10 @@ Of course, Dexter isn't the only implementation of this idea. Other ones out the
  * [Rhasspy](https://github.com/rhasspy/rhasspy)
 
 How is Dexter different? Well, that's in the eye of the beholder really. The basic idea is the same, and they all have support for adding services (or equivalent) on your own. Of course, I can say without a hint of bias, that Dexter is the most awesome-est of the bunch. Like, I mean, dude: you can make it do swirly things with lights when it's listening to you or doing work. Who could ask for more?!
+
+## Project status
+
+Right now Dexter is at the point where it does pretty much what I wanted it to and so most of the work happening on it is related to bug fixes and tweaks, as opposed to adding new features. I'll also be keeping it ticking over with the updates to underlying libraries etc. so that it still works out of the box. Development work on it has been rather quiet of late, but don't consider it to be abandonware.
 
 ## Bugs
 
