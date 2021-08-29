@@ -8,7 +8,7 @@ This is very much a toy project and should be considered work in progress. That 
 
 **Table of Contents**
 
-- [Quick start](#quickstart)
+- [Quick start](#quick-start)
 - [Prerequisites](#prerequisites)
 - [Configuration](#configuration)
 - [Running](#running)
@@ -17,9 +17,9 @@ This is very much a toy project and should be considered work in progress. That 
   - [Outputs](#outputs)
   - [Services](#services)
   - [Notifiers](#notifiers)
-- [Notes](#notes)
-- [Related work](#related)
-- [Project status](#status)
+- [Notes](#notes-and-musings)
+- [Related work](#related-work)
+- [Project status](#project-status)
 - [Bugs](#bugs)
 
 ## Quick start
