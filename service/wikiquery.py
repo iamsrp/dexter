@@ -33,7 +33,7 @@ class _Handler(Handler):
         """
         try:
             LOG.info("Querying Wikipedia for '%s'" % (self._thing,))
-            summary = wikipedia.summary(self._thing)
+            summary = wikipedia.summary(self._thing, auto_suggest=False)
         except Exception as e:
             LOG.error("Failed to query Wikipedia about '%s': %s" %
                       (self._thing, e))
