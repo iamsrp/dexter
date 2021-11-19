@@ -54,9 +54,13 @@ class _Handler(Handler):
         # long. First just grab the first paragraph. Next, stop after about
         # 400 chars.
         shortened = summary.split('\n')[0]
-        if '. ' in shortened and len(shortened) > 400:
-            index = shortened.index('. ')
-            shortened = shortened[:index+1]
+        if len(shortened) > 400:
+            # Skip doing this if we don't find a sentence end marker
+            try:
+                index = shortened.index('. ', 398)
+                shortened = shortened[:index+1]
+            except ValueError:
+                pass
 
         # And give it back. We use a period after "says" here so that the speech
         # output will pause appropriately. It's not good gramma though. Since we
