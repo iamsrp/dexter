@@ -41,7 +41,7 @@ You will then be hugely underwhelmed, but at least the basic functionality shoul
 * Around 1G to 2G of free disk space, if you want to use DeepSpeech or Vosk with a good model.
 * Most of what is listed in the `requirements` file. What you actually need will depend on what components you add.
 
-If you want to use [Vosk](https://alphacephei.com/vosk/) for speech-to-text then the _Usage examples_ section on its [install page](https://alphacephei.com/vosk/install) should be enough to tell you how to install it. The various models are on its [models](https://alphacephei.com/vosk/models) page.
+If you want to use [Vosk](https://alphacephei.com/vosk/) for speech-to-text then the _Usage examples_ section on its [install page](https://alphacephei.com/vosk/install) should be enough to tell you how to install it. The various models are on its [models](https://alphacephei.com/vosk/models) page, though I have had trouble getting the full model to run on a 8Gb Raspbery Pi 4.
 
 You'll also need the trained models and scorer from [DeepSpeech](https://github.com/mozilla/DeepSpeech). For more information on setting up DeepSpeech read their [project page](https://github.com/mozilla/DeepSpeech) and [documentation](https://deepspeech.readthedocs.io/).
 
