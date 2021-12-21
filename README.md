@@ -27,7 +27,7 @@ This is very much a toy project and should be considered work in progress. That 
 If you quickly want to get up and running then:
  - Do a git clone of the repo
  - Install the prerequisites
- - Make sure that the appropriate model and scorer files are in `${HOME}/deepspeech`
+ - Make sure that the appropriate model etc. files are where the config file is looking for them
  - Make sure you have a microphone and speaker
  - Try running dexter.py with the appropriate config file for your distro (either `pi_config` or `ubunutu_config`)
 You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
@@ -38,8 +38,10 @@ You will then be hugely underwhelmed, but at least the basic functionality shoul
   - Raspberry Pi OS (on a Raspberry Pi)
   - Ubuntu (on an x64-86 box)
 * [Python 3](https://www.python.org/).
-* Around 1G of free disk space, if you want to use DeepSpeech and so forth.
+* Around 1G to 2G of free disk space, if you want to use DeepSpeech or Vosk with a good model.
 * Most of what is listed in the `requirements` file. What you actually need will depend on what components you add.
+
+If you want to use [Vosk](https://alphacephei.com/vosk/) for speech-to-text then the _Usage examples_ section on its [install page](https://alphacephei.com/vosk/install) should be enough to tell you how to install it. The various models are on its [models](https://alphacephei.com/vosk/models) page.
 
 You'll also need the trained models and scorer from [DeepSpeech](https://github.com/mozilla/DeepSpeech). For more information on setting up DeepSpeech read their [project page](https://github.com/mozilla/DeepSpeech) and [documentation](https://deepspeech.readthedocs.io/).
 
@@ -67,7 +69,7 @@ pcm.!default {
 ```
 You can see the different hardware devices in `alsamixer`, via F6. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference.
 
-For input, DeepSpeech 0.9.0 onwards supports Tensorflow Light and it does a pretty decent job of recognition in near realtime.
+For input, DeepSpeech 0.9.0 onwards supports Tensorflow Light and it does a pretty decent job of recognition in near realtime. Vosk is also a more recent speech-to-text engine which seems to work well.
 
 The Pi also has some really great, and cheap, HATs which can be used for user feedback on status (see below). The current code supports a couple of these but adding support for new ones is pretty easy, should you be feeling keen.
 
@@ -115,6 +117,8 @@ The PyDoc for the different components should help you get up and running with t
 The inputs are ways to get requests into the system. A simple **unsecured** socket-based one is provided in `test_config`, which you can telnet to and type into.
 
 Inputs which convert spoken audio into text are also provided. The `DeepSpeechInput` class has great accuracy but be sure to be using the versions which use TensorFlowLite (0.9.0 and up), since the prior versions are super slow. The default configutations look for the model and scorer files in `${HOME}/deepspeech`.
+
+Since the future DeepSpeech is currently looking uncertain you should also try out the Vosk speech-to-text engine. It's newer but seems to work well.
 
 If the client is too slow at speech-to-text then you might want to consider off-loading some of the work to a machine with decent horse-power; see the `RemoteInput` class for doing that. The `PocketSphinxInput` class works with decent speed on a Raspberry Pi, but its accuracy isn't great.
 
@@ -165,7 +169,7 @@ Right now, a bunch of basic services are there like setting timers, asking about
 
 Writing components for Dexter should, in theory, be simple and intuitive. Most of the time you'll probably wind up writing services for it, though other types of notifier might be handy too. I generally find that you can get a beta version of something up and running in an hour or so. Of course, you then spend three more hours fiddling with it in various ways; that is probably the way of *most* coding projects though.
 
-When it comes to getting Dexter working "right" the main thing I wind up doing is getting the sound quality good on the audio input. Some microphones are impressively bad and it's impressive that DeepSpeech works at all with what they produce. So if you're having trouble, try setting the `wav_dir` argument of the audio input (e.g. to be `/tmp`) and listen to what it's getting. It will create files of the form `1604895798.wav`, where the number is seconds-since-epoch. You can then fiddle with the microphone settings (or use different microphones) until you get something which sounds okay.
+When it comes to getting Dexter working "right" the main thing I wind up doing is getting the sound quality good on the audio input. Some microphones are impressively bad and it's impressive that speech-to-text works at all with what they produce. So if you're having trouble, try setting the `wav_dir` argument of the audio input (e.g. to be `/tmp`) and listen to what it's getting. It will create files of the form `1604895798.wav`, where the number is seconds-since-epoch. You can then fiddle with the microphone settings (or use different microphones) until you get something which sounds okay.
 
 It's far from perfect, and you will probably have to ask it to do something three times, but it's still kind of amazing that you can do all this on a $35 computer..! (Oh, with a $50 microphone, $15 HAT, $20 speaker, ...)
 
