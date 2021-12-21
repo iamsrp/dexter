@@ -45,11 +45,9 @@ class VoskInput(AudioInput):
         :param model:
             The path to the Vosk model file.
         """
-        # If these don't exist then Vosk will segfault when inferring!
+        # Load in and configure the model.
         if not os.path.exists(model):
             raise IOError("Not found: %s" % (model,))
-
-        # Load in and configure the model.
         LOG.info("Loading model from %s" % (model,))
         self._model      = Model(model)
         self._recognizer = KaldiRecognizer(self._model, rate)
