@@ -1,5 +1,7 @@
 """
 Input using DeepSpeech.
+
+See https://github.com/mozilla/DeepSpeech
 """
 
 from   deepspeech         import Model
@@ -13,17 +15,6 @@ import pyaudio
 
 # ------------------------------------------------------------------------------
 
-# In order to use this module you'll need to ensure that you have enough memory
-# since its requirements are relatively huge. On a Raspberry Pi this means
-# increasing your swap size to about 1G.
-#
-# So far I haven't been able to make the Pi work with the language model owing
-# to memory constraints; even with 4G of swap.
-#
-# It's still _very_ slow on a Pi; well over a minute for a few seconds of audio.
-
-# ------------------------------------------------------------------------------
-
 # Typical installation location for deepspeech data
 _MODEL_DIR = "/usr/local/share/deepspeech/models"
 
@@ -31,7 +22,7 @@ _MODEL_DIR = "/usr/local/share/deepspeech/models"
 
 class DeepSpeechInput(AudioInput):
     """
-    Input from DeepSpeech using the US English language model.
+    Input from DeepSpeech using the given language model.
     """
     def __init__(self,
                  notifier,
