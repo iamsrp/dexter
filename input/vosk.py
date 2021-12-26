@@ -3,7 +3,10 @@ Input using Vosk.
 
 See https://alphacephei.com/vosk/
 
-pip3 install vosk should be enough to install it.
+`pip3 install vosk` should be enough to install it on Raspberry Pi OS but you
+will need the 64bit wheel from the install page for the 64bit Raspberry Pi OS.
+You will need the 64bit OS if you want to run the full model, and 7Gb of memory
+to instantiate it. (Adding swap works for this but is, of course, slow.)
 """
 
 from   vosk               import Model, KaldiRecognizer, SetLogLevel
@@ -18,7 +21,7 @@ import pyaudio
 
 # ------------------------------------------------------------------------------
 
-# Typical installation location for vosk data
+# A typical installation location for vosk data
 _MODEL_DIR = "/usr/local/share/vosk/models"
 
 # ------------------------------------------------------------------------------
@@ -48,9 +51,11 @@ class VoskInput(AudioInput):
         # Load in and configure the model.
         if not os.path.exists(model):
             raise IOError("Not found: %s" % (model,))
-        LOG.info("Loading model from %s" % (model,))
+        LOG.info("Loading model from %s, this could take a while", model)
+        SetLogLevel(1 if LOG.getLogger().getEffectiveLevel() >= 20 else 2)
         self._model      = Model(model)
         self._recognizer = KaldiRecognizer(self._model, rate)
+        LOG.info("Model loaded")
 
         # Wen can now init the superclass
         super(VoskInput, self).__init__(
@@ -86,17 +91,20 @@ class VoskInput(AudioInput):
 
         # Tokenize
         tokens = []
+        LOG.debug("Decoding: %s" % self._results)
         for result in self._results:
             word = result.get('word',  '').strip()
             conf = result.get('conf', 0.0)
             if word and conf:
                 tokens.append(Token(word, conf, True))
 
-            # Done
-            self._results = []
+        # Done
+        self._results = []
 
         # And give them all back
+        LOG.debug("Got: %s" % ' '.join(str(i) for i in tokens))
         return tokens
+
 
     def _add_result(self, json_result):
         """
