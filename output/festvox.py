@@ -153,12 +153,8 @@ class PyFestivalOutput(SpeechOutput):
     """
     A speech to text output which uses the pyfestival module.
 
-    You might be able to pip install it, but I had to build it by hand using
-    source from ``https://github.com/techiaith/pyfestival`` to make it work.
-
-    Note that the current version holds on to the GIL. There's a fork in
-    ``https://github.com/iamsrp/pyfestival`` which fixes this; a pull request
-    has been made.
+    The github version is currently the most up-to-date version::
+      pip install git+https://github.com/techiaith/pyfestival#festival
     """
     def __init__(self,
                  state,
