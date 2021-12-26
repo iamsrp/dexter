@@ -5,7 +5,6 @@ An input which uses the Adafruit `digitalio` interface.
 from   dexter.input    import Input, Token
 from   dexter.core.log import LOG
 from   digitalio       import DigitalInOut, Direction, Pull
-from   threading       import Thread
 
 import board
 import time

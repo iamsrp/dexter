@@ -5,7 +5,6 @@ An input which uses the Raspberry Pi GPIO interface.
 from   dexter.input    import Input, Token
 from   dexter.core.log import LOG
 from   gpiozero        import Button
-from   threading       import Thread
 
 import time
 

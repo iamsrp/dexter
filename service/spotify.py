@@ -72,7 +72,6 @@ from   fuzzywuzzy               import fuzz
 from   math                     import sqrt
 from   spotipy                  import Spotify
 from   spotipy.oauth2           import SpotifyOAuth
-from   threading                import Thread
 from   .music                   import MusicService
 
 # ------------------------------------------------------------------------------
