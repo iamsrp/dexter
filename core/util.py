@@ -7,7 +7,6 @@ from   fuzzywuzzy      import fuzz
 from   threading       import Lock
 
 import numpy
-import pygame
 import re
 
 # ------------------------------------------------------------------------------
@@ -432,6 +431,10 @@ def get_pygame():
     Get a handle on the pygame module, ensuring that it's been init()'d.
     """
     with _PYGAME_LOCK:
+        # Importing pygame has side-effects so we only do it when and if we
+        # need to. (E.g. it causes Vosk to fail to load a model if we import
+        # it before doing so. Go figure...)
+        import pygame
         pygame.init()
         pygame.mixer.init()
         return pygame
