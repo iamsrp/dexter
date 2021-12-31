@@ -106,6 +106,9 @@ class FestivalOutput(SpeechOutput):
                 text  = self._queue.pop()
                 text  = text.replace('"', '')
 
+                # Festvial pauses for too long with commas so just ignore them
+                text  = text.replace(',', '')
+
                 # Ignore empty strings
                 if not text:
                     LOG.info("Nothing to say...")
@@ -259,6 +262,9 @@ class PyFestivalOutput(SpeechOutput):
                 start = time.time()
                 text  = self._queue.pop()
                 text  = text.replace('"', '')
+
+                # Festvial pauses for too long with commas so just ignore them
+                text  = text.replace(',', '')
 
                 # Ignore empty strings
                 if not text:
