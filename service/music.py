@@ -190,7 +190,7 @@ class MusicService(Service):
         """
         Use fuzz.ratio to match word tuples.
         """
-        return fuzz.ratio(words, target) > 80
+        return fuzz.ratio(words, target) >= 75
 
 
     def _match_artist(self, artist):
