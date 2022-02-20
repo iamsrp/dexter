@@ -22,6 +22,12 @@ class AudioInput(Input):
     """
     Base class for input from audio.
     """
+    _GOBBLE_LIMIT = 15
+    """
+    How many seconds old a clip is before we throw it away. This can happen if
+    decoding has fallen behind for some reason.
+    """
+
     def __init__(self,
                  state,
                  chunk_secs=0.1,
@@ -276,6 +282,10 @@ class AudioInput(Input):
                     self._notify(Notifier.ACTIVE)
                     speech = []
 
+                    # Start off by putting the current time on the queue, so the
+                    # recipient knows how old this data is when it gets it.
+                    self._decode_queue.append(time.time())
+
                     # Push in everything that we have so far
                     for prev in audio_buf:
                         speech.append(prev)
@@ -318,6 +328,9 @@ class AudioInput(Input):
         Pulls values from the decoder queue and handles them appropriately. Runs in
         its own thread.
         """
+        # Whether we are skipping the current input
+        gobble = False
+
         LOG.info("Started decoding handler")
         while True:
             try:
@@ -332,15 +345,29 @@ class AudioInput(Input):
                     item = queue.popleft()
                     if item is None:
                         # A None denotes the end of the data so we look to
-                        # decode what we've been given
-                        LOG.info("Decoding audio")
-                        self._notify(Notifier.WORKING)
-                        self._output.append(self._decode())
-                        self._notify(Notifier.IDLE)
+                        # decode what we've been given if we're not throwing it
+                        # away.
+                        if gobble:
+                            LOG.info("Dropped audio")
+                        else:
+                            LOG.info("Decoding audio")
+                            self._notify(Notifier.WORKING)
+                            self._output.append(self._decode())
+                            self._notify(Notifier.IDLE)
+                    elif isinstance(item, float) :
+                        # This is the timestamp of the clip. If it's too old
+                        # then we throw it away.
+                        age = time.time() - item
+                        if int(age) > 0:
+                            LOG.info("Upcoming audio clip is %0.2fs old" % (age,))
+                        gobble = age > self._GOBBLE_LIMIT
                     elif isinstance(item, bytes):
                         # Something to feed the decoder
-                        LOG.debug("Feeding %d bytes" % len(item))
-                        self._feed_raw(item)
+                        if gobble:
+                            LOG.debug("Ignoring %d bytes" % len(item))
+                        else:
+                            LOG.debug("Feeding %d bytes" % len(item))
+                            self._feed_raw(item)
                     else:
                         LOG.warning("Ignoring junk on decode queue: %r" % (item,))
 
