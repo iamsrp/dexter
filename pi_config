@@ -11,9 +11,9 @@
 
     "components" : {
         "inputs" : [
-            [ "dexter.input.deepspeech.DeepSpeechInput", {
-                "model"   : "${HOME}/deepspeech/deepspeech-0.9.0-models.tflite",
-                "scorer"  : "${HOME}/deepspeech/deepspeech-0.9.0-models.scorer"
+            [ "dexter.input.coqui.CoquiInput", {
+                "model"   : "${HOME}/coqui/model",
+                "scorer"  : "${HOME}/coqui/scorer"
             }]
         ],
 

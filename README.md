@@ -38,16 +38,16 @@ You will then be hugely underwhelmed, but at least the basic functionality shoul
   - Raspberry Pi OS (on a Raspberry Pi); 64bit version for some speech-to-text systems
   - Ubuntu (on an x64-86 box)
 * [Python 3](https://www.python.org/).
-* Around 1G to 2G of free disk space, if you want to use DeepSpeech or Vosk with a good model.
+* Around 1G to 2G of free disk space, if you want to use Coqui or Vosk with a good model.
 * Most of what is listed in the `requirements` file. What you actually need will depend on what components you add.
 
 If you want to use [Vosk](https://alphacephei.com/vosk/) for speech-to-text then the _Usage examples_ section on its [install page](https://alphacephei.com/vosk/install) should be enough to tell you how to install it. The various models are on its [models](https://alphacephei.com/vosk/models) page, though you will need the 64bit version of Raspberry Pi OS if you want to load in the full model, since it needs about 6Gb to instantiate. (See the Vosk install page for info on getting the 64bit `whl` file.) Per the Vosk developers, you can remove `rescore` and `rnnlm` folders from the models to make the full model run if memory is limited.
 
-You'll also need the trained models and scorer from [DeepSpeech](https://github.com/mozilla/DeepSpeech). For more information on setting up DeepSpeech read their [project page](https://github.com/mozilla/DeepSpeech) and [documentation](https://deepspeech.readthedocs.io/).
+You'll also need the trained models and scorer from [Coqui](https://github.com/coqui-ai/stt). For more information on setting up Coqui read their [project page](https://github.com/coqui-ai/stt) and [documentation](https://stt.readthedocs.io/en/latest/).
 
 Some of the components need extra package installed to make them work (e.g. Spotify needs various magic); this is generally documented in the module's PyDoc.
 
-When it comes to recording, make sure that you have a decent microphone with no noise; try listening to some `arecord` output to make sure it sounds clear. You can also provide a `wav_dir` argument for some of the audio input components, like `dexter.input.deepspeech.DeepSpeechInput`.
+When it comes to recording, make sure that you have a decent microphone with no noise; try listening to some `arecord` output to make sure it sounds clear. You can also provide a `wav_dir` argument for some of the audio input components, like `dexter.input.coqui.CoquiInput` or `dexter.input.vosk.VoskInput`.
 
 ### Raspberry Pi Specifics
 
@@ -69,7 +69,7 @@ pcm.!default {
 ```
 You can see the different hardware devices in `alsamixer`, via F6. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference.
 
-For input, DeepSpeech 0.9.0 onwards supports Tensorflow Light and it does a pretty decent job of recognition in near realtime. Vosk is also a more recent speech-to-text engine which seems to work well.
+For input, Coqui supports Tensorflow Light and it does a pretty decent job of recognition in near realtime. Vosk is also a more recent speech-to-text engine which seems to work well.
 
 The Pi also has some really great, and cheap, HATs which can be used for user feedback on status (see below). The current code supports a couple of these but adding support for new ones is pretty easy, should you be feeling keen.
 
@@ -116,10 +116,6 @@ The PyDoc for the different components should help you get up and running with t
 
 The inputs are ways to get requests into the system. A simple **unsecured** socket-based one is provided in `test_config`, which you can telnet to and type into.
 
-Inputs which convert spoken audio into text are also provided. The `DeepSpeechInput` class has great accuracy but be sure to be using the versions which use TensorFlowLite (0.9.0 and up), since the prior versions are super slow. The default configutations look for the model and scorer files in `${HOME}/deepspeech`.
-
-Since the future DeepSpeech is currently looking uncertain you should also try out the Vosk speech-to-text engine. It's newer but seems to work well.
-
 If the client is too slow at speech-to-text then you might want to consider off-loading some of the work to a machine with decent horse-power; see the `RemoteInput` class for doing that. The `PocketSphinxInput` class works with decent speed on a Raspberry Pi, but its accuracy isn't great.
 
 It is recommended that you have only a single audio input. The reason for this is left as an exercise for the reader.
@@ -163,7 +159,7 @@ When using a Raspberry Pi 4 to drive Dexter I've found the following work for me
 
 ## Notes and Musings
 
-This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS, but also works on x86- 64 Ubuntu (as of 20.04.1). I've not tried it on Ubuntu on a Pi.
+This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS (both 32bit and 64bit versions), but also works on x86-64 Ubuntu. I've not tried it on Ubuntu on a Pi.
 
 Right now, a bunch of basic services are there like setting timers, asking about things and playing music. That's pretty much most people tend to use their home assistant for anyhow it seems.
 

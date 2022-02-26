@@ -11,7 +11,7 @@ sudo apt install -y \
      libpulse-dev libasound2-dev festival festival-dev festvox-us-slt-hts
 
 pip3 install vosk || (uname -m | grep -q aarch64 && pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl)
-pip3 install deepspeech
+pip3 install stt # Replaces DeepSpeech
 pip3 install pyalsaaudio
 pip3 install wikipedia
 pip3 install spotipy

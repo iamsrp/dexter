@@ -11,7 +11,7 @@ cloud to process, then it seems only fair that we can do something like that
 too.
 """
 
-from   deepspeech import Model
+from   coqui      import Model
 from   threading  import Thread
 
 import argparse
@@ -132,13 +132,11 @@ logging.basicConfig(
 )
 
 # Parse the command line args
-parser = argparse.ArgumentParser(description='Running DeepSpeech inference.')
+parser = argparse.ArgumentParser(description='Running Coqui inference.')
 parser.add_argument('--model', required=True,
                     help='Path to the .pbmm file')
 parser.add_argument('--scorer', required=False,
                     help='Path to the .scorer file')
-parser.add_argument('--beam_width', type=int, default=500,
-                    help='Beam width for the CTC decoder')
 parser.add_argument('--port', type=int, default=8008,
                     help='The port number to listen on')
 args = parser.parse_args()
@@ -147,8 +145,7 @@ args = parser.parse_args()
 logging.info("Loading model from %s" % args.model)
 model = Model(args.model)
 
-# Configure it
-model.setBeamWidth(args.beam_width)
+# Load any optional scorer
 if args.scorer:
     logging.info("Loading scorer from %s" % (args.scorer,))
     model.enableExternalScorer(args.scorer)

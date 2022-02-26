@@ -1,10 +1,17 @@
 """
-Input using DeepSpeech.
+Input using the Coqui STT library.
 
-See https://github.com/mozilla/DeepSpeech
+See::
+  https://github.com/coqui-ai/stt
+  https://stt.readthedocs.io/en/latest/
+
+You'll mainly just need to download the appropriate model and scorer
+files. These can be found either by running the ``stt-model-manager`` or by
+going to:
+  https://coqui.ai/models
 """
 
-from   deepspeech         import Model
+from   stt                import Model
 from   dexter.input       import Token
 from   dexter.input.audio import AudioInput
 from   dexter.core.log    import LOG
@@ -12,24 +19,25 @@ from   dexter.core.log    import LOG
 import numpy
 import os
 import pyaudio
+import time
 
 # ------------------------------------------------------------------------------
 
-# Typical installation location for deepspeech data
-_MODEL_DIR = "/usr/local/share/deepspeech/models"
+# A typical installation location for Coqui data
+_MODEL_DIR = "/usr/local/share/coqui/models"
 
 # ------------------------------------------------------------------------------
 
-class DeepSpeechInput(AudioInput):
+class CoquiInput(AudioInput):
     """
-    Input from DeepSpeech using the given language model.
+    Input from Coqui using the given language model.
     """
     def __init__(self,
                  notifier,
-                 rate=None,
+                 rate   =None,
                  wav_dir=None,
-                 model =os.path.join(_MODEL_DIR, 'models.pbmm'),
-                 scorer=os.path.join(_MODEL_DIR, 'models.scorer')):
+                 model  =os.path.join(_MODEL_DIR, 'model'),
+                 scorer =os.path.join(_MODEL_DIR, 'scorer')):
         """
         @see AudioInput.__init__()
 
@@ -41,28 +49,30 @@ class DeepSpeechInput(AudioInput):
             Where to save the wave files, if anywhere.
         :type  model:
         :param model:
-            The path to the DeepSpeech model file.
+            The path to the Coqui model file.
         :type  scorer:
         :param scorer:
-            The path to the DeepSpeech scorer file.
+            The path to the Coqui scorer file.
         """
-        # If these don't exist then DeepSpeech will segfault when inferring!
+        # If these don't exist then Coqui will segfault when inferring!
         if not os.path.exists(model):
             raise IOError("Not found: %s" % (model,))
 
         # Load in and configure the model.
+        start = time.time()
         LOG.info("Loading model from %s" % (model,))
         self._model = Model(model)
         if os.path.exists(scorer):
             LOG.info("Loading scorer from %s" % (scorer,))
             self._model.enableExternalScorer(scorer)
+        LOG.info("Models loaded in %0.2fs" % (time.time() - start,))
 
         # Handle any rate override
         if rate is None:
             rate = self._model.sampleRate()
 
         # Wen can now init the superclass
-        super(DeepSpeechInput, self).__init__(
+        super(CoquiInput, self).__init__(
             notifier,
             format=pyaudio.paInt16,
             channels=1,
