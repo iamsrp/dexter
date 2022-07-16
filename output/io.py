@@ -51,7 +51,7 @@ class StdoutOutput(_FileOutput):
         """
         @see Output.__init__()
         """
-        super(Stdout, self).__init__(state, sys.stdout)
+        super(StdoutOutput, self).__init__(state, sys.stdout)
 
 
 class StderrOutput(_FileOutput):
@@ -62,7 +62,7 @@ class StderrOutput(_FileOutput):
         """
         @see Output.__init__()
         """
-        super(Stderr, self).__init__(state, sys.stderr)
+        super(StderrOutput, self).__init__(state, sys.stderr)
 
 
 class LogOutput(Output):
