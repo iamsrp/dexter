@@ -2,16 +2,17 @@
 
 # What you will need to make all of this work. Some things are optional, depending
 # on whether you don't care about certain modules. On Raspberry Pi OS and Ubuntu
-# the following should work.
+# the following should mostly work. If you see errors then it might be fine
+# depending on what platform you're on.
 
 sudo apt install -y \
-     swig \
+     git swig \
      python3-pip python3-numpy python3-scipy python3-pyaudio python3-argh python3-pyalsa \
      python3-espeak python3-fuzzywuzzy python3-httplib2 python3-mutagen python3-pygame \
      libpulse-dev libasound2-dev festival festival-dev festvox-us-slt-hts
 
 pip3 install vosk || (uname -m | grep -q aarch64 && pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl)
-pip3 install stt # Replaces DeepSpeech
+pip3 install stt || (pip3 install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
 pip3 install pyalsaaudio
 pip3 install wikipedia
 pip3 install spotipy
