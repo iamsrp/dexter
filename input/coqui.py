@@ -31,11 +31,6 @@ _MODEL_DIR = "/usr/local/share/coqui/models"
 class CoquiInput(AudioInput):
     """
     Input from Coqui using the given language model.
-
-    :param model:  The path to the model, typically called something like
-                   ``model.tflite``.
-    :param scorer: The path to the scorer, typically called something like
-                   ``huge-vocabulary.scorer``.
     """
     def __init__(self,
                  notifier,
