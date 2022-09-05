@@ -173,7 +173,9 @@ It's far from perfect, and you will probably have to ask it to do something thre
 
 Of course, Dexter isn't the only implementation of this idea. Other ones out there are:
  * [Jasper](https://jasperproject.github.io/)
+ * [Leon](https://github.com/leon-ai/leon)
  * [Mycroft](https://mycroft.ai/)
+ * [Project Alice](https://github.com/project-alice-assistant/ProjectAlice)
  * [Rhasspy](https://github.com/rhasspy/rhasspy)
 
 How is Dexter different? Well, that's in the eye of the beholder really. The basic idea is the same, and they all have support for adding services (or equivalent) on your own. Of course, I can say without a hint of bias, that Dexter is the most awesome-est of the bunch. Like, I mean, dude: you can make it do swirly things with lights when it's listening to you or doing work. Who could ask for more?!
