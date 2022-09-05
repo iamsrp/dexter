@@ -14,7 +14,7 @@ import time
 
 class EspeakOutput(SpeechOutput):
     """
-    An output which logs as a particular level to the system's log.
+    An output which talks using the Espeak module.
     """
     def __init__(self,
                  state,
