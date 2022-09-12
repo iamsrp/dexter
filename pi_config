@@ -12,8 +12,8 @@
     "components" : {
         "inputs" : [
             [ "dexter.input.coqui.CoquiInput", {
-                "model"   : "${HOME}/coqui/model",
-                "scorer"  : "${HOME}/coqui/scorer"
+                "model"  : "${HOME}/coqui/model",
+                "scorer" : "${HOME}/coqui/scorer"
             }]
         ],
 
