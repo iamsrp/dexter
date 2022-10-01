@@ -286,14 +286,15 @@ class AudioInput(Input):
                     # recipient knows how old this data is when it gets it.
                     self._decode_queue.append(time.time())
 
-                    # Push in everything that we have so far
-                    for prev in audio_buf:
+                    # Push in everything that we have
+                    while audio_buf:
+                        prev = audio_buf.popleft()
                         speech.append(prev)
                         self._decode_queue.append(prev)
-
-                # Add on what we just recorded
-                speech.append(chunk)
-                self._decode_queue.append(chunk)
+                else:
+                    # Add on what we just recorded
+                    speech.append(chunk)
+                    self._decode_queue.append(chunk)
 
             # We deem that talking is still happening if it started only a
             # little while ago
@@ -312,6 +313,9 @@ class AudioInput(Input):
 
                 # Now decode. We do this by denoting the end of the audio with a None.
                 self._decode_queue.append(None)
+
+                # Ensure the old queue is empty before we start again
+                audio_buf.clear()
 
                 # And we're back to listening
                 LOG.info("Listening")
