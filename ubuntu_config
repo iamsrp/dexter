@@ -11,9 +11,8 @@
 
     "components" : {
         "inputs" : [
-            [ "dexter.input.coqui.CoquiInput", {
-                "model"   : "${HOME}/coqui/model",
-                "scorer"  : "${HOME}/coqui/scorer"
+            [ "dexter.input.openai_whisper.WhisperInput", {
+                "model" : "base"
             }]
         ],
 
