@@ -109,7 +109,7 @@ class WeatherService(Service):
                     self, tokens, start, end, self._coordinates
                 )
         except Exception as e:
-            LOG.debug("Failed to handle '%s': %s" % (phrase, e))
+            LOG.debug("Failed to handle '%s': %s" % (words, e))
 
         # Not for us
         return None
