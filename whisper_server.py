@@ -3,7 +3,7 @@
 Listen for incoming data and give back parsed results.
 
 This can be run a machine with a decent amount of oomph and the L{RemoteService}
-can talk to it instead of doing the speech-to-text locally. Thias is handy for
+can talk to it instead of doing the speech-to-text locally. This is handy for
 when your client machine is just a Raspberry Pi.
 
 And, if other Home Hub providers can ship audio off from their Home Hub to the
