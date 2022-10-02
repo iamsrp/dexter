@@ -5,7 +5,7 @@ The heart of the system.
 from dexter.core.audio  import get_volume, set_volume
 from dexter.core.event  import TimerEvent
 from dexter.core.log    import LOG
-from dexter.core.util   import to_letters, list_index
+from dexter.core.util   import to_alphanumeric, to_letters, list_index
 from fuzzywuzzy.process import fuzz
 
 import heapq
@@ -494,8 +494,8 @@ class Dexter(object):
         if tokens is None:
             return None
 
-        # Get the words from this text
-        words = [to_letters(token.element).lower()
+        # Get the words from this text, these could include numeric values
+        words = [to_alphanumeric(token.element).lower()
                  for token in tokens
                  if token.verbal]
         LOG.info("Handling: \"%s\"" % ' '.join(words))
