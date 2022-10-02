@@ -23,7 +23,7 @@ class _Handler(Handler):
         :param thing:
             What, or who, is being asked about.
         """
-        super(_Handler, self).__init__(service, tokens, belief, False)
+        super(_Handler, self).__init__(service, tokens, belief, True)
         self._thing = str(thing)
 
 
@@ -141,9 +141,9 @@ class WikipediaService(Service):
 
             # Turn the words into a string for the handler
             if best is not None:
-                # We always have a 0..50% belief so that other services which
+                # We always have a 0..75% belief so that other services which
                 # begin with "What's blah blah" can overrule us.
-                belief = best[1] / 100 / 2
+                belief = best[1] / 100 * 0.75
                 return _Handler(self, tokens, belief, best[0])
 
         # If we got here then it didn't look like a query for us
