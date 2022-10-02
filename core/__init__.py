@@ -608,7 +608,6 @@ class Dexter(object):
             if stopped:
                 return None
 
-
         # See which services want them
         handlers = []
         for service in self._services:
@@ -619,6 +618,7 @@ class Dexter(object):
                 # Get any handler from the service for the given tokens
                 handler = service.evaluate(tokens[offset:])
                 if handler is not None:
+                    LOG.info("Service %s yields handler %s", service, handler)
                     handlers.append(handler)
 
             except:
@@ -639,6 +639,7 @@ class Dexter(object):
         # Okay, put the handlers into order of belief and try them. Notice that
         # we want the higher beliefs first so we reverse the sign in the key.
         handlers = sorted(handlers, key=lambda h: -h.belief)
+        LOG.info("Handlers matched: %s", ', '.join(str(h) for h in handlers))
 
         # If any of the handlers have marked themselves as exclusive then we
         # restrict the list to just them. Hopefully there will be just one but,

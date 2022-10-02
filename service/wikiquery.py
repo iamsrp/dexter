@@ -141,7 +141,10 @@ class WikipediaService(Service):
 
             # Turn the words into a string for the handler
             if best is not None:
-                return _Handler(self, tokens, best[1] / 100, best[0])
+                # We always have a 0..50% belief so that other services which
+                # begin with "What's blah blah" can overrule us.
+                belief = best[1] / 100 / 2
+                return _Handler(self, tokens, belief, best[0])
 
         # If we got here then it didn't look like a query for us
         return None

@@ -2,9 +2,11 @@
 Services which get the weather.
 """
 
+from   datetime         import date, timedelta
 from   dexter.core.log  import LOG
 from   dexter.core.util import fuzzy_list_range, parse_number
 from   dexter.service   import Service, Handler, Result
+from   fuzzywuzzy       import fuzz
 from   urllib.request   import Request, urlopen
 
 import json
@@ -15,11 +17,17 @@ class _UsHandler(Handler):
     """
     Get the weather from weather.gov via there RESTful API.
     """
-    def __init__(self, service, tokens, start, end, coordinates):
+    def __init__(self, service, tokens, words, start, end, coordinates):
         """
         @see Handler.__init__()
         """
-        super().__init__(service, tokens, 1.0, False)
+        super().__init__(service, tokens, 1.0, True)
+
+        # The stuff after the end of the match is the day specifier (we hope)
+        if end < len(words):
+            self._when = words[end]
+        else:
+            self._when = None
 
         # See https://www.weather.gov/documentation/services-web-api
         self._url = f'https://api.weather.gov/points/{coordinates}'
@@ -49,12 +57,31 @@ class _UsHandler(Handler):
         # Let's just choose the first for now. The name is the name of the
         # period, the first is "tonight" or "today" etc. but later ones are
         # names of days etc.
-        which  = 0
-        period = periods[which]
+        which = 0
+        if self._when is not None:
+            LOG.info("Handling a 'when' of '%s'", self._when)
+            if fuzz.ratio('tomorrow', self._when) > 75:
+                # Tomorrow is today + 1day
+                LOG.info("Matched as tomorrow")
+                when = (date.today() + timedelta(days=1)).strftime('%A')
+            else:
+                when = self._when
+
+            # Now look for it
+            for (idx, p) in enumerate(periods):
+                if fuzz.ratio(when, p['name'].lower()) > 75:
+                    LOG.info("Found %s as %s at index %d",
+                             when, p['name'], idx)
+                    which = idx
+                    break
+
+        # Now look for the period which we want
+        period   = periods[which]
         name     = period['name']
-        if which > 0:
-            name = "on " + name
         forecast = period['detailedForecast']
+
+        # Tweak some parts of the text to expand abbreviations etc.
+        forecast = forecast.replace("mph", "miles per hour")
 
         # And put it together to give back
         return Result(
@@ -102,11 +129,12 @@ class WeatherService(Service):
         # Turn the tokens into a set of words to match on
         words = self._words(tokens)
         try:
-            prefix = ("what's", "the", "weather")
+            prefix = ("whats", "the", "weather")
             (start, end, score) = fuzzy_list_range(words, prefix)
             if len(words) >= end:
+                LOG.info("Matched on: %s", ' '.join(words))
                 return self._handler_class(
-                    self, tokens, start, end, self._coordinates
+                    self, tokens, words, start, end, self._coordinates
                 )
         except Exception as e:
             LOG.debug("Failed to handle '%s': %s" % (words, e))

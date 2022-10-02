@@ -128,6 +128,10 @@ class Handler(object):
         raise NotImplementedError("Abstract method called")
 
 
+    def __str__(self):
+        return "%s{%0.2f,%s}" % (self.service, self.belief, self.exclusive)
+
+
 class Result(object):
     """
     The result of caling L{Handler.handle()}.
