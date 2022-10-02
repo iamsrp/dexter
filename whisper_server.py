@@ -28,16 +28,16 @@ _MODELS = ('tiny', 'base', 'small', 'medium', 'large')
 
 # ------------------------------------------------------------------------------
 
-def handle(conn):
+def handle(conn, translate):
     """
     Create a new thread for the given connection and start it.
     """
-    thread = Thread(target=lambda: run(conn))
+    thread = Thread(target=lambda: run(conn, translate))
     thread.daemon = True
     thread.start()
 
 
-def run(conn):
+def run(conn, translate):
     """
     Handle a new connection, in its own thread.
     """
@@ -105,7 +105,8 @@ def run(conn):
         # Finally, decode it
         logging.info("Decoding %0.2f seconds of audio",
                      len(data) / rate / width / channels)
-        result = model.transcribe(audio)
+        result = model.transcribe(audio,
+                                  task='translate' if translate else 'transcribe')
         words = result['text'].strip()
         logging.info("Got: '%s'", words)
 
@@ -143,6 +144,8 @@ parser.add_argument('--model', default='base',
                     help='The model type to use; one of %s' % ' '.join(_MODELS))
 parser.add_argument('--port', type=int, default=8008,
                     help='The port number to listen on')
+parser.add_argument('--translate', default=False, action='store_true',
+                    help='Whether to translate to English')
 args = parser.parse_args()
 
 # Pull in the model
@@ -163,7 +166,7 @@ while True:
         logging.info("Waiting for a connection")
         (conn, addr) = sckt.accept()
         logging.info("Got connection from %s" % (addr,))
-        handle(conn)
+        handle(conn, args.translate)
 
     except Exception as e:
         # Tell the user at least

@@ -31,9 +31,10 @@ class WhisperInput(AudioInput):
     """
     def __init__(self,
                  notifier,
-                 rate   =16000,
-                 model  ='base',
-                 wav_dir=None):
+                 rate     =16000,
+                 model    ='base',
+                 translate=True,
+                 wav_dir  =None):
         """
         @see AudioInput.__init__()
 
@@ -57,8 +58,9 @@ class WhisperInput(AudioInput):
             wav_dir=wav_dir
         )
 
-        # Set up the actual model
+        # Set up the actual model and our params
         self._model = whisper.load_model(model)
+        self._task = 'translate' if bool(translate) else 'transcribe'
 
         # Where we buffer to
         self._audio = None
@@ -87,7 +89,7 @@ class WhisperInput(AudioInput):
 
         # Turn the audio into speech
         try:
-            result = self._model.transcribe(self._audio)
+            result = self._model.transcribe(self._audio, task=self._task)
         finally:
             self._audio = None
 
