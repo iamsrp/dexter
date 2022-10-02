@@ -4,8 +4,10 @@ Input using the OpenAI Whisper module..
 See::
   https://github.com/openai/whisper
 
-Since there is no PyTorch for the Pi this does not work on the Pi, at the time
-of writing...
+If you want to run this on the Raspberry Pi then you will need the 64bit
+RaspberyPi OS since there is no version of PyTorch for the 32bit one. (And you
+will need a more up-to-date version of numpy too.) However, it's _slow_; it
+takes about 20s to decode 5s of audio.
 """
 
 from   dexter.input       import Token
