@@ -171,7 +171,12 @@ class _SpellingHandler(Handler):
         # Just join all the spellings together
         response = ""
         for word in self._words:
-            response += "The word %s is spelt %s. " % (word, ' '.join(word))
+            # Strip trailing punctuation since that will be interpreted
+            # incorrectly
+            word = word.strip(',').strip('.')
+
+            # User '.'s to slow down the rate at which the latters are spoken.
+            response += "The word %s is spelt %s. " % (word, ' .'.join(word))
 
         # And give it all back
         return Result(self, response, False, True)
