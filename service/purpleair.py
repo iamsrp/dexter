@@ -1,5 +1,8 @@
 """
 Get data from Purple Air and render it.
+
+You will need an API key to do this, as well as a sensor ID. Last tie I checked
+you could get an API key by mailing ``contact@purpleair.com``.
 """
 
 from   dexter.core.log   import LOG
@@ -26,6 +29,7 @@ class _PurpleAirHandler(Handler):
         # We'll want to cache the data since hammering PurpleAir is unfriendly
         # and also results in getting back no data.
         sensor_id = self.service.get_sensor_id()
+        key       = self.service.get_key()
         filename  = '/tmp/dexter_purpleair_%s' % (sensor_id,)
         now       = time.time()
         content   = None
@@ -43,9 +47,10 @@ class _PurpleAirHandler(Handler):
         if not content:
             h = httplib2.Http()
             resp, content = \
-                h.request("https://www.purpleair.com/json?show=%d" % (sensor_id,),
-    			  "GET",
-    			  headers={'content-type':'text/plain'} )
+                h.request("https://api.purpleair.com/v1/sensors/%d" % (sensor_id,),
+			  "GET",
+			  headers={'content-type':'text/plain',
+                                   'X-API-Key'   : key } )
 
             # Save what we downloaded into the cache
             try:
@@ -189,7 +194,7 @@ class PurpleAirService(Service):
                  ('whats', 'the',),)
 
 
-    def __init__(self, state, sensor_id=None):
+    def __init__(self, state, sensor_id=None, api_key=None):
         """
         @see Service.__init__()
         :type  sensor_id: int
@@ -197,12 +202,18 @@ class PurpleAirService(Service):
             The device ID. This can usually be found by looking at the sensor
             information on the Purple Air map (e.g. in the "Get this widget"
             tool-tip). This is required.
+        :type  api_key: str
+        :param api_key:
+            The API read key for the PurleAir API. This is reqiured.
         """
         super(PurpleAirService, self).__init__("PurpleAir", state)
 
         if sensor_id is None:
             raise ValueError("Sensor ID was not given")
+        if api_key is None:
+            raise ValueError("API key  was not given")
         self._sensor_id = sensor_id
+        self._key       = api_key
 
 
     def evaluate(self, tokens):
@@ -224,6 +235,13 @@ class PurpleAirService(Service):
 
     def get_sensor_id(self):
         """
-        Get the sensor ID as best we can.
+        Get the sensor ID.
         """
         return self._sensor_id
+
+
+    def get_key(self):
+        """
+        Get the API key.
+        """
+        return self._key
