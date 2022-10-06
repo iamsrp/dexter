@@ -19,7 +19,7 @@ pip3 install git+https://github.com/openai/whisper.git && sudo apt install -y ff
 # Vosk is another STT engine
 pip3 install vosk || (uname -m | grep -q aarch64 && pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl)
 # And so Coqui (STT), which was DeepSpeech once upon a time
-pip3 install stt || (pip3 install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
+pip3 install stt || (pip3 install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl)
 # Other generally handy things
 pip3 install pyalsaaudio
 pip3 install wikipedia
