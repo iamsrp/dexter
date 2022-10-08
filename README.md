@@ -22,6 +22,7 @@ This is very much a toy project and should be considered work in progress. That 
 - [Project status](#project-status)
 - [Bugs](#bugs)
 
+
 ## Quick start
 
 If you quickly want to get up and running then:
@@ -29,14 +30,15 @@ If you quickly want to get up and running then:
  - Install the prerequisites
  - Make sure that the appropriate model etc. files are where the config file is looking for them
  - Make sure you have a microphone and speaker
- - Try running dexter.py with the appropriate config file for your distro (either `pi_config` or `ubunutu_config`)
+ - Try running dexter.py with the appropriate config file for your distro (e.g. `./dexter.py -c pi_config`)
 You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
+
 
 ## Prerequisites
 
 * Linux:
   - Raspberry Pi OS (on a Raspberry Pi); 64bit version for some speech-to-text systems
-  - Ubuntu (on an x64-86 box)
+  - Ubuntu (on an x64-86 box or the StarFive VisionFive2 RISC-V board)
 * [Python 3](https://www.python.org/).
 * Around 1G to 2G of free disk space, if you want to use Coqui or Vosk with a good model.
 * Most of what is listed in the `requirements` file. What you actually need will depend on what components you add.
@@ -47,13 +49,14 @@ You'll also need the trained models and scorer from [Coqui](https://github.com/c
 
 Some of the components need extra package installed to make them work (e.g. Spotify needs various magic); this is generally documented in the module's PyDoc.
 
-When it comes to recording, make sure that you have a decent microphone with no noise; try listening to some `arecord` output to make sure it sounds clear. You can also provide a `wav_dir` argument for some of the audio input components, like `dexter.input.coqui.CoquiInput` or `dexter.input.vosk.VoskInput`.
+When it comes to recording, make sure that you have a decent microphone with no noise; try listening to some `arecord` output to make sure it sounds clear. You can also provide a `wav_dir` argument for some of the audio input components, like `dexter.input.openai_whisper.WhisperInput`.
 
-### Raspberry Pi Specifics
 
-Dexter has been tested and developed using, most recently a 2Gb Raspberry Pi 4.
+### Architecture Specifics
 
-If you're running Dexter on a Raspberry Pi then make sure that ALSA is working by testing `aplay` and `arecord`, tweaking volume and recording levels with `alsamixer`. If it is not then you may well get strange errors from `pyaudio`. You might also want a `/home/pi/.asoundrc` file which looks something like this:
+Dexter has been tested and developed using, most recently a 4Gb Raspberry Pi 4.
+
+If you're running Dexter on a Raspberry Pi or the StarFive VisionFive2 then make sure that ALSA is working by testing `aplay` and `arecord`, tweaking volume and recording levels with `alsamixer`. If it is not then you may well get strange errors from `pyaudio`. You might also want a `/home/pi/.asoundrc` file which looks something like this:
    ```
 pcm.!default {
         type asym
@@ -67,11 +70,16 @@ pcm.!default {
         }
 }
 ```
-You can see the different hardware devices in `alsamixer`, via F6. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference.
+You can see the different hardware devices in `alsamixer`, via F6. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference. On the StarFive board the built-in audio-out doesn't currently work and using a USB audio adapter seems wonky too.
 
 For input, Coqui supports Tensorflow Light and it does a pretty decent job of recognition in near realtime. Vosk is also a more recent speech-to-text engine which seems to work well.
 
+OpenAI's Whisper requires PyTorch to run and this is only available on the Pi 64bit OS. However it's not very fast and takes about 4x realtime to decode audio; using a remote server for it is recommended.
+
+For the StarFive VisionFive2 there's only really early Ubuntu support and most third-party libraries don't have RISC-V versions as yet. PocketSphinx seems to work as a SST engine but is very slow (10x realtime). So you probably want to run Whisper on a remote server just like you would for the Pi.
+
 The Pi also has some really great, and cheap, HATs which can be used for user feedback on status (see below). The current code supports a couple of these but adding support for new ones is pretty easy, should you be feeling keen.
+
 
 ## Configuration
 
@@ -85,6 +93,7 @@ The `components` should be a dict with the following entires: `inputs`, `outputs
 
 See the `test_config` file as a simple example, and the platform specific ones which are more fleshed out.
 
+
 ## Running
 
 You can run the client like this:
@@ -96,6 +105,7 @@ cd the_checkout_directory
 
 You can then stop it with a `CTRL-c` or by sending it a `SIGINT`.
 
+
 ### Notifiers
 
 The Notifiers are how Dexter tells the user what it's doing. For example, if it has started listening or if it's querying an outside service, then it will effectively say so via simple means.
@@ -106,11 +116,13 @@ There are at least these right now:
  * One for the [Pimoroni Scroll HAT Mini](https://shop.pimoroni.com/products/scroll-hat-mini), which does pulsey things.
  * A Gnome task tray icon, which appears when Dexter is busy.
 
+
 ## Components
 
 There are three types of component in the system. You may have any number of each type, but it might not be wise in certain cases (e.g. multiple audio inputs probably won't work out well). The components plug into the system to provide its various functionality. Inputs are how commands get into the system, services handle the commands, and outputs give back the service results to the user.
 
 The PyDoc for the different components should help you get up and running with them.
+
 
 ### Inputs
 
@@ -124,12 +136,14 @@ There are other simple input types mostly for physical interaction:
  * MediaKeyInput: This binds certain phrases to the media keys (Play, Stop, Next Track, Previous Track)
  * GPIO: Which binds certain phrases to the buttons on some HATs
 
+
 ### Outputs
 
 These are ways to get Dexter's responses back to the user. These currently:
  * Speech-to-text via [Festival](http://www.cstr.ed.ac.uk/projects/festival/) and [ESpeak](http://espeak.sourceforge.net/).
  * Simple logging via the `LogOutput`
  * Transmission to an unsecured remote socket
+
 
 ### Services
 
@@ -146,6 +160,7 @@ A quick overview of the current set of service modules is:
  * Randomness: Various random generators
  * Volume: Sound control
  * WikiQuery: Look up things on Wikipedia
+
 
 ## Hardware
 
@@ -169,6 +184,7 @@ When it comes to getting Dexter working "right" the main thing I wind up doing i
 
 It's far from perfect, and you will probably have to ask it to do something three times, but it's still kind of amazing that you can do all this on a $35 computer..! (Oh, with a $50 microphone, $15 HAT, $20 speaker, ...)
 
+
 ## Related work
 
 Of course, Dexter isn't the only implementation of this idea. Other ones out there are:
@@ -180,9 +196,11 @@ Of course, Dexter isn't the only implementation of this idea. Other ones out the
 
 How is Dexter different? Well, that's in the eye of the beholder really. The basic idea is the same, and they all have support for adding services (or equivalent) on your own. Of course, I can say without a hint of bias, that Dexter is the most awesome-est of the bunch. Like, I mean, dude: you can make it do swirly things with lights when it's listening to you or doing work. Who could ask for more?!
 
+
 ## Project status
 
 Right now Dexter is at the point where it does pretty much what I wanted it to and so most of the work happening on it is related to bug fixes and tweaks, as opposed to adding new features. I'll also be keeping it ticking over with the updates to underlying libraries etc. so that it still works out of the box. Development work on it has been rather quiet of late, but don't consider it to be abandonware.
+
 
 ## Bugs
 
@@ -199,3 +217,5 @@ The speech recognition could do with some work:
  * It would be better if it continuously listened and picked up instructions as it went along
 
 Some of the underlying libraries can hit fatal errors, causing the whole thing to `abort()` and die.
+
+PyFestival seems to yield a `aplay: main:831: audio open error: Device or resource busy` error on the StarFive VisionFive 2, meaning you get nothing out.
