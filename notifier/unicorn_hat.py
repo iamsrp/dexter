@@ -90,6 +90,14 @@ class _Clockface():
     _DIGIT_COL = [ 128, 128, 128 ]
     _COLON_COL = [  64,  64,  64 ]
     
+
+    def __init__(self, hrs):
+        """
+        :param hrs: 12 or 24 hour clock.
+        """
+        self._hrs = int(hrs)
+
+
     def render_hhmm(self, w, h, seconds):
         """
         Render the time into a WxH RGB buffer as an HH:MM image.
@@ -138,10 +146,13 @@ class _Clockface():
                 [0, 0, 0] for _ in range(int(h))
             ] for _ in range(int(w))
         ]
-        render(buf, int(dt.hour   / 10), h1_x_off, y_off)
-        render(buf, int(dt.hour   % 10), h2_x_off, y_off)
-        render(buf, int(dt.minute / 10), m1_x_off, y_off)
-        render(buf, int(dt.minute % 10), m2_x_off, y_off)
+        hh = dt.hour   % self._hrs
+        mm = dt.minute
+        if hh >= 10:
+            render(buf, int(hh / 10), h1_x_off, y_off)
+        render(buf, int(hh % 10), h2_x_off, y_off)
+        render(buf, int(mm / 10), m1_x_off, y_off)
+        render(buf, int(mm % 10), m2_x_off, y_off)
 
         # Finally, put in the colon, if we're on an odd second bonundary (so it
         # flashes)
@@ -161,7 +172,7 @@ class _UnicornHatNotifier(ByComponentNotifier):
     """
     def __init__(self,
                  brightness,
-                 show_clock,
+                 clock_type,
                  rotation,
                  flip_x,
                  flip_y):
@@ -169,7 +180,8 @@ class _UnicornHatNotifier(ByComponentNotifier):
         @see ByComponentNotifier.__init__()
 
         :param brightness: From 0.0 to 1.0.
-        :param show_clock: Whether to display the clock.
+        :param clock_type: The type of clock to display, one of ``12``, ``24``,
+                           or ``None``.
         :param rotation:   Rotate the display by ``0``, ``90``, ``180``, or
                            ``270`` degrees.
         :param flip_x:     Whether to flip the horizontal rendering.
@@ -179,7 +191,6 @@ class _UnicornHatNotifier(ByComponentNotifier):
 
         # Save params
         self._start_brightness = float(brightness)
-        self._show_clock       = bool(show_clock)
         self._rotation         = int(rotation / 90)
         self._flip_x           = bool(flip_x)
         self._flip_y           = bool(flip_y)
@@ -200,7 +211,12 @@ class _UnicornHatNotifier(ByComponentNotifier):
         self._outputs  = set()
 
         # How we render the clock
-        self._clockface = _Clockface()
+        if clock_type is None:
+            self._clockface = None
+        elif clock_type not in (12, "12", 24, "24"):
+            raise ValueError("Bad clock type")
+        else:
+            self._clockface = _Clockface(clock_type)
 
 
     def update_status(self, component, status):
@@ -375,7 +391,7 @@ class _UnicornHatNotifier(ByComponentNotifier):
             now = time.time()
 
             # Render the clockface into a buffer to use, maybe
-            if self._show_clock:
+            if self._clockface is not None:
                 clock = self._clockface.render_hhmm(w, h, now)
             else:
                 clock = None
@@ -477,7 +493,7 @@ class UnicornHatHdNotifier(_UnicornHatNotifier):
     """
     def __init__(self,
                  brightness=0.75,
-                 show_clock=True,
+                 clock_type=24,
                  rotation  =90,
                  flip_x    =True,
                  flip_y    =False):
@@ -485,7 +501,7 @@ class UnicornHatHdNotifier(_UnicornHatNotifier):
         @see _UnicornHatNotifier.__init__()
         """
         super().__init__(brightness=brightness,
-                         show_clock=show_clock,
+                         clock_type=clock_type,
                          rotation  =rotation,
                          flip_x    =flip_x,
                          flip_y    =flip_y)
@@ -539,7 +555,7 @@ class UnicornHatMiniNotifier(_UnicornHatNotifier):
     """
     def __init__(self,
                  brightness=0.5,
-                 show_clock=True,
+                 clock_type=24,
                  rotation  =180,
                  flip_x    =False,
                  flip_y    =False):
@@ -547,7 +563,7 @@ class UnicornHatMiniNotifier(_UnicornHatNotifier):
         @see _UnicornHatNotifier.__init__()
         """
         super().__init__(brightness=brightness,
-                         show_clock=show_clock,
+                         clock_type=clock_type,
                          rotation  =rotation,
                          flip_x    =flip_x,
                          flip_y    =flip_y)
