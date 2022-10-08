@@ -5,6 +5,7 @@ Notifiers which utilise the Unicorn HATs on a Raspberry Pi.
 @see https://github.com/pimoroni/unicorn-hat-hd
 """
 
+from   datetime        import datetime
 from   dexter.core     import Notifier
 from   dexter.core.log import LOG
 from   dexter.notifier import ByComponentNotifier
@@ -15,18 +16,173 @@ import time
 
 # ------------------------------------------------------------------------------
 
+class _Clockface():
+    # The 3x5 digits
+    _DIGITS = [
+        [[ 1,1,1 ],
+         [ 1,0,1 ],
+         [ 1,0,1 ],
+         [ 1,0,1 ],
+         [ 1,1,1 ]],
+
+         [[ 1,1,0 ],
+          [ 0,1,0 ],
+          [ 0,1,0 ],
+          [ 0,1,0 ],
+          [ 1,1,1 ]],
+
+         [[ 1,1,1 ],
+          [ 0,0,1 ],
+          [ 1,1,1 ],
+          [ 1,0,0 ],
+          [ 1,1,1 ]],
+
+         [[ 1,1,1 ],
+          [ 0,0,1 ],
+          [ 1,1,1 ],
+          [ 0,0,1 ],
+          [ 1,1,1 ]],
+
+         [[ 1,0,1 ],
+          [ 1,0,1 ],
+          [ 1,1,1 ],
+          [ 0,0,1 ],
+          [ 0,0,1 ]],
+
+         [[ 1,1,1 ],
+          [ 1,0,0 ],
+          [ 1,1,1 ],
+          [ 0,0,1 ],
+          [ 1,1,1 ]],
+
+         [[ 1,1,1 ],
+          [ 1,0,0 ],
+          [ 1,1,1 ],
+          [ 1,0,1 ],
+          [ 1,1,1 ]],
+
+         [[ 1,1,1 ],
+          [ 0,0,1 ],
+          [ 0,0,1 ],
+          [ 0,0,1 ],
+          [ 0,0,1 ]],
+
+         [[ 1,1,1 ],
+          [ 1,0,1 ],
+          [ 1,1,1 ],
+          [ 1,0,1 ],
+          [ 1,1,1 ]],
+
+         [[ 1,1,1 ],
+          [ 1,0,1 ],
+          [ 1,1,1 ],
+          [ 0,0,1 ],
+          [ 1,1,1 ]],
+    ] 
+
+    _EMPTY = \
+         [[ 0,0,0 ],
+          [ 0,0,0 ],
+          [ 0,0,0 ],
+          [ 0,0,0 ],
+          [ 0,0,0 ]]
+
+    _DIGIT_COL = [ 128, 128, 128 ]
+    _COLON_COL = [  64,  64,  64 ]
+    
+    def render_hhmm(self, w, h, seconds):
+        """
+        Render the time into a WxH RGB buffer as an HH:MM image.
+        
+        :param seconds: Seconds since epoch.
+        """
+        def render(buf, num, x_off, y_off):
+            # Pick the character to render
+            if 0 <= num < len(self._DIGITS):
+                digit = self._DIGITS[num]
+            else:
+                digit = self._EMPTY
+
+            # Render it into the buffer.Note that the digits have reversed
+            # indexing.
+            for y in range(len(digit)):
+                for x in range(len(digit[y])):
+                    buf_x = x + x_off
+                    buf_y = y + y_off
+                    if (0 <= buf_x < len(buf       ) and
+                        0 <= buf_y < len(buf[buf_x]) and
+                        digit[y][x]):
+                        # We're in the buffer and the digit's pixel is set
+                        buf[buf_x][buf_y] = self._DIGIT_COL
+
+        # Determine the digits' extents
+        d_h = len(self._EMPTY)
+        d_w = len(self._EMPTY[0])
+
+        # Figure out the offsets of each digit in the time. Remember we need to
+        # pad by one pixel horizontally.
+        mid_x = w // 2
+        mid_y = h // 2
+        y_off = mid_y - d_h // 2
+        h2_x_off = mid_x - d_w - 1
+        h1_x_off = h2_x_off - d_w - 1
+        m1_x_off = mid_x + 1
+        m2_x_off = m1_x_off + d_w + 1
+
+        # What we will render
+        dt = datetime.fromtimestamp(int(seconds))
+
+        # Create the buffer and render into it
+        buf = [
+            [
+                [0, 0, 0] for _ in range(int(h))
+            ] for _ in range(int(w))
+        ]
+        render(buf, int(dt.hour   / 10), h1_x_off, y_off)
+        render(buf, int(dt.hour   % 10), h2_x_off, y_off)
+        render(buf, int(dt.minute / 10), m1_x_off, y_off)
+        render(buf, int(dt.minute % 10), m2_x_off, y_off)
+
+        # Finally, put in the colon, if we're on an odd second bonundary (so it
+        # flashes)
+        if (int(seconds) & 1) == 1:
+            buf[mid_x    ][mid_y - 1] = self._COLON_COL
+            buf[mid_x    ][mid_y + 1] = self._COLON_COL
+            buf[mid_x - 1][mid_y - 1] = self._COLON_COL
+            buf[mid_x - 1][mid_y + 1] = self._COLON_COL
+
+        # And give it back
+        return buf
+
+
 class _UnicornHatNotifier(ByComponentNotifier):
     """
     A notifier for the Unicorn HAT family from Pimoroni.
     """
-    def __init__(self, brightness):
+    def __init__(self,
+                 brightness,
+                 show_clock,
+                 rotation,
+                 flip_x,
+                 flip_y):
         """
         @see ByComponentNotifier.__init__()
-        """
-        super(_UnicornHatNotifier, self).__init__()
 
-        # Used when we start
-        self._start_brightness = brightness
+        :param brightness: From 0.0 to 1.0.
+        :param show_clock: Whether to display the clock.
+        :param rotation:   Rotate the display by ``0``, ``90``, ``180``, or
+                           ``270`` degrees.
+        :param flip_x:     Whether to flip the horizontal rendering.
+        :param flip_y:     Whether to flip the vertical rendering.
+        """
+        super().__init__()
+
+        # Save params
+        self._start_brightness = float(brightness)
+        self._show_clock       = bool(show_clock)
+        self._rotation         = int(rotation / 90)
+        self._flip_x           = bool(flip_x)
+        self._flip_y           = bool(flip_y)
 
         # The time, since epoch, when each component type stopped being active
         self._input_time   = 0
@@ -43,12 +199,15 @@ class _UnicornHatNotifier(ByComponentNotifier):
         self._services = set()
         self._outputs  = set()
 
+        # How we render the clock
+        self._clockface = _Clockface()
+
 
     def update_status(self, component, status):
         """
         @see Notifier.update_status()
         """
-        # Sanity
+        # Do nothing for bad inputs
         if component is None or status is None:
             return
 
@@ -110,13 +269,6 @@ class _UnicornHatNotifier(ByComponentNotifier):
         thread.start()
 
 
-    def _get_shape(self):
-        """
-        Get the width and height of the display, as a tuple.
-        """
-        raise NotImplementedError("Abstract method called")
-
-
     def _brightness(self, brightness):
         """
         Set the brightness to a value in the range ``[0.0, 1.0]``.
@@ -124,14 +276,58 @@ class _UnicornHatNotifier(ByComponentNotifier):
         raise NotImplementedError("Abstract method called")
 
 
-    def _rotation(self, rotation):
+    def _get_shape(self):
         """
-        Set the rotation, to one of: ``0``, ``90``, ``180``, ``270``
+        Get the width and height of the display, as a tuple, adjusting by any global
+        mutation parameters.
+        """
+        # Get the shape, handling any rotation
+        (w, h) = self._get_shape_raw()
+        if self._rotation == 1 or self._rotation == 3:
+            return (h, w)
+        else:
+            return (w, h)
+
+
+    def _get_shape_raw(self):
+        """
+        Get the width and height of the display, as a tuple.
         """
         raise NotImplementedError("Abstract method called")
 
 
     def _set_pixel(self, x, y, r, g, b):
+        """
+        Set the pixel at ``(x,y)`` to the given ``(r,g,b)`` value, adjusting by any
+        global mutation parameters.
+        """
+        # Need to know the raw shape
+        (w, h) = self._get_shape_raw()
+
+        # Handle horizontal flipping
+        if self._flip_x:
+            x = w - x - 1
+        if self._flip_y:
+            y = h - y - 1
+
+        # And any rotation
+        if   self._rotation == 1:
+            raw_x = w - y - 1
+            raw_y = x
+        elif self._rotation == 2:
+            raw_x = w - x - 1
+            raw_y = h - y - 1
+        elif self._rotation == 3:
+            raw_x = y
+            raw_y = h - x - 1
+        else:
+            raw_x = x
+            raw_y = y
+
+        self._set_pixel_raw(raw_x, raw_y, r, g, b)
+
+
+    def _set_pixel_raw(self, x, y, r, g, b):
         """
         Set the pixel at ``(x,y)`` to the given ``(r,g,b)`` value.
         """
@@ -178,6 +374,12 @@ class _UnicornHatNotifier(ByComponentNotifier):
             # What time is love?
             now = time.time()
 
+            # Render the clockface into a buffer to use, maybe
+            if self._show_clock:
+                clock = self._clockface.render_hhmm(w, h, now)
+            else:
+                clock = None
+
             # How long since these components went non-idle
             i_since = now - self._input_time
             s_since = now - self._service_time
@@ -219,12 +421,24 @@ class _UnicornHatNotifier(ByComponentNotifier):
                     o_s = self._swirl(rx, ry, o_index, o_dir)
 
                     # The RGB values
-                    r = int(max(0, min(255, o_s * o_mult)))
-                    g = int(max(0, min(255, s_s * s_mult)))
-                    b = int(max(0, min(255, i_s * i_mult)))
+                    r = o_s * o_mult
+                    g = s_s * s_mult
+                    b = i_s * i_mult
+
+                    # Merge in the clock, if any
+                    if clock is not None:
+                        r += clock[x][y][0]
+                        g += clock[x][y][1]
+                        b += clock[x][y][2]
 
                     # And set them
-                    self._set_pixel(x, y, r, g, b)
+                    self._set_pixel(
+                        x,
+                        y,
+                        int(max(0, min(255, r))),
+                        int(max(0, min(255, g))),
+                        int(max(0, min(255, b)))
+                    )
 
             self._show()
 
@@ -261,11 +475,20 @@ class UnicornHatHdNotifier(_UnicornHatNotifier):
     """
     A notifier for the Unicorn HAT HD.
     """
-    def __init__(self, brightness=0.5):
+    def __init__(self,
+                 brightness=0.75,
+                 show_clock=True,
+                 rotation  =90,
+                 flip_x    =True,
+                 flip_y    =False):
         """
         @see _UnicornHatNotifier.__init__()
         """
-        super(UnicornHatHdNotifier, self).__init__(brightness=brightness)
+        super().__init__(brightness=brightness,
+                         show_clock=show_clock,
+                         rotation  =rotation,
+                         flip_x    =flip_x,
+                         flip_y    =flip_y)
 
         import unicornhathd
         self._hat = unicornhathd
@@ -282,23 +505,16 @@ class UnicornHatHdNotifier(_UnicornHatNotifier):
             self._hat.brightness(brightness)
 
 
-    def _rotation(self, rotation):
+    def _get_shape_raw(self):
         """
-        @see _UnicornHatNotifier._rotation
-        """
-        self._hat.set_rotation(rotation)
-
-
-    def _get_shape(self):
-        """
-        @see _UnicornHatNotifier._get_shape
+        @see _UnicornHatNotifier._get_shape_raw
         """
         return self._hat.get_shape()
 
 
-    def _set_pixel(self, x, y, r, g, b):
+    def _set_pixel_raw(self, x, y, r, g, b):
         """
-        @see _UnicornHatNotifier._set_pixel
+        @see _UnicornHatNotifier._set_pixel_raw
         """
         self._hat.set_pixel(x, y, r, g, b)
 
@@ -321,11 +537,20 @@ class UnicornHatMiniNotifier(_UnicornHatNotifier):
     """
     A notifier for the Unicorn HAT Mini.
     """
-    def __init__(self, brightness=0.5):
+    def __init__(self,
+                 brightness=0.5,
+                 show_clock=True,
+                 rotation  =180,
+                 flip_x    =False,
+                 flip_y    =False):
         """
         @see _UnicornHatNotifier.__init__()
         """
-        super(UnicornHatMiniNotifier, self).__init__(brightness=brightness)
+        super().__init__(brightness=brightness,
+                         show_clock=show_clock,
+                         rotation  =rotation,
+                         flip_x    =flip_x,
+                         flip_y    =flip_y)
 
         from unicornhatmini import UnicornHATMini
         self._hat = UnicornHATMini()
@@ -338,23 +563,16 @@ class UnicornHatMiniNotifier(_UnicornHatNotifier):
         self._hat.set_brightness(brightness)
 
 
-    def _rotation(self, rotation):
+    def _get_shape_raw(self):
         """
-        @see _UnicornHatNotifier._rotation
-        """
-        self._hat.set_rotation(rotation)
-
-
-    def _get_shape(self):
-        """
-        @see _UnicornHatNotifier._get_shape
+        @see _UnicornHatNotifier._get_shape_raw
         """
         return self._hat.get_shape()
 
 
-    def _set_pixel(self, x, y, r, g, b):
+    def _set_pixel_raw(self, x, y, r, g, b):
         """
-        @see _UnicornHatNotifier._set_pixel
+        @see _UnicornHatNotifier._set_pixel_raw
         """
         self._hat.set_pixel(x, y, r, g, b)
 
