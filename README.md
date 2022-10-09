@@ -78,7 +78,7 @@ OpenAI's Whisper requires PyTorch to run and this is only available on the Pi 64
 
 For the StarFive VisionFive2 there's only really early Ubuntu support and most third-party libraries don't have RISC-V versions as yet. PocketSphinx seems to work as a SST engine but is very slow (10x realtime). So you probably want to run Whisper on a remote server just like you would for the Pi.
 
-The Pi Zero 2 will also run Dexter as well but has, of course, only 2 cores and just 512Mb of RAM. So, once again, offloading the STT engine to a server is recommended. Apart from that it looks to work pretty well too.
+The Pi Zero 2 will also run Dexter as well but has, of course, just 512Mb of RAM. So, once again, offloading the STT engine to a server is recommended. Apart from that it looks to work pretty well too.
 
 The Pi also has some really great, and cheap, HATs which can be used for user feedback on status (see below). The current code supports a couple of these but adding support for new ones is pretty easy, should you be feeling keen.
 
