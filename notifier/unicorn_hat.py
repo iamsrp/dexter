@@ -146,8 +146,18 @@ class _Clockface():
                 [0, 0, 0] for _ in range(int(h))
             ] for _ in range(int(w))
         ]
-        hh = dt.hour   % self._hrs
+
+        # Get the hours and minutes, special handling for 12hr clocks which go
+        # from 1~12 twice, vs 24hr clocks which go from 00~23.
+        hh = dt.hour
+        if self._hrs == 12:
+            if hh > 12:
+                hh -= 12
+            elif hh == 0:
+                hh = 12
         mm = dt.minute
+
+        # Draw the digits
         if hh >= 10:
             render(buf, int(hh / 10), h1_x_off, y_off)
         render(buf, int(hh % 10), h2_x_off, y_off)
