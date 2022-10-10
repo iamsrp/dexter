@@ -29,7 +29,7 @@ class _PandoraServicePauseHandler(Handler):
             service,
             tokens,
             1.0 if service.is_playing() else 0.0,
-            False
+            True
         )
 
 

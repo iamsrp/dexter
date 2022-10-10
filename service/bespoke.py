@@ -54,7 +54,7 @@ class _BespokeHandler(Handler):
         :param reply:
             What to respond with.
         """
-        super(_BespokeHandler, self).__init__(service, tokens, 1.0, False)
+        super(_BespokeHandler, self).__init__(service, tokens, 1.0, True)
         self._reply = reply
 
 

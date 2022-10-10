@@ -22,7 +22,7 @@ class _DictionaryHandler(Handler):
         :param word:
             The single word to look up.
         """
-        super(_DictionaryHandler, self).__init__(service, tokens, belief, False)
+        super(_DictionaryHandler, self).__init__(service, tokens, belief, True)
         self._word  = str(word)
         self._limit = limit
 
@@ -160,7 +160,7 @@ class _SpellingHandler(Handler):
         :param words:
             The words to spell.
         """
-        super(_SpellingHandler, self).__init__(service, tokens, belief, False)
+        super(_SpellingHandler, self).__init__(service, tokens, belief, True)
         self._words = words
 
 

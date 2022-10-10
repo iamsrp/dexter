@@ -224,7 +224,7 @@ class _CancelHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_CancelHandler, self).__init__(service, tokens, 1.0, False)
+        super(_CancelHandler, self).__init__(service, tokens, 1.0, True)
         self._words = words
 
 

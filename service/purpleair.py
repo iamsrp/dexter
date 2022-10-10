@@ -19,7 +19,7 @@ class _PurpleAirHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_PurpleAirHandler, self).__init__(service, tokens, 1.0, False)
+        super(_PurpleAirHandler, self).__init__(service, tokens, 1.0, True)
 
 
     def _get_data(self):

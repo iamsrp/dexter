@@ -12,7 +12,7 @@ class _EchoHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_EchoHandler, self).__init__(service, tokens, 1.0, False)
+        super(_EchoHandler, self).__init__(service, tokens, 1.0, True)
 
 
     def handle(self):
@@ -54,7 +54,7 @@ class _MatchHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_MatchHandler, self).__init__(service, tokens, best / 100, False)
+        super(_MatchHandler, self).__init__(service, tokens, best / 100, True)
         self._matches = matches
 
 

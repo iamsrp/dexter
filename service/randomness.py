@@ -13,7 +13,7 @@ class _CoinTossHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_CoinTossHandler, self).__init__(service, tokens, 1.0, False)
+        super(_CoinTossHandler, self).__init__(service, tokens, 1.0, True)
 
 
     def handle(self):
@@ -34,7 +34,7 @@ class _DiceHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_DiceHandler, self).__init__(service, tokens, 1.0, False)
+        super(_DiceHandler, self).__init__(service, tokens, 1.0, True)
         self._sides = sides
 
 

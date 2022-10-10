@@ -22,7 +22,7 @@ class _FortuneHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_FortuneHandler, self).__init__(service, tokens, 1.0, False)
+        super(_FortuneHandler, self).__init__(service, tokens, 1.0, True)
         self._fortune = fortune
 
 
