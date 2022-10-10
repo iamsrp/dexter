@@ -212,7 +212,7 @@ If you are running with an unaccessible `DISPLAY` then you might see pygame do t
 ```
 Fatal Python error: (pygame parachute) Segmentation Fault
 ```
-If that's the case, then simply unset the `DISPLAY` when running, e.g. with `env -u DISPLAY ./dexter.py -c config`.
+If that's the case, then simply unset the `DISPLAY` when running, e.g. with `env -u DISPLAY ./dexter.py -c config`. However, if the `DISPLAY` is not set then pygame will attempt to set up `curses` instead and this renders the terminal unusable. Because of that it's suggested that the output be redirected into a file, e.g. `env -u DISPLAY ./dexter.py -c config > dexter.log 2>&1`. Lovely.
 
 The speech recognition could do with some work:
  * Not perfect at detecting the start and end of speech
