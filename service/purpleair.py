@@ -64,11 +64,11 @@ class _PurpleAirHandler(Handler):
 
         # And pull out the first value from the "results" section, which should
         # be what we care about
-        if 'results' not in raw or len(raw['results']) == 0:
+        if 'sensor' not in raw or len(raw['sensor']) == 0:
             return {}
         else:
-            LOG.debug("Got: %s", (raw['results'][0],))
-            return raw['results'][0]
+            LOG.debug("Got: %s", raw['sensor'])
+            return raw['sensor']
 
 
 class _AQHandler(_PurpleAirHandler):
@@ -85,18 +85,19 @@ class _AQHandler(_PurpleAirHandler):
         @see Handler.handle()
         """
         data  = self._get_data()
-        where = data.get('DEVICE_LOCATIONTYPE', '')
 
         # We can look to derive the AQI from this
-        value = data.get('PM2_5Value')
+        value = data.get('pm2.5')
         if value is not None:
             # This is a very rough approximation to the AQI from the PM2_5Value
             value = float(value)
             aqi = value * value / 285
             if self._raw:
-                what = "The air quality index %s is %d." % (where, aqi)
+                what = "The air quality index %s is %d." % (aqi,)
             else:
-                if aqi < 50:
+                if aqi < 10:
+                    quality = "good"
+                elif aqi < 50:
                     quality = "okay"
                 elif aiq < 100:
                     quality = "acceptable"
@@ -108,9 +109,9 @@ class _AQHandler(_PurpleAirHandler):
                     quality = "hazardous"
                 else:
                     quality = "extremely hazardous"
-                what = "The air quality %s is %s" % (where, quality)
+                what = "The air quality is %s" % (quality,)
         else:
-            what = "The air quality %s is unknown" % (where,)
+            what = "The air quality is unknown"
 
         # And give it back
         return Result(
@@ -134,7 +135,6 @@ class _HumidityHandler(_PurpleAirHandler):
         @see Handler.handle()
         """
         data = self._get_data()
-        where = data.get('DEVICE_LOCATIONTYPE', '')
         humidity = data.get('humidity')
         if humidity is not None:
             what = "%s percent" % (humidity,)
@@ -142,7 +142,7 @@ class _HumidityHandler(_PurpleAirHandler):
             what = "unknown"
         return Result(
             self,
-            "The humidity %s is %s." % (where, what),
+            "The humidity is %s." % (what,),
             False,
             True
         )
@@ -163,15 +163,14 @@ class _TemperatureHandler(_PurpleAirHandler):
         # This comes in Fahrenheit, one day we'll convert it depending on user
         # tastes...
         data = self._get_data()
-        where = data.get('DEVICE_LOCATIONTYPE', '')
-        temperature = data.get('temp_f')
+        temperature = data.get('temperature')
         if temperature is not None:
             what = "%s degrees fahrenheit" % (temperature,)
         else:
             what = "unknown"
         return Result(
             self,
-            "The temperature %s is %s." % (where, what),
+            "The temperature is %s." % (what,),
             False,
             True
         )
