@@ -1,0 +1,114 @@
+# This config file won't work as-is but is, instead, intended to be used to copy
+# & paste from when building your own file, if you're looking for examples of
+# how things are meant to work.
+#
+# It's not completely exhaustive but it has most of the things which you'll
+# likely want in it. And, if it doesn't, you can probably figure out what to do
+# for the others :)
+#
+# That being said, don't blindly copy & paste from this file. Some of the things
+# in it only make sense for different set-ups, and some are just a bad idea if
+# you don't know what they do (e.g. SocketInput).
+
+{
+    "key_phrases" : [
+        "Dexter",
+        "Hey Computer"
+    ],
+
+    "notifiers" : [
+        [ "dexter.notifier.desktop.SysTrayNotifier", {
+        }],
+
+        [ "dexter.notifier.logging.LogNotifier", {
+        }],
+
+        [ "dexter.notifier.thingm.Blink1Notifier", {
+        }],
+
+        [ "dexter.notifier.unicorn_hat.UnicornHatHdNotifier", {
+            "clock_type" : 12
+        }]
+    ],
+
+    "components" : {
+        "inputs" : [
+            [ "dexter.input.socket.SocketInput", {
+                "port" : "8008"
+            }],
+
+            [ "dexter.input.remote.RemoteInput", {
+                "host"    : "192.168.1.100",
+                "port"    : "8008",
+                "wav_dir" : "${HOME}/wavs"
+            }]
+        ],
+
+        "outputs" : [
+            [ "dexter.output.io.LogOutput", {
+                "level" : "INFO"
+            }],
+
+            [ "dexter.output.desktop.NotifierOutput", {
+            }],
+
+            [ "dexter.output.festvox.PyFestivalOutput", {
+            }]
+        ],
+
+        "services" : [
+            [ "dexter.service.bespoke.BespokeService", {
+            }],
+
+            [ "dexter.service.chronos.ClockService", {
+                "easter_egg_prob" : 0.1
+            }],
+
+            [ "dexter.service.chronos.TimerService", {
+                "timer_sound" : "${HOME}/Music/alarm.wav"
+            }],
+
+            [ "dexter.service.fortune.FortuneService", {
+            }],
+
+            [ "dexter.service.language.DictionaryService", {
+            }],
+
+            [ "dexter.service.language.SpellingService", {
+            }],
+
+            [ "dexter.service.music.LocalMusicService", {
+                "dirname" : "${HOME}/Music"
+            }],
+
+            [ "dexter.service.purpleair.PurpleAirService", {
+                "sensor_id" : 12345,
+                "api_key"   : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+            }],
+
+            [ "dexter.service.randomness.RandomService", {
+            }],
+
+            [ "dexter.service.tplink_kasa.KasaService", {
+                "bulbs" : {
+                    "the lamp" : "192.168.1.200",
+                    "my light" : "192.168.1.201"
+                },
+                "plugs" : {
+                    "the outside lights" : "192.168.1.202"
+                }
+            }],
+
+            [ "dexter.service.volume.VolumeService", {
+            }],
+
+            [ "dexter.service.weather.WeatherService", {
+                "region"      : "US",
+                "coordinates" : "40.7484445,-73.9878531"
+            }],
+
+            [ "dexter.service.wikiquery.WikipediaService", {
+            }]
+        ]
+    }
+}
