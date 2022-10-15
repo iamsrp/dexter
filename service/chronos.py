@@ -11,6 +11,7 @@ from   dexter.core.util import (fuzzy_list_range,
                                 parse_number,
                                 to_letters)
 from   dexter.service   import Service, Handler, Result
+from   random           import random
 from   threading        import Thread
 
 import time
@@ -38,49 +39,60 @@ _PERIODS = ((('eons',       'eon'      ), 1000000000 * 365.24 * 24 * 60 * 60),
 # ------------------------------------------------------------------------------
 
 class _ClockHandler(Handler):
-    def __init__(self, service, tokens):
+    def __init__(self, service, tokens, easter_egg_prob):
         """
         @see Handler.__init__()
+
+        :param easter_egg_prob: The probability of whether to have snarky
+                                comments as potential replies.
         """
         super(_ClockHandler, self).__init__(service, tokens, 1.0, True)
+        self._easter_egg_prob = easter_egg_prob
 
 
     def handle(self):
         """
         @see Handler.handle()
         """
-        # Get the time in the local timezone and render the component parts that
-        # we care about
-        now = time.localtime(time.time())
-        hh  = time.strftime("%I", now)
-        mm  = time.strftime("%M", now)
-        p   = time.strftime("%p", now)
-
-        # We strip any leading zero from the HH, which you expect for a HH:MM
-        # format. For MM we replace it with 'oh' for a more natural response. AM
-        # and PM need to be spelt out so that speech output doesn't say "am" (as
-        # in "I am he!") instead of "ay em".
-        if hh.startswith('0'):
-            hh = hh.lstrip('0')
-        hh = number_to_words(int(hh))
-        if mm == '00':
-            mm = ''
-        elif mm.startswith('0'):
-            mm = 'oh %s' % number_to_words(int(mm))
+        # See if we need to do an easter egg
+        if random() < self._easter_egg_prob:
+            # Yes!
+            choice = int(random() * 2)
+            if choice == 0:
+                result = "Time you got a watch"
+            elif choice == 1:
+                result = "Time is an illusion"
+            else:
+                result = "Sorry, I don't want to tell you"
         else:
-            mm = number_to_words(int(mm))
-        if p == "AM":
-            p = "ay em"
-        elif p == "PM":
-            p = "pee em"
+            # Get the time in the local timezone and render the component parts that
+            # we care about
+            now = time.localtime(time.time())
+            hh  = time.strftime("%I", now)
+            mm  = time.strftime("%M", now)
+            p   = time.strftime("%p", now)
+
+            # We strip any leading zero from the HH, which you expect for a HH:MM
+            # format. For MM we replace it with 'oh' for a more natural response. AM
+            # and PM need to be spelt out so that speech output doesn't say "am" (as
+            # in "I am he!") instead of "ay em".
+            if hh.startswith('0'):
+                hh = hh.lstrip('0')
+            hh = number_to_words(int(hh))
+            if mm == '00':
+                mm = ''
+            elif mm.startswith('0'):
+                mm = 'oh %s' % number_to_words(int(mm))
+            else:
+                mm = number_to_words(int(mm))
+            if p == "AM":
+                p = "ay em"
+            elif p == "PM":
+                p = "pee em"
+            result = "The current time is %s %s %s" % (hh, mm, p)
 
         # Now we can hand it back
-        return Result(
-            self,
-            "The current time is %s %s %s" % (hh, mm, p),
-            False,
-            True
-        )
+        return Result(self, result, False, True)
 
 
 class ClockService(Service):
@@ -94,11 +106,17 @@ class ClockService(Service):
     >>> result.text.startswith('The current time is')
     True
     """
-    def __init__(self, state):
+    def __init__(self,
+                 state,
+                 easter_egg_prob=0.0):
         """
         @see Service.__init__()
+
+        :param easter_egg_prob: The probability of whether to have snarky
+                                comments as potential replies.
         """
         super(ClockService, self).__init__("Clock", state)
+        self._easter_egg_prob = max(0.0, min(1.0, float(easter_egg_prob)))
 
 
     def evaluate(self, tokens):
@@ -118,7 +136,7 @@ class ClockService(Service):
                 # asking for the time with caveats
                 if start == 0 and end == len(words):
                     LOG.info("Matched '%s' on '%s'" % (want, words))
-                    return _ClockHandler(self, tokens)
+                    return _ClockHandler(self, tokens, self._easter_egg_prob)
             except ValueError:
                 pass
 
