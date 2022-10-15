@@ -11,7 +11,7 @@ cloud to process, then it seems only fair that we can do something like that
 too.
 """
 
-from   threading  import Thread
+from   threading  import Lock, Thread
 
 import argparse
 import logging
@@ -25,6 +25,7 @@ import whisper
 # ------------------------------------------------------------------------------
 
 _MODELS = ('tiny', 'base', 'small', 'medium', 'large')
+_LOCK   = Lock()
 
 # ------------------------------------------------------------------------------
 
@@ -105,8 +106,13 @@ def run(conn, translate):
         # Finally, decode it
         logging.info("Decoding %0.2f seconds of audio",
                      len(data) / rate / width / channels)
-        result = model.transcribe(audio,
-                                  task='translate' if translate else 'transcribe')
+
+        # Ony one at a time so do this under a lock
+        with _LOCK:
+            result = model.transcribe(audio,
+                                      task='translate' if translate else 'transcribe')
+
+        # And give it back
         words = result['text'].strip()
         logging.info("Got: '%s'", words)
 
