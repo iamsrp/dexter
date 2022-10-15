@@ -5,7 +5,7 @@ This is very basic right now.
 """
 
 from   dexter.core.log  import LOG
-from   dexter.core.util import fuzzy_list_range
+from   dexter.core.util import COLORS, fuzzy_list_range, to_letters
 from   dexter.service   import Service, Handler, Result
 from   fuzzywuzzy       import fuzz
 from   kasa             import SmartBulb, SmartPlug
@@ -15,15 +15,15 @@ import asyncio
 # ------------------------------------------------------------------------------
 
 class _KasaHandler(Handler):
-    def __init__(self, service, tokens, score, coroutine):
+    def __init__(self, service, tokens, score, routine):
         """
         @see Handler.__init__()
 
-        :param coroutine: The coroutine to execute.
+        :param routine: The generator for coroutine to execute.
         """
         super(_KasaHandler, self).__init__(service, tokens, score, True)
 
-        self._coroutine = coroutine
+        self._routine = routine
 
 
     def handle(self):
@@ -36,10 +36,12 @@ class _KasaHandler(Handler):
         for _ in range(5):
             try:
                 # If this work, then we're done, with no response needed
-                asyncio.run(self._coroutine)
+                coroutine = self._routine()
+                LOG.info("Calling %s", coroutine)
+                asyncio.run(coroutine)
                 return None
-            except:
-                pass
+            except Exception as e:
+                LOG.warning("Failed to run coroutine: %s", e)
 
 
 class KasaService(Service):
@@ -47,8 +49,8 @@ class KasaService(Service):
     A service which controls Kasa smart devices.
     """
     # Actions that we support
-    _TURN_ON  = 'turn_on'
-    _TURN_OFF = 'turn_off'
+    _TURN_ON  = 'turn on'
+    _TURN_OFF = 'turn off'
 
     def __init__(self,
                  state,
@@ -70,68 +72,160 @@ class KasaService(Service):
         """
         @see Service.evaluate()
         """
-        # Look to match what we were given on a number of different phrasings
+        def make_routine(function, args=tuple()):
+            return lambda: function(*args)
+
+        # Match on these
         words = self._words(tokens)
-        for action in (self._TURN_OFF,
-                       self._TURN_ON):
-            try:
-                # Match the different actions on the input
-                (start, end, action_score) = fuzzy_list_range(words, action.split())
 
-                # Did we match? The end has to be smaller than the number of
-                # words since we want to know what we're acting on.
-                if start == 0 and end < len(words):
-                    LOG.info("Matched '%s' on '%s'", action, words)
-                    # Now we look for the device
-                    pair = self._find_device(' '.join(words[end:]))
+        # Anything plausible?
+        if len(words) < 2:
+            # Nothing which we can match on
+            return None
 
-                    # If we got anything then we figure out what we want to do
-                    coroutine = None
+        # Look to match what we were given on a number of different phrasings
+        score   = 0
+        routine = None
+
+        # Slightly complex commands first
+        if (routine is None and
+            len(words) >= 3 and
+            fuzz.ratio(words[0], "turn") > 80):
+            # Looking at "turn <the something> <something>". Find the device
+            # first.
+            name = ' '.join(words[1:-1])
+
+            # We have something, so figure out the action
+            action = to_letters(words[-1])
+            if action in ("on", "off"):
+                LOG.info("Matched 'turn <something> %s' in '%s'", action, words)
+
+                # Look at all devices
+                pair = self._find_device(name,
+                                         (self._bulbs, self._plugs))
+
+                # If we got anything then we figure out what we want to do
+                if pair is not None:
+                    # Pull out the bits
+                    (device_score, device) = pair
+                    new_score = (100 + device_score) / 2 / 100
+                    if new_score > score:
+                        LOG.debug("New score is %0.2f", new_score)
+                        self._update_device(device)
+                        try:
+                            if action == "off":
+                                routine = make_routine(device.turn_off)
+                                score = new_score
+                            elif action == "on":
+                                routine = make_routine(device.turn_on)
+                                score = new_score
+                            LOG.debug("Created action to turn %s %s", name, action)
+                        except AttributeError:
+                            pass
+            else:
+                # Might be a colour
+                color = COLORS.match(action)
+                if color is not None:
+                    LOG.info("Matched color 'turn <something> %s' in '%s' as %s",
+                             action, words, color)
+                    (action_score, (rgb, hsv)) = color
+
+                    # Only bulbs can do this
+                    pair = self._find_device(name, (self._bulbs,))
                     if pair is not None:
                         # Pull out the bits
                         (device_score, device) = pair
-                        try:
-                            if action == self._TURN_ON:
-                                coroutine = device.turn_on()
-                            elif action == self._TURN_OFF:
-                                coroutine = device.turn_off()
-                        except AttributeError:
-                            pass
+                        new_score = (action_score + device_score) / 2 / 100
+                        if new_score > score:
+                            LOG.debug("New score is %0.2f", new_score)
+                            self._update_device(device)
+                            try:
+                                routine = make_routine(device.set_hsv, hsv)
+                                score = new_score
+                                LOG.debug("Created action to set the HSV to %s", hsv)
+                            except AttributeError:
+                                pass
 
-                    # Now we can give back a handler, if we know what we're doing
-                    if coroutine is not None:
-                        # Compute the combined score, and shift it to be in the
-                        # range 0..1
-                        score = (action_score + device_score) / 2 / 100
-                        return _KasaHandler(self, tokens, score, coroutine)
-            except ValueError:
-                pass
+        # Now try a different tack
+        if routine is None:
+            for action in (self._TURN_OFF,
+                           self._TURN_ON):
+                try:
+                    # Match the different actions on the input
+                    (start, end, action_score) = fuzzy_list_range(words,
+                                                                  action.split())
 
-        return None
+                    # Did we match? The end has to be smaller than the number of
+                    # words since we want to know what we're acting on.
+                    if start == 0 and end < len(words):
+                        LOG.info("Matched '%s' on '%s'", action, words)
+                        # Now we look for the device
+                        pair = self._find_device(' '.join(words[end:]),
+                                                 (self._bulbs, self._plugs))
+
+                        # If we got anything then we figure out what we want to do
+                        if pair is not None:
+                            # Pull out the bits
+                            (device_score, device) = pair
+                            new_score = (action_score + device_score) / 2 / 100
+                            if new_score > score:
+                                LOG.debug("New score is %0.2f", new_score)
+                                self._update_device(device)
+                                try:
+                                    if action == self._TURN_ON:
+                                        routine = make_routine(device.turn_on)
+                                        score = new_score
+                                    elif action == self._TURN_OFF:
+                                        routine = make_routine(device.turn_off)
+                                        score = new_score
+                                except AttributeError:
+                                    pass
+                except ValueError:
+                    pass
+
+        # Now we can give back a handler, if we know what we're doing
+        if routine is not None:
+            # Compute the combined score, and shift it to be in the
+            # range 0..1
+            return _KasaHandler(self, tokens, score, routine)
+        else:
+            return None
 
 
-    def _find_device(self, want, threshold=50):
+    def _find_device(self, want, device_dicts, threshold=50):
         """
         Look for the device with the given name and return its object.
 
         :return: The ``(score, device)`` pair.
         """
+        # Null breeds null
+        if want is None or want == "":
+            return None
+
         # Score all the devices by fuzzy matching
         choices = []
-        for (name, device) in self._bulbs.items():
-            score = fuzz.ratio(name, want)
-            LOG.info('"%s" matches "%s" with score %d', want, name, score)
-            if score > threshold:
-                choices.append((score, device))
-        for (name, device) in self._plugs.items():
-            LOG.info('"%s" matches "%s" with score %d', want, name, score)
-            score = fuzz.ratio(name, want)
-            if score > threshold:
-                choices.append((score, device))
+        for devices in device_dicts:
+            for (name, device) in devices.items():
+                score = fuzz.ratio(name, want)
+                LOG.debug('"%s" matches "%s" with score %d', want, name, score)
+                if score > threshold:
+                    choices.append((score, device))
 
         # If we have anything then give back the best one
         if len(choices) > 0:
-            LOG.info("Choices are: %s", choices)
+            LOG.debug("Choices are: %s", choices)
             return sorted(choices, key=lambda pair: -pair[0])[0]
         else:
             return None
+
+
+    def _update_device(self, device):
+        """
+        Call update on the device, which might fail.
+        """
+        if device is not None:
+            for _ in range(5):
+                try:
+                    asyncio.run(device.update())
+                except Exception as e:
+                    LOG.warning("Failed to update %s: %s", device, e)

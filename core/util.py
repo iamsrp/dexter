@@ -2,6 +2,7 @@
 Various utility methods.
 """
 
+from   colorsys        import rgb_to_hsv
 from   dexter.core.log import LOG
 from   fuzzywuzzy      import fuzz
 from   threading       import Lock
@@ -160,7 +161,92 @@ class _WordsToNumbers():
         # the loop is complete, return the result
         return num
 
+
+class _Colors():
+    """
+    Utilities for dealt with colours.
+    """
+    def __init__(self):
+        self._name_to_color = dict(
+            (name, (rgb, self._hsv(rgb)))
+            for (name, rgb) in (
+                #             R    G    B 
+                ("aqua",    (  0, 255, 255)),
+                ("black",   (  0,   0,   0)),
+                ("blue",    (  0,   0, 255)),
+                ("cyan",    (  0, 255, 255)),
+                ("fuchsia", (255,   0, 255)),
+                ("gray",    (128, 128, 128)),
+                ("green",   (  0, 128,   0)),
+                ("lime",    (  0, 255,   0)),
+                ("magenta", (255,   0, 255)),
+                ("maroon",  (128,   0,   0)),
+                ("navy",    (  0,   0, 128)),
+                ("olive",   (128, 128,   0)),
+                ("orange",  (236,  93,  15)),
+                ("pink",    (255,   0, 255)),
+                ("purple",  (128,   0, 128)),
+                ("red",     (255,   0,   0)),
+                ("silver",  (192, 192, 192)),
+                ("teal",    (  0, 128, 128)),
+                ("white",   (255, 255, 255)),
+                ("yellow",  (255, 255,   0)),
+            )
+        )
+
+
+    def match(self, want, threshold=50):
+        """
+        Match the given colour want and give back its RGB value and the match's
+        score.
+
+        :return: ``(score, ((r,g,b), (h, s, v))`` tuple, where the RGB values are
+                ``[0..255]`` and HSV values are degrees and percentages.
+        """
+        # Null breeds null
+        if want is None or want == "":
+            return None
+
+        # Tidy it up
+        want = to_letters(str(want).lower())
+
+        # Try a direct lookup
+        color = self._name_to_color.get(want)
+        if color is not None:
+            return (100, color)
+
+        # Now a fuzzy lookup. As far as I can tell process.extract works on
+        # values so we walk by hand
+        best = None
+        for (name, color) in self._name_to_color.items():
+            score = fuzz.ratio(want, name)
+            if best is None or score > best[0]:
+                best = (score, color)
+
+        # Give back anything which scored more than the threshold
+        if best is not None and best[0] >= threshold:
+            return best
+        else:
+            return None
+
+
+    def _hsv(self, rgb):
+        """
+        Convert from RGB to unit space and unit space to HSV degrees and
+        percentages
+        """
+        hsv = rgb_to_hsv(rgb[0] / 255,
+                         rgb[1] / 255,
+                         rgb[2] / 255)
+        h = int(360 * hsv[0])
+        s = int(100 * hsv[1])
+        v = int(100 * hsv[2])
+        return (h, s, v)
+            
+
 # ------------------------------------------------------------------------------
+
+COLORS = _Colors()
 
 _PYGAME_LOCK = Lock()
 
@@ -424,7 +510,6 @@ _HOMOPHONES = {
 }
 
 # ------------------------------------------------------------------------------
-
 
 def get_pygame():
     """
