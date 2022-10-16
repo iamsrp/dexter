@@ -26,4 +26,4 @@ pip3 install wikipedia
 pip3 install spotipy
 pip3 install pydictionary
 pip3 install git+https://github.com/techiaith/pyfestival#festival
-
+pip3 install python-kasa
