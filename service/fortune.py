@@ -40,8 +40,9 @@ class FortuneService(Service):
     """
     def __init__(self,
                  state,
-                 phrase      ="Tell me something",
-                 fortunes_dir="/usr/share/games/fortunes",
+                 phrase       ="Tell me something",
+                 fortunes_dir ="/usr/share/games/fortunes",
+                 fortune_files=tuple(),
                  max_length  =200):
         """
         @see Service.__init__()
@@ -58,9 +59,10 @@ class FortuneService(Service):
         """
         super(FortuneService, self).__init__("Fortune", state)
 
-        self._phrase  = [word for word in phrase.split() if word]
-        self._dir     = fortunes_dir
-        self._max_len = int(max_length)
+        self._phrase    = [str(word).lower() for word in phrase.split() if word]
+        self._dir       = fortunes_dir
+        self._filenames = fortune_files
+        self._max_len   = int(max_length)
 
 
     def evaluate(self, tokens):
@@ -94,10 +96,17 @@ class FortuneService(Service):
         """
         Choose a random fortune. This is the meat of this class.
         """
-        # We do this all from scratch each time since it's not _that_ expensive
-        # and it means we don't have to restart anything when new files are
-        # added. We have a list of filenames and the start and end of their data
-        # as part of the total count.
+        # We look in both the forturn directory and the list of files given
+        filenames = list(self._filenames)
+        for (subdir, _, files) in os.walk(self._dir, followlinks=True):
+            for filename in files:
+                filenames.append(os.path.join(subdir, filename))
+
+        # Now we look at all the files we found and turn them into one huge
+        # one. We do this all from scratch each time since it's not _that_
+        # expensive and it means we don't have to restart anything when new
+        # files are added. We have a list of filenames and the start and end of
+        # their data as part of the total count.
         #
         # We are effectively concatenating the files here so as to avoid
         # bias. Consider: if you have two files, with one twice the size of the
@@ -106,31 +115,31 @@ class FortuneService(Service):
         # ones in the bigger one.
         file_info = []
         total_size = 0
-        for (subdir, _, files) in os.walk(self._dir, followlinks=True):
-            for filename in files:
-                # The fortune files have an associated .dat file, this means we
-                # can identify them by looking for that .dat file.
-                path = os.path.join(subdir, filename)
-                dat_path = path + '.dat'
-                LOG.debug("Candidate: %s %s", path, dat_path)
-                if os.path.exists(dat_path):
-                    # Open it to make sure can do so
-                    try:
-                        with open(path, 'rt'):
-                            # Get the file length to use it to accumulate into
-                            # our running counter, and to compute the file-
-                            # specifc stats.
-                            stat = os.stat(path)
+        for path in filenames:
+            # The fortune files have an associated .dat file, this means we
+            # can identify them by looking for that .dat file.
+            dat_path = path + '.dat'
+            LOG.debug("Candidate: %s %s", path, dat_path)
+            if not os.path.exists(dat_path):
+                LOG.info("Skipping file with missing .dat: %s", path)
+            else:
+                # Open it to make sure can do so
+                try:
+                    with open(path, 'rt'):
+                        # Get the file length to use it to accumulate into
+                        # our running counter, and to compute the file-
+                        # specifc stats.
+                        stat = os.stat(path)
 
-                            # The start of the file is the current total_size
-                            # and the end is that plus the file size
-                            start = total_size
-                            total_size += stat.st_size
-                            end = total_size
-                            file_info.append((path, start, end))
-                            LOG.debug("Adding %s[%d:%d]", path, start, end)
-                    except Exception as e:
-                        LOG.debug("Failed to add %s: %s", path, e)
+                        # The start of the file is the current total_size
+                        # and the end is that plus the file size
+                        start = total_size
+                        total_size += stat.st_size
+                        end = total_size
+                        file_info.append((path, start, end))
+                        LOG.debug("Adding %s[%d:%d]", path, start, end)
+                except Exception as e:
+                    LOG.debug("Failed to add %s: %s", path, e)
 
 
         # Keep trying this until we get something, or until we give up. Most of
