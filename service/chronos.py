@@ -9,6 +9,7 @@ from   dexter.core.util import (fuzzy_list_range,
                                 get_pygame,
                                 number_to_words,
                                 parse_number,
+                                to_alphanumeric,
                                 to_letters)
 from   dexter.service   import Service, Handler, Result
 from   random           import random
@@ -196,9 +197,16 @@ class _SetTimerHandler(Handler):
                 while value[0] == "and":
                     value = value[1:]
 
-                # Now try to parse it
+                # Now try to turn it into a value
                 LOG.info("Parsing %s" % (value,))
-                amount = parse_number(' '.join(value))
+                amount = None
+                try:
+                    if len(value) == 1:
+                        amount = float(value[0])
+                except ValueError:
+                    pass
+                if amount is None:
+                    amount = parse_number(' '.join(value))
 
                 # Accumulate
                 total = amount * seconds
@@ -339,7 +347,8 @@ class TimerService(Service):
         # We use a number of different prefices here since the word "for" has a
         # homonyms of "four" and "set" apparently sounds like "said". Yes, I
         # know I could do a cross product here but...
-        words  = self._words(tokens)
+        words  = tuple(to_alphanumeric(word)
+                       for word in self._words(tokens))
         phrase = ('set', 'a', 'timer', 'for')
         try:
             (start, end, score) = fuzzy_list_range(words, phrase)
