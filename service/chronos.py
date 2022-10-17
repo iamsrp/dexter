@@ -211,7 +211,7 @@ class _SetTimerHandler(Handler):
                 for word in words:
                     if word in self._times:
                         index = self._times.index(word)
-                        LOG.info("Found '%s' at index %d" % (word, index))
+                        LOG.debug("Found '%s' at index %d" % (word, index))
                         indices.append((index, seconds))
 
             # Anything?
@@ -233,13 +233,13 @@ class _SetTimerHandler(Handler):
                     value = value[1:]
 
                 # Now try to turn it into a value
-                LOG.info("Parsing %s" % (value,))
+                LOG.debug("Parsing %s" % (value,))
                 amount = parse_number(' '.join(value))
 
                 # Accumulate
                 total = amount * seconds
 
-            LOG.info("Got value of %s seconds from %s" % (total, self._times))
+            LOG.debug("Got value of %s seconds from %s" % (total, self._times))
 
             # Handle accordingly
             if total > 0:
@@ -430,7 +430,7 @@ class TimerService(Service):
 
         # Play any sound...
         if self._timer_audio is not None:
-            LOG.info("Playing timer sound")
+            LOG.debug("Playing timer sound")
 
             # ...for about 5 seconds
             end = time.time() + 5
@@ -462,7 +462,7 @@ class _SetAlarmHandler(Handler):
         @see Handler.handle()
         """
         # If we got nothing then grumble in a vaguely (un)helpful way
-        LOG.info("Parsing timespec: %s", self._timespec)
+        LOG.debug("Parsing timespec: %s", self._timespec)
         timespec = list(self._timespec)
         if len(timespec) == 0:
             return Result(
@@ -498,7 +498,7 @@ class _SetAlarmHandler(Handler):
             if timespec[-1] == "oclock":
                 # Two choices, pick the one closest to now, which could be
                 # tomorrow morning
-                LOG.info("Parsing X o'clock time")
+                LOG.debug("Parsing X o'clock time")
                 hh_am = parse_number(timespec[-2])
                 hh_pm = hh_am + 12
                 dt_am = datetime(now.year, now.month, now.day, hh_am, 0)
@@ -515,7 +515,7 @@ class _SetAlarmHandler(Handler):
                     seconds = dt_am.timestamp() + 24 * 60 * 60 * day_offset
 
             elif timespec[-1].endswith('am') or timespec[-1].endswith('pm'):
-                LOG.info("Parsing X am/pm time")
+                LOG.debug("Parsing X am/pm time")
 
                 # First handle "815pm"
                 if len(timespec[-1]) > 2:
@@ -523,7 +523,7 @@ class _SetAlarmHandler(Handler):
                                                 timespec[-1][-2:]]
 
                 # Might have a minutes value or not
-                LOG.info("Parsing %s", timespec)
+                LOG.debug("Parsing %s", timespec)
                 mm = 0
                 if len(timespec) == 2: # "4 pm" or "432 pm"
                     hh = parse_number(timespec[0])
@@ -549,7 +549,7 @@ class _SetAlarmHandler(Handler):
                     seconds = dt.timestamp()
 
             elif len(timespec) == 1 or len(timespec) == 2:
-                LOG.info("Parsing raw time")
+                LOG.debug("Parsing raw time")
 
                 # Expect 4 or 4 32
                 mm = 0
@@ -577,7 +577,7 @@ class _SetAlarmHandler(Handler):
                     seconds = dt_am.timestamp() + 24 * 60 * 60 * day_offset
 
             # Handle accordingly
-            LOG.info("Seconds value was %s", seconds)
+            LOG.debug("Seconds value was %s", seconds)
             if seconds is not None:
                 # As words
                 dt = datetime.fromtimestamp(seconds)
@@ -595,7 +595,7 @@ class _SetAlarmHandler(Handler):
                         dayspec
                     )
                 ).strip()
-                LOG.info("Got value of %s from %s" % (description, self._timespec))
+                LOG.debug("Got value of %s from %s" % (description, self._timespec))
 
                 # That's a valid alarm value. Set the alarm and say we did it.
                 self.service.add_alarm(seconds)
@@ -756,7 +756,7 @@ class AlarmService(Service):
             index = fuzzy_list_range(words, phrase)
             return _CancelAlarmHandler(self, tokens, words)
         except Exception as e:
-            LOG.info("Didn't match on %s: %s", phrase, e)
+            LOG.debug("Didn't match on %s: %s", phrase, e)
             pass
 
         # Didn't find any of the prefices
@@ -799,7 +799,7 @@ class AlarmService(Service):
 
         # Play any sound...
         if self._alarm_audio is not None:
-            LOG.info("Playing alarm sound")
+            LOG.debug("Playing alarm sound")
 
             # ...for about 5 seconds
             end = time.time() + 5
