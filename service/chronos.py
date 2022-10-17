@@ -41,7 +41,7 @@ _PERIODS = ((('eons',       'eon'      ), 1000000000 * 365.24 * 24 * 60 * 60),
 # ------------------------------------------------------------------------------
 
 class _ClockHandler(Handler):
-    def __init__(self, service, tokens, easter_egg_prob):
+    def __init__(self, service, tokens, what, easter_egg_prob):
         """
         @see Handler.__init__()
 
@@ -49,6 +49,7 @@ class _ClockHandler(Handler):
                                 comments as potential replies.
         """
         super(_ClockHandler, self).__init__(service, tokens, 1.0, True)
+        self._what = what
         self._easter_egg_prob = easter_egg_prob
 
 
@@ -70,28 +71,52 @@ class _ClockHandler(Handler):
             # Get the time in the local timezone and render the component parts that
             # we care about
             now = time.localtime(time.time())
-            hh  = time.strftime("%I", now)
-            mm  = time.strftime("%M", now)
-            p   = time.strftime("%p", now)
 
-            # We strip any leading zero from the HH, which you expect for a HH:MM
-            # format. For MM we replace it with 'oh' for a more natural response. AM
-            # and PM need to be spelt out so that speech output doesn't say "am" (as
-            # in "I am he!") instead of "ay em".
-            if hh.startswith('0'):
-                hh = hh.lstrip('0')
-            hh = number_to_words(int(hh))
-            if mm == '00':
-                mm = ''
-            elif mm.startswith('0'):
-                mm = 'oh %s' % number_to_words(int(mm))
+            if self._what == "time":
+                hh  = time.strftime("%I", now)
+                mm  = time.strftime("%M", now)
+                p   = time.strftime("%p", now)
+    
+                # We strip any leading zero from the HH, which you expect for a HH:MM
+                # format. For MM we replace it with 'oh' for a more natural response. AM
+                # and PM need to be spelt out so that speech output doesn't say "am" (as
+                # in "I am he!") instead of "ay em".
+                if hh.startswith('0'):
+                    hh = hh.lstrip('0')
+                hh = number_to_words(int(hh))
+                if mm == '00':
+                    mm = ''
+                elif mm.startswith('0'):
+                    mm = 'oh %s' % number_to_words(int(mm))
+                else:
+                    mm = number_to_words(int(mm))
+                if p == "AM":
+                    p = "ay em"
+                elif p == "PM":
+                    p = "pee em"
+                result = "The current time is %s %s %s" % (hh, mm, p)
+
+            elif self._what == "date":
+                # Get the parts
+                day   = time.strftime("%A", now)
+                month = time.strftime("%B", now)
+                dom   = time.strftime("%d", now)
+                year  = time.strftime("%Y", now)
+
+                # Append a 'st', 'nd', 'rd', 'th' to the day
+                if   dom.endswith('1') and dom != '11':
+                    dom += 'st'
+                elif dom.endswith('2') and dom != '12':
+                    dom += 'nd'
+                elif dom.endswith('3') and dom != '13':
+                    dom += 'rd'
+                else:
+                    dom += 'th'
+    
+                result = "The date is %s %s %s %s" % (day, month, dom, year)
+
             else:
-                mm = number_to_words(int(mm))
-            if p == "AM":
-                p = "ay em"
-            elif p == "PM":
-                p = "pee em"
-            result = "The current time is %s %s %s" % (hh, mm, p)
+                result = "I'm sorry, I don't know what the %s is" % (self._what)
 
         # Now we can hand it back
         return Result(self, result, False, True)
@@ -127,22 +152,31 @@ class ClockService(Service):
         """
         # Look to match what we were given on a number of different phrasings
         words = self._words(tokens)
-        for want in (('whats', 'the', 'time'),
-                     ('what', 'is', 'the', 'time'),
-                     ('what', 'time', 'is', 'it')):
-            try:
-                # Match the different pharses on the input
-                (start, end, score) = fuzzy_list_range(words, want)
+        handler = None
+        score   = 0
+        for what in ('time', 'date'):
+            for want in (('whats', 'the', what),
+                         ('what', 'is', 'the', what),
+                         ('what', what, 'is', 'it')):
+                try:
+                    # Match the different pharses on the input
+                    (start, end, score_) = fuzzy_list_range(words, want)
+    
+                    # We want to match the full input, since we want to avoid people
+                    # asking for the time with caveats
+                    if start == 0 and end == len(words) and score_ > score:
+                        score = score_
+                        LOG.info("Matched '%s' on '%s' with score %d",
+                                 want, words, score_)
+                        handler = _ClockHandler(self,
+                                                tokens,
+                                                what,
+                                                self._easter_egg_prob)
+                except ValueError:
+                    pass
 
-                # We want to match the full input, since we want to avoid people
-                # asking for the time with caveats
-                if start == 0 and end == len(words):
-                    LOG.info("Matched '%s' on '%s'" % (want, words))
-                    return _ClockHandler(self, tokens, self._easter_egg_prob)
-            except ValueError:
-                pass
-
-        return None
+        # Give back what we had, if anything
+        return handler
 
 # ------------------------------------------------------------------------------
 
