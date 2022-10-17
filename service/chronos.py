@@ -4,6 +4,7 @@ Chronos, the greek god of Thyme, and other select herbs.
 Various services related to the ticking of the clock.
 """
 
+from   datetime         import datetime
 from   dexter.core.log  import LOG
 from   dexter.core.util import (fuzzy_list_range,
                                 get_pygame,
@@ -199,14 +200,7 @@ class _SetTimerHandler(Handler):
 
                 # Now try to turn it into a value
                 LOG.info("Parsing %s" % (value,))
-                amount = None
-                try:
-                    if len(value) == 1:
-                        amount = float(value[0])
-                except ValueError:
-                    pass
-                if amount is None:
-                    amount = parse_number(' '.join(value))
+                amount = parse_number(' '.join(value))
 
                 # Accumulate
                 total = amount * seconds
@@ -245,12 +239,12 @@ class _SetTimerHandler(Handler):
             )
 
 
-class _CancelHandler(Handler):
+class _CancelTimerHandler(Handler):
     def __init__(self, service, tokens, words):
         """
         @see Handler.__init__()
         """
-        super(_CancelHandler, self).__init__(service, tokens, 1.0, True)
+        super(_CancelTimerHandler, self).__init__(service, tokens, 1.0, True)
         self._words = words
 
 
@@ -359,8 +353,8 @@ class TimerService(Service):
         # And now for cancelling
         phrase = ('cancel', 'timer')
         try:
-            index = fuzzy_list_range(words, prefix)
-            return _CancelHandler(self, tokens, words)
+            index = fuzzy_list_range(words, phrase)
+            return _CancelTimerHandler(self, tokens, words)
         except Exception as e:
             pass
 
@@ -415,5 +409,374 @@ class TimerService(Service):
         # And remove the timer (this should not fail but...)
         try:
             self._timers.remove(timer)
+        except:
+            pass
+
+# ------------------------------------------------------------------------------
+
+class _SetAlarmHandler(Handler):
+    def __init__(self, service, tokens, timespec):
+        """
+        @see Handler.__init__()
+        """
+        super(_SetAlarmHandler, self).__init__(service, tokens, 1.0, True)
+        self._timespec = timespec
+
+
+    def handle(self):
+        """
+        @see Handler.handle()
+        """
+        # If we got nothing then grumble in a vaguely (un)helpful way
+        LOG.info("Parsing timespec: %s", self._timespec)
+        timespec = list(self._timespec)
+        if len(timespec) == 0:
+            return Result(
+                self,
+                "I'm sorry, I didn't catch that",
+                False,
+                True
+            )
+
+        # Figure out the date today
+        now = datetime.now()
+
+        # See if it ends with "tomorrow" or "today"
+        day_offset = 0
+        dayspec   = ""
+        if timespec[-1] == "today":
+            # Just strip it
+            timespec = timespec[:-1]
+        elif timespec[-1] == "tomorrow":
+            # Add an offset and strip it
+            day_offset = 1
+            timespec = timespec[:-1]
+            dayspec  = "tomorrow"
+
+        # Attempt to turn the time specification into seconds-since-epoch
+        seconds = None
+        try:
+            # Try a few different formats to determine the time given, trh the
+            # following formats:
+            #   4 o'clock
+            #   4 pm
+            #   4 32 pm
+            if timespec[-1] == "oclock":
+                # Two choices, pick the one closest to now, which could be
+                # tomorrow morning
+                LOG.info("Parsing X o'clock time")
+                hh_am = parse_number(timespec[-2])
+                hh_pm = hh_am + 12
+                dt_am = datetime(now.year, now.month, now.day, hh_am, 0)
+                dt_pm = datetime(now.year, now.month, now.day, hh_pm, 0)
+                if day_offset == 0:
+                    if dt_am > now:
+                        seconds = dt_am.timestamp()
+                    elif dt_pm > now:
+                        seconds = dt_pm.timestamp()
+                    else:
+                        seconds = dt_am.timestamp() + 24 * 60 * 60
+                        dayspec = "tomorrow"
+                else:
+                    seconds = dt_am.timestamp() + 24 * 60 * 60 * day_offset
+
+            elif timespec[-1].endswith('am') or timespec[-1].endswith('pm'):
+                LOG.info("Parsing X am/pm time")
+
+                # First handle "815pm"
+                if len(timespec[-1]) > 2:
+                    timespec = timespec[:-1] + [timespec[-1][:-2],
+                                                timespec[-1][-2:]]
+
+                # Might have a minutes value or not
+                LOG.info("Parsing %s", timespec)
+                mm = 0
+                if len(timespec) == 2: # "4 pm" or "432 pm"
+                    hh = parse_number(timespec[0])
+                    # See if it's 432 pm
+                    if hh >= 100:
+                        (hh, mm) = divmod(hh, 100)
+                elif len(timespec) == 3: # "4 32 pm"
+                    hh = parse_number(timespec[0])
+                    mm = parse_number(timespec[1])
+                if timespec[-1] == 'pm':
+                    hh += 12
+
+                # Now construct the time
+                dt = datetime(now.year, now.month, now.day, hh, mm)
+
+                # And adjust
+                if day_offset > 0:
+                    seconds = dt.timestamp() + 24 * 60 * 60 * day_offset
+                elif dt < now:
+                    seconds = dt.timestamp() + 24 * 60 * 60
+                    dayspec = "tomorrow"
+                else:
+                    seconds = dt.timestamp()
+
+            elif len(timespec) == 1 or len(timespec) == 2:
+                LOG.info("Parsing raw time")
+
+                # Expect 4 or 4 32
+                mm = 0
+                if len(timespec) == 1: # "4" or "432"
+                    hh = parse_number(timespec[0])
+                    # See if it's 432 pm
+                    if hh >= 100:
+                        (hh, mm) = divmod(hh, 100)
+                else: # 4 43
+                    hh = parse_number(timespec[0])
+                    mm = parse_number(timespec[1])
+
+                # Same logic as above
+                dt_am = datetime(now.year, now.month, now.day, hh,      mm)
+                dt_pm = datetime(now.year, now.month, now.day, hh + 12, mm)
+                if day_offset == 0:
+                    if dt_am > now:
+                        seconds = dt_am.timestamp()
+                    elif dt_pm > now:
+                        seconds = dt_pm.timestamp()
+                    else:
+                        seconds = dt_am.timestamp() + 24 * 60 * 60
+                        dayspec = "tomorrow"
+                else:
+                    seconds = dt_am.timestamp() + 24 * 60 * 60 * day_offset
+
+            # Handle accordingly
+            LOG.info("Seconds value was %s", seconds)
+            if seconds is not None:
+                # As words
+                dt = datetime.fromtimestamp(seconds)
+                hh = dt.strftime('%I').lstrip('0')
+                mm = dt.strftime('%M')
+                if mm == '00':
+                    mm = ''
+                elif mm[0] == '0':
+                    mm = 'oh %s' % mm[1]
+                description = (
+                    "%s %s %s %s" % (
+                        hh,
+                        mm,
+                        dt.strftime('%p'),
+                        dayspec
+                    )
+                ).strip()
+                LOG.info("Got value of %s from %s" % (description, self._timespec))
+
+                # That's a valid alarm value. Set the alarm and say we did it.
+                self.service.add_alarm(seconds)
+                return Result(
+                    self,
+                    "Okay, alarm set for %s" % description,
+                    False,
+                    True
+                )
+
+        except Exception:
+            LOG.error("Problem parsing alarm '%s':\n%s" %
+                      (self._timespec, traceback.format_exc()))
+
+        # If we got here then we failed
+        return Result(
+            self,
+            "Sorry, I don't know how to set an alarm for %s" %
+            (' '.join(self._timespec),),
+            False,
+            True
+        )
+
+
+class _CancelAlarmHandler(Handler):
+    def __init__(self, service, tokens, words):
+        """
+        @see Handler.__init__()
+        """
+        super(_CancelAlarmHandler, self).__init__(service, tokens, 1.0, True)
+        self._words = words
+
+
+    def handle(self):
+        """
+        @see Handler.handle()
+        """
+        # Just cancel them all for now
+        try:
+            self.service.cancel_alarm()
+            return Result(
+                self,
+                "All alarms cancelled",
+                False,
+                True
+            )
+        except ValueError as e:
+            return Result(self, str(e), False, True)
+        except Exception as e:
+            return Result(
+                self,
+                "Sorry, I don't know how to cancel that alarm",
+                False,
+                True
+            )
+
+
+class Alarm(object):
+    """
+    An alarm.
+    """
+    def __init__(self, service, when):
+        self._service   = service
+        self._when      = when
+        self._cancelled = False
+
+
+    def cancel(self):
+        """
+        Cancel this alarm.
+        """
+        self._cancelled = True
+
+
+    def start(self):
+        """
+        Start this alarm.
+        """
+        thread = Thread(target=self._run)
+        thread.daemon = True
+        thread.start()
+
+
+    def _run(self):
+        """
+        How we run.
+        """
+        while not self._cancelled:
+            if time.time() > self._when:
+                self._service.sound_alarm(self)
+                break
+            time.sleep(0.1)
+
+
+    def __str__(self):
+        dt = datetime.fromtimestamp(self._when)
+        return "Alarm for %s" % (dt.strftime('%Y-%m-%d %H:%M'),)
+
+
+class AlarmService(Service):
+    """
+    A service for setting alarms and alarms.
+    """
+    def __init__(self, state, alarm_sound=None):
+        """
+        @see Service.__init__()
+
+        :type  alarm_sound: str
+        :param alarm_sound:
+            The path to the sound to play when the alarm goes off.
+        """
+        super(AlarmService, self).__init__("Alarm", state)
+
+        self._alarms  = []
+
+        if alarm_sound is not None:
+            self._alarm_audio = get_pygame().mixer.Sound(alarm_sound)
+        else:
+            self._alarm_audio = None
+
+
+    def evaluate(self, tokens):
+        """
+        @see Service.evaluate()
+        """
+        # We use a number of different prefices here since the word "for" has a
+        # homonyms of "four" and "set" apparently sounds like "said". Yes, I
+        # know I could do a cross product here but...
+        words  = self._words(tokens)
+        phrase = ('set', 'an', 'alarm', 'for')
+        try:
+            # Attempt to match
+            (start, end, score) = fuzzy_list_range(words, phrase)
+
+            # We need to handle the STT giving us "3:32" or "3.32" instead of "3 32"
+            words = words[end:]
+            for char in ':.':
+                new_words = []
+                for word in words:
+                    for w in word.split(char):
+                        if len(w):
+                            new_words.append(w)
+                words = new_words
+
+            # Now ensure the values are alphanumerical
+            words = tuple(to_alphanumeric(word)
+                          for word in words)
+
+            # And we can hand them off
+            return _SetAlarmHandler(self, tokens, words)
+
+        except Exception as e:
+            pass
+
+        # And now for cancelling
+        phrase = ('cancel', 'alarm')
+        try:
+            index = fuzzy_list_range(words, phrase)
+            return _CancelAlarmHandler(self, tokens, words)
+        except Exception as e:
+            LOG.info("Didn't match on %s: %s", phrase, e)
+            pass
+
+        # Didn't find any of the prefices
+        return None
+
+
+    def add_alarm(self, when):
+        """
+        Set an alarm for the given number of seconds since epoch.
+        """
+        alarm = Alarm(self, when)
+        self._alarms.append(alarm)
+        alarm.start()
+
+
+    def cancel_alarm(self, which=None):
+        """
+        Cancel an alarm, possibly all of them
+        """
+        if which is None:
+            if len(self._alarms) == 0:
+                raise ValueError("No alarms are set")
+            for alarm in self._alarms:
+                alarm.cancel
+            self._alarms = []
+        elif 0 <= which < len(self._alarms):
+            alarm = self._alarms[which]
+            alarm.cancel()
+            self._alarms.remove(alarm)
+        else:
+            raise ValueError("No alarm for index %d" % (which,))
+
+
+    def sound_alarm(self, alarm):
+        """
+        Ring the alarm for the given alarm.
+        """
+        # Let the terminal know
+        LOG.info("DING DING DING!!! Alarm '%s' is ringing..." % (alarm,))
+
+        # Play any sound...
+        if self._alarm_audio is not None:
+            LOG.info("Playing alarm sound")
+
+            # ...for about 5 seconds
+            end = time.time() + 5
+            while time.time() < end:
+                try:
+                    self._alarm_audio.play()
+                except Exception as e:
+                    LOG.warning("Failed to play alarm sound: %s", e)
+
+        # And remove the alarm (this should not fail but...)
+        try:
+            self._alarms.remove(alarm)
         except:
             pass
