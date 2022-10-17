@@ -5,7 +5,11 @@ The heart of the system.
 from dexter.core.audio  import get_volume, set_volume
 from dexter.core.event  import TimerEvent
 from dexter.core.log    import LOG
-from dexter.core.util   import to_alphanumeric, to_letters, list_index
+from dexter.core.util   import (to_alphanumeric,
+                                to_letters,
+                                list_index,
+                                fuzzy_list_range)
+
 from fuzzywuzzy.process import fuzz
 
 import heapq
@@ -195,8 +199,9 @@ class Dexter(object):
             :param notifiers:
                 The other notifiers that we hold.
             """
-            self._notifiers = tuple(notifiers)
-            self._speakers  = set()
+            self._notifiers     = tuple(notifiers)
+            self._speakers      = set()
+            self._last_response = None
 
 
         def start(self):
@@ -426,6 +431,9 @@ class Dexter(object):
                         if result is not None:
                             self._respond(result)
 
+                        # And remember what was said
+                        self._last_response = result
+
                 # Wait for a bit before going around again
                 time.sleep(0.1)
 
@@ -607,6 +615,21 @@ class Dexter(object):
             # done. We don't want another component to pick up this command.
             if stopped:
                 return None
+
+        # See if we've been asked to repeat what was just said
+        for phrase in (('what', 'did', 'you', 'say'),
+                       ('say', 'that', 'again'),
+                       ('repeat', 'that')):
+            try:
+                (start, end, score) = fuzzy_list_range(words[offset:], phrase)
+                if start == 0 and end >= len(words[offset:]):
+                    if self._last_response is None:
+                        return "I don't remember what I just said"
+                    else:
+                        return self._last_response
+            except ValueError:
+                # No match
+                LOG.debug("No match for %s with %s", words[offset:], phrase)
 
         # See which services want them
         handlers = []
