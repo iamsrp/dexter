@@ -124,6 +124,15 @@ class Component(_Startable):
         return self._status
 
 
+    def interrupt(self):
+        """
+        Interrupt the component, stopping what it's doing.
+        """
+        # Not everything will support/need this so we make it a NOP for the
+        # general case
+        pass
+
+
     def _notify(self, status):
         """
         Notify of a status change.
@@ -599,14 +608,14 @@ class Dexter(object):
         # Special handling if we have active outputs and someone said "stop"
         if offset == len(words) - 1 and words[-1] == "stop":
             stopped = False
-            for output in self._outputs:
-                # If this output is busy doing something then we tell it to stop
+            for component in  self._inputs + self._outputs + self._services:
+                # If this component is busy doing something then we tell it to stop
                 # doing that thing with interrupt(). (stop() means shutdown.)
-                if output.status in (Notifier.ACTIVE, Notifier.WORKING):
+                if component.status in (Notifier.ACTIVE, Notifier.WORKING):
                     try:
                         # Best effort
-                        LOG.info("Interrupting %s", output)
-                        output.interrupt()
+                        LOG.info("Interrupting %s", component)
+                        component.interrupt()
                         stopped = True
                     except:
                         pass

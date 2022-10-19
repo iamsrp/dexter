@@ -64,6 +64,10 @@
                 "easter_egg_prob" : 0.1
             }],
 
+            [ "dexter.service.chronos.AlarmService", {
+                "alarm_sound" : "${HOME}/Music/alarm.wav"
+            }],
+
             [ "dexter.service.chronos.TimerService", {
                 "timer_sound" : "${HOME}/Music/alarm.wav"
             }],

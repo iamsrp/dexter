@@ -76,7 +76,7 @@ class _ClockHandler(Handler):
                 hh  = time.strftime("%I", now)
                 mm  = time.strftime("%M", now)
                 p   = time.strftime("%p", now)
-    
+
                 # We strip any leading zero from the HH, which you expect for a HH:MM
                 # format. For MM we replace it with 'oh' for a more natural response. AM
                 # and PM need to be spelt out so that speech output doesn't say "am" (as
@@ -112,7 +112,7 @@ class _ClockHandler(Handler):
                     dom += 'rd'
                 else:
                     dom += 'th'
-    
+
                 result = "The date is %s %s %s %s" % (day, month, dom, year)
 
             else:
@@ -161,7 +161,7 @@ class ClockService(Service):
                 try:
                     # Match the different pharses on the input
                     (start, end, score_) = fuzzy_list_range(words, want)
-    
+
                     # We want to match the full input, since we want to avoid people
                     # asking for the time with caveats
                     if start == 0 and end == len(words) and score_ > score:
@@ -350,13 +350,16 @@ class TimerService(Service):
     """
     A service for setting timers and alarms.
     """
-    def __init__(self, state, timer_sound=None):
+    def __init__(self, state, timer_sound=None, duration=5.0):
         """
         @see Service.__init__()
 
         :type  timer_sound: str
         :param timer_sound:
             The path to the sound to play when the timer goes off.
+        :type  duration: float
+        :param duration:
+            How long to ring for, in seconds.
         """
         super(TimerService, self).__init__("Timer", state)
 
@@ -366,6 +369,10 @@ class TimerService(Service):
             self._timer_audio = get_pygame().mixer.Sound(timer_sound)
         else:
             self._timer_audio = None
+
+        self._duration = float(duration)
+
+        self._interrupt_time = None
 
 
     def evaluate(self, tokens):
@@ -394,6 +401,13 @@ class TimerService(Service):
 
         # Didn't find any of the prefices
         return None
+
+
+    def interrupt(self):
+        """
+        @see Component.interrupt
+        """
+        self._interrupt_time = time.time()
 
 
     def add_timer(self, seconds):
@@ -425,26 +439,37 @@ class TimerService(Service):
         """
         Ring the alarm for the given timer.
         """
-        # Let the terminal know
-        LOG.info("DING DING DING!!! Timer '%s' has expired..." % (timer,))
+        # Remember the last interrupt so we can see if we got interrupted again
+        interrupt_time = self._interrupt_time
 
-        # Play any sound...
-        if self._timer_audio is not None:
-            LOG.debug("Playing timer sound")
-
-            # ...for about 5 seconds
-            end = time.time() + 5
-            while time.time() < end:
-                try:
-                    self._timer_audio.play()
-                except Exception as e:
-                    LOG.warning("Failed to play timer sound: %s", e)
-
-        # And remove the timer (this should not fail but...)
         try:
-            self._timers.remove(timer)
-        except:
-            pass
+            # This service is doing something so update the status
+            self._state.update_status(service, Notifier.ACTIVE)
+
+            # Let the terminal know
+            LOG.info("DING DING DING!!! Timer '%s' has expired..." % (timer,))
+
+            # Play any sound...
+            if self._timer_audio is not None:
+                LOG.debug("Playing timer sound")
+
+                # ...for as long as we want it to
+                end = time.time() + self._duration
+                while interrupt_time == self._interrupt_time and time.time() < end:
+                    try:
+                        self._timer_audio.play()
+                    except Exception as e:
+                        LOG.warning("Failed to play timer sound: %s", e)
+
+            # And remove the timer (this should not fail but...)
+            try:
+                self._timers.remove(timer)
+            except:
+                pass
+
+        finally:
+            # This service is done working now
+            self._state.update_status(service, Notifier.IDLE)
 
 # ------------------------------------------------------------------------------
 
@@ -587,11 +612,16 @@ class _SetAlarmHandler(Handler):
                     mm = ''
                 elif mm[0] == '0':
                     mm = 'oh %s' % mm[1]
+                p = dt.strftime('%p')                    
+                if p == "AM":
+                    p = "ay em"
+                elif p == "PM":
+                    p = "pee em"
                 description = (
                     "%s %s %s %s" % (
                         hh,
                         mm,
-                        dt.strftime('%p'),
+                        p,
                         dayspec
                     )
                 ).strip()
@@ -699,13 +729,16 @@ class AlarmService(Service):
     """
     A service for setting alarms and alarms.
     """
-    def __init__(self, state, alarm_sound=None):
+    def __init__(self, state, alarm_sound=None, duration=5.0):
         """
         @see Service.__init__()
 
         :type  alarm_sound: str
         :param alarm_sound:
             The path to the sound to play when the alarm goes off.
+        :type  duration: float
+        :param duration:
+            How long to ring for, in seconds.
         """
         super(AlarmService, self).__init__("Alarm", state)
 
@@ -715,6 +748,10 @@ class AlarmService(Service):
             self._alarm_audio = get_pygame().mixer.Sound(alarm_sound)
         else:
             self._alarm_audio = None
+
+        self._duration = float(duration)
+
+        self._interrupt_time = None
 
 
     def evaluate(self, tokens):
@@ -763,6 +800,13 @@ class AlarmService(Service):
         return None
 
 
+    def interrupt(self):
+        """
+        @see Component.interrupt
+        """
+        self._interrupt_time = time.time()
+
+
     def add_alarm(self, when):
         """
         Set an alarm for the given number of seconds since epoch.
@@ -794,23 +838,34 @@ class AlarmService(Service):
         """
         Ring the alarm for the given alarm.
         """
-        # Let the terminal know
-        LOG.info("DING DING DING!!! Alarm '%s' is ringing..." % (alarm,))
+        # Remember the last interrupt so we can see if we got interrupted again
+        interrupt_time = self._interrupt_time
 
-        # Play any sound...
-        if self._alarm_audio is not None:
-            LOG.debug("Playing alarm sound")
-
-            # ...for about 5 seconds
-            end = time.time() + 5
-            while time.time() < end:
-                try:
-                    self._alarm_audio.play()
-                except Exception as e:
-                    LOG.warning("Failed to play alarm sound: %s", e)
-
-        # And remove the alarm (this should not fail but...)
         try:
-            self._alarms.remove(alarm)
-        except:
-            pass
+            # This service is doing something so update the status
+            self._state.update_status(service, Notifier.ACTIVE)
+
+            # Let the terminal know
+            LOG.info("DING DING DING!!! Alarm '%s' is ringing..." % (alarm,))
+
+            # Play any sound...
+            if self._alarm_audio is not None:
+                LOG.debug("Playing alarm sound")
+
+                # ...for as long as we want it to
+                end = time.time() + self._duration
+                while interrupt_time == self._interrupt_time and time.time() < end:
+                    try:
+                        self._alarm_audio.play()
+                    except Exception as e:
+                        LOG.warning("Failed to play alarm sound: %s", e)
+
+            # And remove the alarm (this should not fail but...)
+            try:
+                self._alarms.remove(alarm)
+            except:
+                pass
+
+        finally:
+            # This service is done working now
+            self._state.update_status(service, Notifier.IDLE)
