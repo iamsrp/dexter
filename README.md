@@ -1,6 +1,6 @@
-# Dexter, A Voice Controlled Assistant
+# Dexter, A Voice-Controlled Assistant
 
-Dexter is a voice controlled assistant, akin to Google Home and Alexa. Dexter's your right hand (in theory).
+Dexter is a voice-controlled assistant, akin to Google Home and Alexa. Dexter's your right hand (in theory).
 
 Originally developed for Raspberry Pi OS, it also works on Ubuntu.
 
@@ -31,6 +31,7 @@ If you quickly want to get up and running then:
  - Make sure that the appropriate model etc. files are where the config file is looking for them
  - Make sure you have a microphone and speaker
  - Try running dexter.py with the appropriate config file for your distro (e.g. `./dexter.py -c pi_config`)
+
 You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
 
 
