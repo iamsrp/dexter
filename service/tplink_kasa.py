@@ -90,15 +90,19 @@ class KasaService(Service):
         # Slightly complex commands first
         if (routine is None and
             len(words) >= 3 and
-            fuzz.ratio(words[0], "turn") > 80):
+            (fuzz.ratio(words[0], "set" ) > 80 or
+             fuzz.ratio(words[0], "turn") > 80)):
             # Looking at "turn <the something> <something>". Find the device
             # first.
-            name = ' '.join(words[1:-1])
+            if words[-2] == "to":
+                name = ' '.join(words[1:-2])
+            else:
+                name = ' '.join(words[1:-1])
 
             # We have something, so figure out the action
             action = to_letters(words[-1])
             if action in ("on", "off"):
-                LOG.info("Matched 'turn <something> %s' in '%s'", action, words)
+                LOG.info("Matched 'set|turn <something> [to] %s' in '%s'", action, words)
 
                 # Look at all devices
                 pair = self._find_device(name,
@@ -126,7 +130,7 @@ class KasaService(Service):
                 # Might be a colour
                 color = COLORS.match(action)
                 if color is not None:
-                    LOG.info("Matched color 'turn <something> %s' in '%s' as %s",
+                    LOG.info("Matched color 'set|turn <something> %s' in '%s' as %s",
                              action, words, color)
                     (action_score, (rgb, hsv)) = color
 
