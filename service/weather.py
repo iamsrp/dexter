@@ -4,10 +4,11 @@ Services which get the weather.
 
 from   datetime         import date, timedelta
 from   dexter.core.log  import LOG
-from   dexter.core.util import fuzzy_list_range, parse_number
+from   dexter.core.util import fuzzy_list_range, parse_number, to_letters
 from   dexter.service   import Service, Handler, Result
 from   fuzzywuzzy       import fuzz
 from   urllib.request   import Request, urlopen
+from   urllib.error     import HTTPError
 
 import json
 
@@ -25,7 +26,7 @@ class _UsHandler(Handler):
 
         # The stuff after the end of the match is the day specifier (we hope)
         if end < len(words):
-            self._when = words[end]
+            self._when = to_letters(words[end])
         else:
             self._when = None
 
@@ -37,23 +38,33 @@ class _UsHandler(Handler):
         """
         @see Handler.handle()
         """
-        # Start with the main URL request
-        request = Request(self._url,
-                          headers=_HEADERS)
-        with urlopen(request) as handle:
-            data = json.loads(''.join(l.decode('ASCII')
-                                      for l in handle.readlines()))
+        try:
+            # Start with the main URL request
+            request = Request(self._url,
+                              headers=_HEADERS)
+            with urlopen(request) as handle:
+                data = json.loads(''.join(l.decode('ASCII')
+                                          for l in handle.readlines()))
 
-        # Inside that there should be a "forecast" URL which we can read
-        request = Request(data['properties']['forecast'],
-                          headers=_HEADERS)
-        with urlopen(request) as handle:
-            fc_data = json.loads(''.join(l.decode('ASCII')
-                                         for l in handle.readlines()))
+            # Inside that there should be a "forecast" URL which we can read
+            request = Request(data['properties']['forecast'],
+                              headers=_HEADERS)
+            with urlopen(request) as handle:
+                fc_data = json.loads(''.join(l.decode('ASCII')
+                                             for l in handle.readlines()))
+        except HTTPError as e:
+            LOG.error("Problem getting the weather data: %s", e)
+            return Result(
+                self,
+                ("Sorry, there was a problem getting the weather for %s. "
+                 "Please try again in a minute") % (self._when, ),
+                False,
+                True
+            )
 
         # The data comes in a number of periods
         periods = fc_data['properties']['periods']
-        
+
         # Let's just choose the first for now. The name is the name of the
         # period, the first is "tonight" or "today" etc. but later ones are
         # names of days etc.
@@ -103,7 +114,7 @@ class WeatherService(Service):
         """
         @see Service.__init__()
 
-        :param coordinates: A comma-separated longditude and latitude pair, 
+        :param coordinates: A comma-separated longditude and latitude pair,
                             e.g. ``40.7858267,-74.0050447``.
         :param region:      The region for the forecast, currently only ``US``
                             is supported (sorry).
