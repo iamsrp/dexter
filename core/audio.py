@@ -4,10 +4,7 @@ Methods for dealing with audio I/O manipulation.
 
 from dexter.core.log import LOG
 
-try:
-    import alsaaudio as pyalsaaudio
-except:
-    import pyalsa    as pyalsaaudio
+import alsaaudio
 
 # ------------------------------------------------------------------------------
 
@@ -65,9 +62,9 @@ def _get_alsa_mixer():
         The mixer.
     """
     # Get the ALSA mixer by going in the order that they are listed
-    for mixer in pyalsaaudio.mixers():
+    for mixer in alsaaudio.mixers():
         try:
-            return pyalsaaudio.Mixer(mixer)
+            return alsaaudio.Mixer(mixer)
         except:
             pass
 
