@@ -5,6 +5,7 @@
 # the following should mostly work. If you see errors then it might be fine
 # depending on what platform you're on.
 
+# Things which we expect to have in both OSes
 sudo apt update
 sudo apt install -y \
      git swig \
@@ -12,18 +13,32 @@ sudo apt install -y \
      python3-espeak python3-fuzzywuzzy python3-httplib2 python3-mutagen python3-pygame \
      libpulse-dev libasound2-dev festival festival-dev festvox-us-slt-hts
 
-# Whisper only works on the 64bit Pi OS since it needs PyTorch, which is 64bit
-# only. (PyTorch looks to need a more up-to-date numpy than is currently
-# available via apt.) We only install ffmpeg and upgrade numpy if it succeeds.
-pip3 install git+https://github.com/openai/whisper.git && sudo apt install -y ffmpeg && pip3 install -U numpy
-# Vosk is another STT engine
-pip3 install vosk || (uname -m | grep -q aarch64 && pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl)
-# And so Coqui (STT), which was DeepSpeech once upon a time
-pip3 install stt || (pip3 install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl)
-# Other generally handy things
+# Generally handy things
 pip3 install pyalsaaudio
 pip3 install wikipedia
 pip3 install spotipy
 pip3 install pydictionary
 pip3 install git+https://github.com/techiaith/pyfestival#festival
 pip3 install python-kasa
+
+# Vosk is another STT engine
+pip3 install vosk || (
+    uname -m | grep -q aarch64 &&
+        pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl
+)
+
+# And so Coqui (STT), which was DeepSpeech once upon a time
+pip3 install stt ||
+    pip3 install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
+
+# Some things which only really work for 64bit OSs
+uname -m | grep -Eq 'aarch64|x86_64' && (
+    # Whisper only works on the 64bit Pi OS since it needs PyTorch, which is
+    # 64bit only. (PyTorch looks to need a more up-to-date numpy than is
+    # currently available via apt.) We only install ffmpeg and upgrade numpy if
+    # it succeeds.
+    pip3 install git+https://github.com/openai/whisper.git && sudo apt install -y ffmpeg && pip3 install -U numpy
+
+    # Coqui TTS, this depends on PyTorch (and about a million other things too
+    pip3 install TTS
+)
