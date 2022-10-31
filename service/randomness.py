@@ -93,7 +93,7 @@ class RandomService(Service):
         # Binary random number
         for phrase in ("toss a coin", "flip a coin"):
             try:
-                fuzzy_list_range(words, phrase)
+                fuzzy_list_range(words, phrase.split())
                 return _CoinTossHandler(self, tokens)
             except ValueError:
                 pass
@@ -101,7 +101,7 @@ class RandomService(Service):
         # A regular die
         for phrase in ("roll a die", "roll a dice"):
             try:
-                fuzzy_list_range(words, phrase)
+                fuzzy_list_range(words, phrase.split())
                 return _DiceHandler(self, tokens, 6)
             except ValueError:
                 pass
