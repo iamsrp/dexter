@@ -31,14 +31,17 @@ pip3 install vosk || (
 pip3 install stt ||
     pip3 install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
 
-# Some things which only really work for 64bit OSs
-uname -m | grep -Eq 'aarch64|x86_64' && (
+# Some things which only really work for 64bit OSs. While these theoretically
+# work for Raspbian, Whisper is _slow_ to the point of being unusable and Coqui
+# TTS has Numpy versioning issues. So we only install for Ubuntu x86_64 by
+# default.
+uname -m | grep -Eq 'x86_64' && (
     # Whisper only works on the 64bit Pi OS since it needs PyTorch, which is
     # 64bit only. (PyTorch looks to need a more up-to-date numpy than is
     # currently available via apt.) We only install ffmpeg and upgrade numpy if
     # it succeeds.
     pip3 install git+https://github.com/openai/whisper.git && sudo apt install -y ffmpeg && pip3 install -U numpy
 
-    # Coqui TTS, this depends on PyTorch (and about a million other things too
+    # Coqui TTS, this depends on PyTorch (and about a million other things too)
     pip3 install TTS
 )
