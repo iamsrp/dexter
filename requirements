@@ -5,6 +5,10 @@
 # the following should mostly work. If you see errors then it might be fine
 # depending on what platform you're on.
 
+# Let the user have some time to realise what we're doing
+echo "This will pip install a whole load of things on your system. If you don't want to do this then hit CTRL-c now..!"
+sleep 5
+
 # Things which we expect to have in both OSes
 sudo apt update
 sudo apt install -y \
