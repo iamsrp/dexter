@@ -246,9 +246,7 @@ class AudioInput(Input):
             # Different detection based on what we are looking for
             if not talking:
                 # Looking for a step up in the latter part
-                if self._state.is_speaking():
-                    LOG.debug("System is speaking so ignoring audio input")
-                elif from_median * 2.0 < to_median:
+                if from_median * 2.0 < to_median:
                     LOG.info("Detected start of speech "
                              "with levels going from %0.2f to %0.2f" %
                              (from_median, to_median))
