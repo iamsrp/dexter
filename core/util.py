@@ -529,8 +529,8 @@ def _strip_to(string, alphabet):
     """
     Remove non-alphabet contents from a word.
 
-    :type   string: str
-    @parses string:
+    :type  string: str
+    :param string:
        The string to strip the chars from.
 
     :rtype: str
@@ -551,8 +551,8 @@ def to_letters(string):
     >>> to_letters(' a b c d ')
     'abcd'
 
-    :type   string: str
-    @parses string:
+    :type  string: str
+    :param string:
        The string to strip the chars from.
 
     :rtype: str
@@ -571,8 +571,8 @@ def to_alphanumeric(string):
     >>> to_alphanumeric(' a b c d ')
     'abcd'
 
-    :type   string: str
-    @parses string:
+    :type  string: str
+    :param string:
        The string to strip the chars from.
 
     :rtype: str
@@ -597,7 +597,7 @@ def parse_number(words):
     -4.789
 
     :type  words: str
-    @parse words:
+    :param words:
         The string words to parse. E.g. C{'twenty seven'}.
     """
     # Sanity
@@ -656,7 +656,7 @@ def parse_number(words):
         if whole is None:
             return None
 
-        # S;plit up the digits to parse them.
+        # Split up the digits to parse them.
         digits = numpy.array([parse_number(digit)
                               for digit in decimal.split(' ')])
         if None in digits        or \
@@ -697,7 +697,7 @@ def number_to_words(value):
     'one million'
 
     :type  value: number
-    @parse value:
+    :param value:
         The value to convert to words.
     """
     # First handle the integer part
@@ -962,7 +962,8 @@ def fuzzy_list_range(list_,
 
         # Look for an exact match first
         try:
-            return words.index(query)
+            words.index(query)
+            return (0, 1, 100)
         except ValueError:
             pass
 
