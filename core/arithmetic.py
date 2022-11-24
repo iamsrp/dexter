@@ -205,6 +205,19 @@ class Identity(_Function):
         return self.v
 
 
+class Negate(_Function):
+    """
+    A value gained by negating another.
+    """
+    def __call__(self):
+        return -self.v
+
+
+    @property
+    def _description(self):
+        return "negative"
+
+
 class Square(_Function):
     """
     A value gained by taking the square of another.

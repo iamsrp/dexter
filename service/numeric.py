@@ -3,8 +3,9 @@ Services relating to numbers in various ways.
 """
 
 from dexter.service          import Service, Handler, Result
-from dexter.core.arithmetic  import (Constant, Identity,
+from dexter.core.arithmetic  import (Constant,
                                      ConstantE, ConstantPi, ConstantTau,
+                                     Identity, Negate,
                                      Add, Subtract, Multiply, Divide,
                                      Square, Cube,
                                      SquareRoot, CubeRoot,
@@ -66,6 +67,8 @@ class CalculatorService(Service):
     _PREFIX_FUNCTIONS = (
         # These might have a 'the' prefix as well as an 'of' postfix
         ('value',       Identity),
+        ('negative',    Negate),
+        ('minus',       Negate),
         ('square root', SquareRoot),
         ('cube root',   CubeRoot),
         ('square',      Square),
@@ -96,6 +99,7 @@ class CalculatorService(Service):
         ('divided by',    Divide),
         ('plus',          Add),
         ('minus',         Subtract),
+        ('subtract',      Subtract),
     )
 
     def __init__(self, state):
