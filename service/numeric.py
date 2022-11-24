@@ -39,12 +39,22 @@ class _CalculatorHandler(Handler):
         """
         try:
             # Compute it. See if the result is "exact" or not, and give it all
-            # back to the user as a nice string.
+            # back to the user as a nice string. Since this is going to be
+            # spoken we will explictily state "foo point b a r" since the period
+            # in 'foo.bar' might be interpreted as a full stop by some TTS
+            # engines and the digits should be spoken separately.
             value = self._value()
-            strval05 = ('%0.5f'  % value).rstrip('0').rstrip('.')
-            strval15 = ('%0.15f' % value).rstrip('0').rstrip('.')
-            approx = '' if strval05 == strval15 else 'approximately '
-            result = f'{str(self._value)} is {approx}{strval05}'
+            val05 = ('%0.5f'  % value).rstrip('0').rstrip('.')
+            val15 = ('%0.15f' % value).rstrip('0').rstrip('.')
+            approx = '' if val05 == val15 else 'approximately '
+            parts = val05.split('.')
+            if len(parts) == 1:
+                whole = parts[0]
+                frac  = ''
+            else:
+                whole = parts[0]
+                frac  = ' point %s' % (' '.join(parts[1]))
+            result = f'{str(self._value)} is {approx}{whole}{frac}'
         except Exception as e:
             error = to_alphanumeric(str(e))
             result = f'Sorry, I could not compute {self._value}: {error}'
