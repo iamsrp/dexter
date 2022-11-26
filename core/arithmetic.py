@@ -375,3 +375,31 @@ class Log2(_Function):
     @property
     def _description(self):
         return "log 2 of"
+
+
+class DegreesToRadians(_Function):
+    """
+    A value gained by converting a degrees value to a radians one.
+    """
+    def __call__(self):
+        return math.radians(self.v)
+
+
+    @property
+    def _description(self):
+        return "the radians value of"
+
+
+class RadiansToDegrees(_Function):
+    """
+    A value gained by converting a radians value to a degrees one.
+    """
+    def __call__(self):
+        return math.degrees(self.v)
+
+
+    @property
+    def _description(self):
+        return "the degrees value of"
+
+

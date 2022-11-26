@@ -11,7 +11,8 @@ from dexter.core.arithmetic  import (Constant,
                                      SquareRoot, CubeRoot,
                                      Sine, Cosine, Tangent,
                                      Log, NaturalLog, Log2,
-                                     Factorial)
+                                     Factorial,
+                                     DegreesToRadians, RadiansToDegrees)
 from dexter.core.log         import LOG
 from dexter.core.util        import (fuzzy_list_range,
                                      parse_number,
@@ -100,6 +101,8 @@ class CalculatorService(Service):
         ('squared',   Square),
         ('cubed',     Cube),
         ('factorial', Factorial),
+        ('degrees',   DegreesToRadians),
+        ('radians',   RadiansToDegrees),
     )
 
     _INFIX_FUNCTIONS = (
@@ -107,6 +110,7 @@ class CalculatorService(Service):
         ('times',         Multiply),
         ('multiplied by', Multiply),
         ('divided by',    Divide),
+        ('over',          Divide),
         ('plus',          Add),
         ('minus',         Subtract),
         ('subtract',      Subtract),
@@ -231,10 +235,11 @@ class CalculatorService(Service):
                     except ValueError:
                         pass
 
-        # Constants are full strings
+        # Constants are full strings. This might be raw values (3.141) or named
+        # constants (pi).
         constant = parse_number(' '.join(words))
         if constant is not None:
-            LOG.debug("Matched constant value %f", constant)
+            LOG.debug("Matched raw value %f", constant)
             return Constant(constant)
         if len(words) == 1:
             word = words[0]
