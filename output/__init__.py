@@ -140,8 +140,8 @@ class SpeechOutput(Output):
                 f = getattr(self, name)
                 new = f(word)
                 if new is not None:
-                    LOG.info("Used %s() to turn '%s' into '%s'",
-                             name, word, new)
+                    LOG.debug("Used %s() to turn '%s' into '%s'",
+                              name, word, new)
                     break
 
             # Did we get anything?
