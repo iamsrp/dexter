@@ -157,7 +157,7 @@ class CoquiOutput(SpeechOutput):
 
                 # Break this up into sentences so that we can handle
                 # interruptions
-                for sentence in str(text).split('. '):
+                for sentence in self._speechify(str(text)).split('. '):
                     # Turn the text into a wav
                     LOG.info("Saying '%s'", sentence)
                     wav = self._synthesizer.tts(sentence + '.',

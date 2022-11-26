@@ -39,23 +39,8 @@ class _CalculatorHandler(Handler):
         @see Handler.handle()
         """
         try:
-            # Compute it. See if the result is "exact" or not, and give it all
-            # back to the user as a nice string. Since this is going to be
-            # spoken we will explictily state "foo point b a r" since the period
-            # in 'foo.bar' might be interpreted as a full stop by some TTS
-            # engines and the digits should be spoken separately.
-            value = self._value()
-            val05 = ('%0.5f'  % value).rstrip('0').rstrip('.')
-            val15 = ('%0.15f' % value).rstrip('0').rstrip('.')
-            approx = '' if val05 == val15 else 'approximately '
-            parts = val05.split('.')
-            if len(parts) == 1:
-                whole = parts[0]
-                frac  = ''
-            else:
-                whole = parts[0]
-                frac  = ' point %s' % (' '.join(parts[1]))
-            result = f'{str(self._value)} is {approx}{whole}{frac}'
+            # Compute it and give it back
+            result = f'{str(self._value)} is {self._value()}'
         except Exception as e:
             error = to_alphanumeric(str(e))
             result = f'Sorry, I could not compute {self._value}: {error}'
@@ -101,8 +86,8 @@ class CalculatorService(Service):
         ('squared',   Square),
         ('cubed',     Cube),
         ('factorial', Factorial),
-        ('degrees',   DegreesToRadians),
-        ('radians',   RadiansToDegrees),
+        ('degrees',   DegreesToRadians), # Hokey
+        ('radians',   RadiansToDegrees), # Hokey
     )
 
     _INFIX_FUNCTIONS = (
@@ -202,21 +187,6 @@ class CalculatorService(Service):
             except ValueError:
                 pass
 
-        # Postfix functions, like "10 squared"
-        for (func, cls) in self._POSTFIX_FUNCTIONS:
-            try:
-                (start, end, score) = fuzzy_list_range(words, func.split())
-                if end == len(words) and score > threshold:
-                    # We got a match, so attempt to turn the bits before it
-                    # into a value
-                    LOG.debug("Matched postfix '%s'", func)
-                    v = self._make_value(words[:start], threshold)
-                    if v is not None:
-                        # That worked so build it and return it
-                        return cls(v)
-            except ValueError:
-                pass
-
         # Prefix functions, like "the square root of 49"
         for (func, cls) in self._PREFIX_FUNCTIONS:
             for pre in ([], ['the']):
@@ -234,6 +204,21 @@ class CalculatorService(Service):
                                 return cls(v)
                     except ValueError:
                         pass
+
+        # Postfix functions, like "10 squared"
+        for (func, cls) in self._POSTFIX_FUNCTIONS:
+            try:
+                (start, end, score) = fuzzy_list_range(words, func.split())
+                if end == len(words) and score > threshold:
+                    # We got a match, so attempt to turn the bits before it
+                    # into a value
+                    LOG.debug("Matched postfix '%s'", func)
+                    v = self._make_value(words[:start], threshold)
+                    if v is not None:
+                        # That worked so build it and return it
+                        return cls(v)
+            except ValueError:
+                pass
 
         # Constants are full strings. This might be raw values (3.141) or named
         # constants (pi).

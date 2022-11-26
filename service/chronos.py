@@ -90,10 +90,6 @@ class _ClockHandler(Handler):
                     mm = 'oh %s' % number_to_words(int(mm))
                 else:
                     mm = number_to_words(int(mm))
-                if p == "AM":
-                    p = "ay em"
-                elif p == "PM":
-                    p = "pee em"
                 result = "The current time is %s %s %s" % (hh, mm, p)
 
             elif self._what == "date":
@@ -613,10 +609,6 @@ class _SetAlarmHandler(Handler):
                 elif mm[0] == '0':
                     mm = 'oh %s' % mm[1]
                 p = dt.strftime('%p')                    
-                if p == "AM":
-                    p = "ay em"
-                elif p == "PM":
-                    p = "pee em"
                 description = (
                     "%s %s %s %s" % (
                         hh,

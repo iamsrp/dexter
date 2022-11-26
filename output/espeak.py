@@ -42,8 +42,8 @@ class EspeakOutput(SpeechOutput):
         """
         @see Output.write
         """
-        # Simply pass it along to espeak
-        espeak.synth(text)
+        # Simply pass the speechified text along to espeak
+        espeak.synth(self._speechify(text))
 
 
     def interrupt(self):

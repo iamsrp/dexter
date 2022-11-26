@@ -271,6 +271,9 @@ class PyFestivalOutput(SpeechOutput):
                     LOG.info("Nothing to say...")
                     continue
 
+                # Now handle all the other idiosyncrasies
+                text = self._speechify(text)
+
                 # We're about to say something, clear any interrupted flag ready
                 # for any new one
                 self._interrupted = False
