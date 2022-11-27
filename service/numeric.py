@@ -7,7 +7,7 @@ from dexter.core.arithmetic  import (Constant,
                                      ConstantE, ConstantPi, ConstantTau,
                                      Identity, Negate,
                                      Add, Subtract, Multiply, Divide,
-                                     Square, Cube,
+                                     Square, Cube, Power,
                                      SquareRoot, CubeRoot,
                                      Sine, Cosine, Tangent,
                                      Log, NaturalLog, Log2,
@@ -92,13 +92,15 @@ class CalculatorService(Service):
 
     _INFIX_FUNCTIONS = (
         # Order is important so that we bind with * and / before + and -.
-        ('times',         Multiply),
-        ('multiplied by', Multiply),
-        ('divided by',    Divide),
-        ('over',          Divide),
-        ('plus',          Add),
-        ('minus',         Subtract),
-        ('subtract',      Subtract),
+        ('times',           Multiply),
+        ('multiplied by',   Multiply),
+        ('divided by',      Divide),
+        ('over',            Divide),
+        ('plus',            Add),
+        ('minus',           Subtract),
+        ('subtract',        Subtract),
+        ('to the power',    Power),
+        ('to the power of', Power),
     )
 
     def __init__(self, state):
