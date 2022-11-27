@@ -579,7 +579,7 @@ def to_alphanumeric(string):
     :return:
         The stripped string.
     """
-    return _strip_to(string, _UPPER + _LOWER + _NUMBERS)
+    return _strip_to(string, _UPPER + _LOWER + _NUMBERS + '.-+')
 
 
 def parse_number(words):
