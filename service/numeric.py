@@ -12,7 +12,8 @@ from dexter.core.arithmetic  import (Constant,
                                      Sine, Cosine, Tangent,
                                      Log, NaturalLog, Log2,
                                      Factorial,
-                                     DegreesToRadians, RadiansToDegrees)
+                                     DegreesToRadians, RadiansToDegrees,
+                                     CelciusToFahrenheit, FahrenheitToCelcius)
 from dexter.core.log         import LOG
 from dexter.core.util        import (fuzzy_list_range,
                                      parse_number,
@@ -83,11 +84,19 @@ class CalculatorService(Service):
     )
 
     _POSTFIX_FUNCTIONS = (
-        ('squared',   Square),
-        ('cubed',     Cube),
-        ('factorial', Factorial),
-        ('degrees',   DegreesToRadians), # Hokey
-        ('radians',   RadiansToDegrees), # Hokey
+        ('squared',            Square),
+        ('cubed',              Cube),
+        ('factorial',          Factorial),
+        # Cheesy conversion functions. Order is important since we have some
+        # being substrings of others.
+        ('degrees fahrenheit', FahrenheitToCelcius),
+        ('degrees centigrade', CelciusToFahrenheit),
+        ('degrees celcius',    CelciusToFahrenheit),
+        ('fahrenheit',         FahrenheitToCelcius),
+        ('centigrade',         CelciusToFahrenheit),
+        ('celcius',            CelciusToFahrenheit),
+        ('degrees',            DegreesToRadians),
+        ('radians',            RadiansToDegrees),
     )
 
     _INFIX_FUNCTIONS = (
@@ -191,8 +200,8 @@ class CalculatorService(Service):
 
         # Prefix functions, like "the square root of 49"
         for (func, cls) in self._PREFIX_FUNCTIONS:
-            for pre in ([], ['the']):
-                for post in ([], ['of']):
+            for pre in (['the'], []):
+                for post in (['of'], []):
                     prefix = pre + func.split() + post
                     try:
                         (start, end, score) = fuzzy_list_range(words, prefix)

@@ -22,7 +22,7 @@ class _Function(_Value):
     def __init__(self, v):
         self._v = v
 
-    
+
     @property
     def v(self):
         return self._v()
@@ -147,7 +147,7 @@ class Subtract(_BiFunction):
     @property
     def _description(self):
         return "minus"
-    
+
 
 class Multiply(_BiFunction):
     """
@@ -403,3 +403,27 @@ class RadiansToDegrees(_Function):
         return "the degrees value of"
 
 
+class FahrenheitToCelcius(_Function):
+    """
+    A value gained by converting a fahrenheit value to celcius.
+    """
+    def __call__(self):
+        return (self.v - 32) * 5 / 9
+
+
+    @property
+    def _description(self):
+        return "the celcius value of"
+
+
+class CelciusToFahrenheit(_Function):
+    """
+    A value gained by converting a celcius value to fahrenheit.
+    """
+    def __call__(self):
+        return self.v * 9 / 5 + 32
+
+
+    @property
+    def _description(self):
+        return "the fahrenheit value of"
