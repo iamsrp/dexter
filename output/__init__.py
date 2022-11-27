@@ -18,7 +18,7 @@ class Output(Component):
     """
     def __init__(self, state):
         """
-        :type  state: L{State}
+        :type  state: `State`
         :param state:
             The global State instance.
         """
@@ -49,7 +49,7 @@ class SpeechOutput(Output):
     """
     An output which generates audio speech.
 
-    When one of these classes has a state which is not C{IDLE} we deem it to be
+    When one of these classes has a state which is not ``IDLE`` we deem it to be
     generating audio on the speaker.
     """
     # How we turn letters into they phonetic versions
@@ -118,9 +118,9 @@ class SpeechOutput(Output):
         when spoken. This is done via turning abbreviations into their letters.
 
         This function will loko for all the other member functions of the form
-        `_speechify_N_blah` where `N` is a single-digit priority. It will then
-        apply each function in priority order, stopping when a function gives
-        back a non-None result.
+        `_speechify_N_blah` where `N` is a single-digit priority, with a lower
+        value meaning a higher priority. It will then apply each function in
+        priority order, stopping when a function gives back a non-None result.
         """
         if text is None or text == '':
             return text
