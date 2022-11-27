@@ -201,7 +201,7 @@ class SpeechOutput(Output):
 
         # Strip any trailing zeroes and any empty decimal point from decimal
         # values
-        if int(value) != value:
+        if '.' in number:
             number = number.rstrip('0').rstrip('.')
 
         # Since this is going to be spoken we will explictily state "foo
