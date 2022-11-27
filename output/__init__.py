@@ -4,8 +4,11 @@ How Dexter sends information to the outside world.
 This might be via speech synthesis, a display, logging, etc.
 """
 
-from dexter.core     import Component
-from dexter.core.log import LOG
+from   dexter.core      import Component
+from   dexter.core.log  import LOG
+from   dexter.core.util import to_letters
+
+import math
 
 # ------------------------------------------------------------------------------
 
@@ -195,14 +198,27 @@ class SpeechOutput(Output):
         except ValueError:
             return None
 
-        # Handle floating point noise
-        if int(value) != int(value + 1e-14):
-            number = str(int(value + 1e-14))
+        # Strip any leading '+' symbol, it's superfluous
+        if number.startswith('+'):
+            number = number[1:]
 
-        # Strip any trailing zeroes and any empty decimal point from decimal
-        # values
-        if '.' in number:
-            number = number.rstrip('0').rstrip('.')
+        # Handle floating point noise
+        tweaked = math.copysign(abs(value + 1e-13), value)
+        if int(value) != int(tweaked):
+            number = str(tweaked)
+
+        # Avoid -0.0 by handling it specifically
+        if value == 0:
+            return "zero"
+
+        # Handle values with exponents in them
+        if 'e' in number:
+            # Break it up, rendering the exponent accordingly
+            (number, exp) = number.split('e')
+            exponent = ('times ten to the power of %s' %
+                        self._speechify_4_number(exp))
+        else:
+            exponent = ''
 
         # Since this is going to be spoken we will explictily state "foo
         # point b a r" since the period in 'foo.bar' might be interpreted as
@@ -218,7 +234,18 @@ class SpeechOutput(Output):
             else:
                 frac   = parts[1]
                 approx = ''
-            number = '%s%s point %s' % (approx, whole, (' '.join(frac)))
+
+            # Strip any trailing zeroes and any empty decimal point from
+            # decimal values
+            frac = frac.rstrip('0')
+            if frac != '':
+                number = '%s%s point %s' % (approx, whole, (' '.join(frac)))
+            else:
+                number = '%s%s' % (approx, whole)
+
+        # Put back any exponent
+        if exponent:
+            number = f'{number} {exponent}'
 
         # And give it back
         return number
@@ -228,8 +255,8 @@ class SpeechOutput(Output):
         """
         Turn an abbreviation into letters.
         """
-        # See if the string was an allcaps one
-        if abbrev.upper() == abbrev:
+        # See if the string was an allcaps one, possibly with periods in it
+        if abbrev.upper() == abbrev and to_letters(abbrev) != '':
             # Break up the letters into chars and render their names. We ignore
             # periods in the string when we do this (i.e. "ACE" vs "A.C.E.").
             return ' '.join(self._LETTERIFY.get(letter, letter)
