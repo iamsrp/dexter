@@ -5,6 +5,7 @@ Various services related to the ticking of the clock.
 """
 
 from   datetime         import datetime
+from   dexter.core      import Notifier
 from   dexter.core.log  import LOG
 from   dexter.core.util import (fuzzy_list_range,
                                 get_pygame,
@@ -440,10 +441,10 @@ class TimerService(Service):
 
         try:
             # This service is doing something so update the status
-            self._state.update_status(service, Notifier.ACTIVE)
+            self._state.update_status(self, Notifier.ACTIVE)
 
             # Let the terminal know
-            LOG.info("DING DING DING!!! Timer '%s' has expired..." % (timer,))
+            LOG.info("DING DING DING!!! %s has expired..." % (timer,))
 
             # Play any sound...
             if self._timer_audio is not None:
@@ -465,7 +466,7 @@ class TimerService(Service):
 
         finally:
             # This service is done working now
-            self._state.update_status(service, Notifier.IDLE)
+            self._state.update_status(self, Notifier.IDLE)
 
 # ------------------------------------------------------------------------------
 
@@ -835,10 +836,10 @@ class AlarmService(Service):
 
         try:
             # This service is doing something so update the status
-            self._state.update_status(service, Notifier.ACTIVE)
+            self._state.update_status(self, Notifier.ACTIVE)
 
             # Let the terminal know
-            LOG.info("DING DING DING!!! Alarm '%s' is ringing..." % (alarm,))
+            LOG.info("DING DING DING!!! %s is ringing..." % (alarm,))
 
             # Play any sound...
             if self._alarm_audio is not None:
@@ -860,4 +861,4 @@ class AlarmService(Service):
 
         finally:
             # This service is done working now
-            self._state.update_status(service, Notifier.IDLE)
+            self._state.update_status(self, Notifier.IDLE)
