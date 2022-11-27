@@ -199,8 +199,10 @@ class SpeechOutput(Output):
         if int(value) != int(value + 1e-14):
             number = str(int(value + 1e-14))
 
-        # Strip any trailing zeroes and any empty decimal point
-        number = number.rstrip('0').rstrip('.')
+        # Strip any trailing zeroes and any empty decimal point from decimal
+        # values
+        if int(value) != value:
+            number = number.rstrip('0').rstrip('.')
 
         # Since this is going to be spoken we will explictily state "foo
         # point b a r" since the period in 'foo.bar' might be interpreted as
