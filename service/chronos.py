@@ -206,10 +206,13 @@ class _SetTimerHandler(Handler):
             indices = []
             for (words, seconds) in _PERIODS:
                 for word in words:
-                    if word in self._times:
-                        index = self._times.index(word)
-                        LOG.debug("Found '%s' at index %d" % (word, index))
-                        indices.append((index, seconds))
+                    try:
+                        (start, end, score) = fuzzy_list_range(self._times, [word])
+                        if start+1 == end and score > 80:
+                            LOG.debug("Found '%s' at index %d" % (word, start))
+                            indices.append((start, seconds))
+                    except ValueError:
+                        pass
 
             # Anything?
             if len(indices) == 0:
