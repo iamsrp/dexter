@@ -3,7 +3,7 @@ Services related to natural language.
 """
 
 from   dexter.core.log  import LOG
-from   dexter.core.util import fuzzy_list_range
+from   dexter.core.util import fuzzy_list_range, to_alphanumeric
 from   dexter.service   import Service, Handler, Result
 from   math             import sqrt
 from   PyDictionary     import PyDictionary
@@ -34,6 +34,9 @@ class _DictionaryHandler(Handler):
         try:
             result = self.service.meaning(self._word)
         except:
+            result = None
+
+        if result is None:
             return Result(
                 self,
                 "Sorry, I don't know the word %s" % self._word,
@@ -85,8 +88,11 @@ class DictionaryService(Service):
         """
         @see Service.evaluate()
         """
-        # Get the words, ready to match with
-        words = self._words(tokens)
+        # Get the words, ready to match with. Strip out any punctuation which we
+        # don't care about.
+        words = [to_alphanumeric(word).replace('.', '')
+                                      .replace('+', '')
+                 for word in self._words(tokens)]
 
         # This is how it could be phrased
         fixes = ((('define',),                            tuple()),
