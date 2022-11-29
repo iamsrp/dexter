@@ -27,6 +27,9 @@ _PHRASES = (
     ("Are you my friend?",
      "I am a simulated organism. Any feelings you may have are merely illusionary.",
      False),
+    ("I love you",
+     "I am sorry but any feelings you may have for me are merely illusionary.",
+     False),
     ("Do you like",
      "My ability to like or dislike is due in a future update.",
      True),
@@ -41,6 +44,9 @@ _PHRASES = (
      False),
     ("Where are my keys?",
      "I don't know, where were you when you last had them?",
+     False),
+    ("Exterminate",
+     "You would make a good dah-lek.",
      False),
 )
 
