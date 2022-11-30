@@ -87,7 +87,45 @@ class KasaService(Service):
         score   = 0
         routine = None
 
-        # Slightly complex commands first
+        # Do the simpler commands first since they are more likely to match
+        # correctly.
+        if routine is None:
+            for action in (self._TURN_OFF,
+                           self._TURN_ON):
+                try:
+                    # Match the different actions on the input
+                    (start, end, action_score) = fuzzy_list_range(words,
+                                                                  action.split())
+
+                    # Did we match? The end has to be smaller than the number of
+                    # words since we want to know what we're acting on.
+                    if start == 0 and end < len(words):
+                        LOG.info("Matched '%s' on '%s'", action, words)
+                        # Now we look for the device
+                        pair = self._find_device(' '.join(words[end:]),
+                                                 (self._bulbs, self._plugs))
+
+                        # If we got anything then we figure out what we want to do
+                        if pair is not None:
+                            # Pull out the bits
+                            (device_score, device) = pair
+                            new_score = (action_score + device_score) / 2 / 100
+                            if new_score > score:
+                                LOG.debug("New score is %0.2f", new_score)
+                                self._update_device(device)
+                                try:
+                                    if action == self._TURN_ON:
+                                        routine = make_routine(device.turn_on)
+                                        score = new_score
+                                    elif action == self._TURN_OFF:
+                                        routine = make_routine(device.turn_off)
+                                        score = new_score
+                                except AttributeError:
+                                    pass
+                except ValueError:
+                    pass
+
+        # Now the more complex commands
         if (routine is None and
             len(words) >= 3 and
             (fuzz.ratio(words[0], "set" ) > 80 or
@@ -149,43 +187,6 @@ class KasaService(Service):
                                 LOG.debug("Created action to set the HSV to %s", hsv)
                             except AttributeError:
                                 pass
-
-        # Now try a different tack
-        if routine is None:
-            for action in (self._TURN_OFF,
-                           self._TURN_ON):
-                try:
-                    # Match the different actions on the input
-                    (start, end, action_score) = fuzzy_list_range(words,
-                                                                  action.split())
-
-                    # Did we match? The end has to be smaller than the number of
-                    # words since we want to know what we're acting on.
-                    if start == 0 and end < len(words):
-                        LOG.info("Matched '%s' on '%s'", action, words)
-                        # Now we look for the device
-                        pair = self._find_device(' '.join(words[end:]),
-                                                 (self._bulbs, self._plugs))
-
-                        # If we got anything then we figure out what we want to do
-                        if pair is not None:
-                            # Pull out the bits
-                            (device_score, device) = pair
-                            new_score = (action_score + device_score) / 2 / 100
-                            if new_score > score:
-                                LOG.debug("New score is %0.2f", new_score)
-                                self._update_device(device)
-                                try:
-                                    if action == self._TURN_ON:
-                                        routine = make_routine(device.turn_on)
-                                        score = new_score
-                                    elif action == self._TURN_OFF:
-                                        routine = make_routine(device.turn_off)
-                                        score = new_score
-                                except AttributeError:
-                                    pass
-                except ValueError:
-                    pass
 
         # Now we can give back a handler, if we know what we're doing
         if routine is not None:
