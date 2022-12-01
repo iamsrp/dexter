@@ -132,8 +132,10 @@ class DictionaryService(Service):
             (pre_start, pre_end, pre_score,
              suf_start, suf_end, suf_score) = match
 
-            # The belief is the geometric distance of the scores
-            belief = sqrt(pre_score * pre_score + suf_score * suf_score) / 100.0
+            # The belief is the average of the scores, normalised and bumped
+            # down a little to allow for more specific services to take
+            # precident.
+            belief = (pre_score + suf_score) / 2 / 100.0 * 0.95
 
             # The word is the one at pre_end (since it's non-inclusive)
             word = words[pre_end]
