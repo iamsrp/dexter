@@ -184,7 +184,7 @@ class _SpellingHandler(Handler):
             word = word.strip(',').strip('.')
 
             # User '.'s to slow down the rate at which the latters are spoken.
-            response += "The word %s is spelt %s. " % (word, ' .'.join(word))
+            response += "The word %s is spelt %s. " % (word, '. '.join(word))
 
         # And give it all back
         return Result(self, response, False, True)
