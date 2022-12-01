@@ -256,7 +256,10 @@ class SpeechOutput(Output):
         Turn an abbreviation into letters.
         """
         # See if the string was an allcaps one, possibly with periods in it
-        if abbrev.upper() == abbrev and to_letters(abbrev) != '':
+        if abbrev is not None       and \
+           len(abbrev) > 1          and \
+           abbrev.upper() == abbrev and \
+           to_letters(abbrev) != '':
             # Break up the letters into chars and render their names. We ignore
             # periods in the string when we do this (i.e. "ACE" vs "A.C.E.").
             return ' '.join(self._LETTERIFY.get(letter, letter)
