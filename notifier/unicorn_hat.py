@@ -87,15 +87,16 @@ class _Clockface():
           [ 0,0,0 ],
           [ 0,0,0 ]]
 
-    _DIGIT_COL = [ 128, 128, 128 ]
-    _COLON_COL = [  64,  64,  64 ]
+    _DIGIT_COL = [ 255, 255, 255 ]
+    _COLON_COL = [ 128, 128, 128 ]
     
 
-    def __init__(self, hrs):
+    def __init__(self, hrs, brightness):
         """
         :param hrs: 12 or 24 hour clock.
         """
-        self._hrs = int(hrs)
+        self._hrs        = int(hrs)
+        self._brightness = max(0.0, min(1.0, float(brightness)))
 
 
     def render_hhmm(self, w, h, seconds):
@@ -113,6 +114,8 @@ class _Clockface():
 
             # Render it into the buffer.Note that the digits have reversed
             # indexing.
+            value = [max(0, min(255, int(v * self._brightness)))
+                     for v in self._DIGIT_COL]
             for y in range(len(digit)):
                 for x in range(len(digit[y])):
                     buf_x = x + x_off
@@ -121,7 +124,7 @@ class _Clockface():
                         0 <= buf_y < len(buf[buf_x]) and
                         digit[y][x]):
                         # We're in the buffer and the digit's pixel is set
-                        buf[buf_x][buf_y] = self._DIGIT_COL
+                        buf[buf_x][buf_y] = value
 
         # Determine the digits' extents
         d_h = len(self._EMPTY)
@@ -167,10 +170,12 @@ class _Clockface():
         # Finally, put in the colon, if we're on an odd second bonundary (so it
         # flashes)
         if (int(seconds) & 1) == 1:
-            buf[mid_x    ][mid_y - 1] = self._COLON_COL
-            buf[mid_x    ][mid_y + 1] = self._COLON_COL
-            buf[mid_x - 1][mid_y - 1] = self._COLON_COL
-            buf[mid_x - 1][mid_y + 1] = self._COLON_COL
+            value = [max(0, min(255, int(self._brightness * v)))
+                     for v in self._COLON_COL]
+            buf[mid_x    ][mid_y - 1] = value
+            buf[mid_x    ][mid_y + 1] = value
+            buf[mid_x - 1][mid_y - 1] = value
+            buf[mid_x - 1][mid_y + 1] = value
 
         # And give it back
         return buf
@@ -183,19 +188,21 @@ class _UnicornHatNotifier(ByComponentNotifier):
     def __init__(self,
                  brightness,
                  clock_type,
+                 clock_brightness,
                  rotation,
                  flip_x,
                  flip_y):
         """
         @see ByComponentNotifier.__init__()
 
-        :param brightness: From 0.0 to 1.0.
-        :param clock_type: The type of clock to display, one of ``12``, ``24``,
-                           or ``None``.
-        :param rotation:   Rotate the display by ``0``, ``90``, ``180``, or
-                           ``270`` degrees.
-        :param flip_x:     Whether to flip the horizontal rendering.
-        :param flip_y:     Whether to flip the vertical rendering.
+        :param brightness:       From 0.0 to 1.0.
+        :param clock_type:       The type of clock to display, one of ``12``,
+                                 ``24``, or ``None``.
+        :param clock_brightness: From 0.0 to 1.0.
+        :param rotation:         Rotate the display by ``0``, ``90``, ``180``,
+                                 or ``270`` degrees.
+        :param flip_x:           Whether to flip the horizontal rendering.
+        :param flip_y:           Whether to flip the vertical rendering.
         """
         super().__init__()
 
@@ -226,7 +233,8 @@ class _UnicornHatNotifier(ByComponentNotifier):
         elif clock_type not in (12, "12", 24, "24"):
             raise ValueError("Bad clock type")
         else:
-            self._clockface = _Clockface(clock_type)
+            self._clockface = _Clockface(clock_type,
+                                         float(clock_brightness))
 
 
     def update_status(self, component, status):
@@ -502,19 +510,21 @@ class UnicornHatHdNotifier(_UnicornHatNotifier):
     A notifier for the Unicorn HAT HD.
     """
     def __init__(self,
-                 brightness=0.75,
-                 clock_type=24,
-                 rotation  =90,
-                 flip_x    =True,
-                 flip_y    =False):
+                 brightness      =0.75,
+                 clock_type      =24,
+                 clock_brightness=0.5,
+                 rotation        =90,
+                 flip_x          =True,
+                 flip_y          =False):
         """
         @see _UnicornHatNotifier.__init__()
         """
-        super().__init__(brightness=brightness,
-                         clock_type=clock_type,
-                         rotation  =rotation,
-                         flip_x    =flip_x,
-                         flip_y    =flip_y)
+        super().__init__(brightness      =brightness,
+                         clock_type      =clock_type,
+                         clock_brightness=clock_brightness,
+                         rotation        =rotation,
+                         flip_x          =flip_x,
+                         flip_y          =flip_y)
 
         import unicornhathd
         self._hat = unicornhathd
@@ -564,19 +574,21 @@ class UnicornHatMiniNotifier(_UnicornHatNotifier):
     A notifier for the Unicorn HAT Mini.
     """
     def __init__(self,
-                 brightness=0.5,
-                 clock_type=24,
-                 rotation  =180,
-                 flip_x    =False,
-                 flip_y    =False):
+                 brightness      =0.5,
+                 clock_type      =24,
+                 clock_brightness=0.5,
+                 rotation        =180,
+                 flip_x          =False,
+                 flip_y          =False):
         """
         @see _UnicornHatNotifier.__init__()
         """
-        super().__init__(brightness=brightness,
-                         clock_type=clock_type,
-                         rotation  =rotation,
-                         flip_x    =flip_x,
-                         flip_y    =flip_y)
+        super().__init__(brightness      =brightness,
+                         clock_type      =clock_type,
+                         clock_brightness=clock_brightness,
+                         rotation        =rotation,
+                         flip_x          =flip_x,
+                         flip_y          =flip_y)
 
         from unicornhatmini import UnicornHATMini
         self._hat = UnicornHATMini()
