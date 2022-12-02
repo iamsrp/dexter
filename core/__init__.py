@@ -78,8 +78,9 @@ class Component(_Startable):
     """
     def __init__(self, state):
         super(Component, self).__init__()
-        self._state  = state
-        self._status = None
+        self._state      = state
+        self._status     = None
+        self._status_mod = 0
 
 
     @property
@@ -133,17 +134,33 @@ class Component(_Startable):
         pass
 
 
-    def _notify(self, status):
+    def _notify(self, status, expected_mod=None):
         """
         Notify of a status change.
 
         :type  status: Notifier._Status
         :param status:
             The new status of this component.
+        :type  expected_mod: int
+        :param expected_mod:
+            If not ``None``, the expected modification value which the Component
+            should have. If this does not match the current modification value
+            then no change will be applied.
+
+        :return: The new mod value, or ``None`` if no change was made.
         """
-        self._status = status
+        # If we have a mod-check then perform it
+        if expected_mod is not None and expected_mod != self._status_mod:
+            return None
+
+        # Good to make the change
+        self._status      = status
+        self._status_mod += 1
         if self._state is not None:
             self._state.update_status(self, status)
+
+        # Give back the new mod value
+        return self._status_mod
 
 
     def __str__(self):

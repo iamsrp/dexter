@@ -199,6 +199,11 @@ class AudioInput(Input):
         # Init is done, we start off idle
         self._notify(Notifier.IDLE)
 
+        # The expected modification value, used for when we want to transtion to
+        # IDLE so that we don't trip over what the decoding handler thread is
+        # doing.
+        expected_mod = None
+
         # Keep listening until we are stopped
         while self.is_running:
             # We'll need this here and there below
@@ -228,7 +233,7 @@ class AudioInput(Input):
             # listening.
             if talking is None:
                 LOG.info("Listening")
-                self._notify(Notifier.IDLE)
+                self._notify(Notifier.IDLE, expected_mod=expected_mod)
                 talking       = False
                 talking_start = 0
 
@@ -277,7 +282,7 @@ class AudioInput(Input):
                     # Move the rolling window of recording to be the start of
                     # the audio
                     LOG.info("Starting recording")
-                    self._notify(Notifier.ACTIVE)
+                    expected_mod = self._notify(Notifier.ACTIVE)
                     speech = []
 
                     # Start off by putting the current time on the queue, so the
@@ -352,10 +357,14 @@ class AudioInput(Input):
                         if gobble:
                             LOG.info("Dropped audio")
                         else:
+                            # Decode what we got. We use the expected_mod to
+                            # avoid tripping over the listener thread when
+                            # transitioning to IDLE.
                             LOG.info("Decoding audio")
-                            self._notify(Notifier.WORKING)
+                            expected_mod = self._notify(Notifier.WORKING)
                             self._output.append(self._decode())
-                            self._notify(Notifier.IDLE)
+                            self._notify(Notifier.IDLE,
+                                         expected_mod=expected_mod)
                     elif isinstance(item, float) :
                         # This is the timestamp of the clip. If it's too old
                         # then we throw it away.
