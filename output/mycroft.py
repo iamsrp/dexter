@@ -196,7 +196,9 @@ class Mimic3Output(SpeechOutput):
                 self._notify(Notifier.WORKING)
 
                 # Break this up into sentences so that we can handle
-                # interruptions
+                # interruptions. We make sure that we wait until the previous
+                # sentence has finished before we start the next one.
+                wait_until = 0
                 for sentence in self._speechify(str(text)).split('. '):
                     # Turn the text into a wav
                     LOG.info("Saying '%s'", sentence)
@@ -213,9 +215,20 @@ class Mimic3Output(SpeechOutput):
                                 if Path(dirname).is_dir():
                                     with NamedTemporaryFile(dir=dirname,
                                                             suffix='.wav') as fh:
+                                        # Write it out
                                         wav = result.to_wav_bytes()
                                         Path(fh.name).write_bytes(wav)
-                                        self._pygame.mixer.Sound(fh.name).play()
+
+                                        # Read it back in and see how long it
+                                        # will take to play. The play() call can
+                                        # return early and we don't want to have
+                                        # the sounds to overlap so we wait until
+                                        # we think that the last one is done.
+                                        sound = self._pygame.mixer.Sound(fh.name)
+                                        while time.time() < wait_until:
+                                            time.sleep(0.1)
+                                        wait_until = time.time() + sound.get_length()
+                                        sound.play()
                                     break
 
             except Exception as e:
