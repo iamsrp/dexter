@@ -1,3 +1,11 @@
+// -*- mode: javascript -*- //
+
+/*
+ * The example configuration file for running on a Raspberry Pi.
+ *
+ * For an explanation of the configuration file's format see the
+ * pi_config example.
+ */
 {
     "key_phrases" : [
         "Dexter",

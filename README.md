@@ -86,7 +86,7 @@ The Pi also has some really great, and cheap, HATs which can be used for user fe
 
 ## Configuration
 
-The configuration for Dexter is done via a [JSON](https://json.org/) file; sorry, but it was an easy way to do it. I guess I could have made it a Python file which you comment out bits of but that seemed more icky. Of course, JSON doesn't support comments so the default config files are not annotated.
+The configuration for Dexter is done via a [JSON5](https://pypi.org/project/json5/) file; sorry, but it was an easy way to do it. Unlike vanilla JSON, JSON5 supports comments so the example configuration files have some associated annotation.
 
 The file is expected to have three main dict entries: `key_phrases`, `notifiers` and `components`. The `key_phrases` are a list of strings which Dexter will listen for, in order to spot a command. For example, "Dexter, what's the time?"
 

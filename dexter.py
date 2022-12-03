@@ -3,7 +3,7 @@
 import argh
 import getpass
 import logging
-import json
+import pyjson5
 import os
 import socket
 import sys
@@ -141,7 +141,7 @@ def main(log_level=None, config=None):
     if config is not None:
         try:
             with open(config) as fh:
-                configuration = json.load(fh)
+                configuration = pyjson5.load(fh)
         except Exception as e:
             LOG.fatal("Failed to parse config file '%s': %s" % (config, e))
             sys.exit(1)

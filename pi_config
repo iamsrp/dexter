@@ -1,15 +1,34 @@
+// -*- mode: javascript -*- //
+
+/*
+ * The example configuration file for running on a Raspberry Pi.
+ */
 {
+    // The key phrases are what Dexter listens for in order to be activated
     "key_phrases" : [
         "Dexter",
         "Hey Computer"
     ],
 
+    // The notifiers are what tells the user whether Dexter's components are
+    // doing something. Some notifiers might employ hardware add-ons, like a
+    // small LED display for examople. The format is the same as that of the
+    // components, explained below.
     "notifiers" : [
         [ "dexter.notifier.logging.LogNotifier", {
         }]
     ],
 
+    // The components are what perform different actions in the framework.
+    //
+    // The format of the component sections is a type of component (input, etc.)
+    // followed by a list of component definitions. A component definition is a
+    // list with two entries: the full-qualified name of the class followed by a
+    // dict of kwargs for it's constructor.
     "components" : {
+        // The inputs are how requests get into Dexter. A simple socket-based
+        // one can be used for testing, but most of them are speech-to-text
+        // engines.
         "inputs" : [
             [ "dexter.input.coqui.CoquiInput", {
                 "model"  : "${HOME}/coqui/model",
@@ -17,6 +36,8 @@
             }]
         ],
 
+        // The outputs are how Dexter communicates back. These are mostly
+        // text-to-speech engines.
         "outputs" : [
             [ "dexter.output.io.LogOutput", {
                 "level" : "INFO"
@@ -26,6 +47,10 @@
             }]
         ],
 
+        // The services are the "interesting" part of the system since it's
+        // these which actualy respond to the inputs. The can do things for you,
+        // like telling you the time or what a cat is, or they can control
+        // aspects of the system, like setting the output volume.
         "services" : [
             [ "dexter.service.chronos.ClockService", {
             }],
