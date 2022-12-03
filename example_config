@@ -1,21 +1,31 @@
-# This config file won't work as-is but is, instead, intended to be used to copy
-# & paste from when building your own file, if you're looking for examples of
-# how things are meant to work.
-#
-# It's not completely exhaustive but it has most of the things which you'll
-# likely want in it. And, if it doesn't, you can probably figure out what to do
-# for the others :)
-#
-# That being said, don't blindly copy & paste from this file. Some of the things
-# in it only make sense for different set-ups, and some are just a bad idea if
-# you don't know what they do (e.g. SocketInput).
+// -*- mode: javascript -*- //
+
+// This config file won't work as-is but is, instead, intended to be used to
+// crib from when building your own file, if you're looking for examples of how
+// things are meant to work.
+//
+// It's not completely exhaustive but it has most of the things which you'll
+// likely want in it. And, if it doesn't, you can probably figure out what to do
+// for the others :)
+//
+// The best explanation of the component parameters can be found in their source
+// code. Some details are given below for quick reference.
+//
+// That being said, don't blindly copy & paste from this file. Some of the things
+// in it only make sense for different set-ups, and some are just a bad idea if
+// you don't know what they do (e.g. SocketInput).
 
 {
+    // The key phrases are what Dexter listens for in order to be activated
     "key_phrases" : [
         "Dexter",
         "Hey Computer"
     ],
 
+    // The notifiers are what tells the user whether Dexter's components are
+    // doing something. Some notifiers might employ hardware add-ons, like a
+    // small LED display for examople. The format is the same as that of the
+    // components, explained below.
     "notifiers" : [
         [ "dexter.notifier.desktop.SysTrayNotifier", {
         }],
@@ -31,12 +41,27 @@
         }]
     ],
 
+    // The components are what perform different actions in the framework.
+    //
+    // The format of the component sections is a type of component (input, etc.)
+    // followed by a list of component definitions. A component definition is a
+    // list with two entries: the full-qualified name of the class followed by a
+    // dict of kwargs for it's constructor.
     "components" : {
+        // The inputs are how requests get into Dexter. A simple socket-based
+        // one can be used for testing, but most of them are speech-to-text
+        // engines.
         "inputs" : [
+            // A simple input which you can telnet and type command into
             [ "dexter.input.socket.SocketInput", {
-                "port" : "8008"
-            }],
+                // The port to listen on.
+                "port" : "8008",
+                // Always prefix what is received with this. This saves the user
+                // having to type the prefix themselves.
+                "prefix" : "Dexter"
 
+            }],
+            
             [ "dexter.input.remote.RemoteInput", {
                 "host"    : "192.168.1.100",
                 "port"    : "8008",
@@ -44,6 +69,8 @@
             }]
         ],
 
+        // The outputs are how Dexter communicates back. These are mostly
+        // text-to-speech engines.
         "outputs" : [
             [ "dexter.output.io.LogOutput", {
                 "level" : "INFO"
@@ -56,11 +83,19 @@
             }]
         ],
 
+        // The services are the "interesting" part of the system since it's
+        // these which actualy respond to the inputs. The can do things for you,
+        // like telling you the time or what a cat is, or they can control
+        // aspects of the system, like setting the output volume.
         "services" : [
+            // The Bespoke service has various stock phrases which it knows how
+            // to respond to.
             [ "dexter.service.bespoke.BespokeService", {
             }],
 
             [ "dexter.service.chronos.ClockService", {
+                // The Easter egg means it will randomly give you a "fun" reply
+                // instead of saying the actual time.
                 "easter_egg_prob" : 0.1
             }],
 
@@ -72,19 +107,35 @@
                 "timer_sound" : "${HOME}/Music/alarm.wav"
             }],
 
+            // You can use the Fortune service to give back entries from the
+            // stock BSD fortune program's install...
             [ "dexter.service.fortune.FortuneService", {
             }],
-
-            [ "dexter.service.language.DictionaryService", {
+            // ...or you can have it listen for a special trigger and pull from
+            // a specific location.
+            [ "dexter.service.fortune.FortuneService", {
+                // The trigger phrase
+                "phrase"        : "Tell me a joke",
+                // There needs to be an associated `.dat` file for the fortune
+                // file to be recognised. These can be created with `strfile`
+                // (or, really, just by `touch`).
+                "fortune_files" : [ "/home/pi/fortunes/jokes" ]
             }],
 
+            // Standard language services. E.g. "Define cat" or "How do you
+            // spell cat?"
+            [ "dexter.service.language.DictionaryService", {
+            }],
             [ "dexter.service.language.SpellingService", {
             }],
 
+            // For playing music from disk
             [ "dexter.service.music.LocalMusicService", {
                 "dirname" : "${HOME}/Music"
             }],
 
+            // A way to query your PurpleAir sensor, if you know the ID of one.
+            // You'll need an API key to get this to work (see the code).
             [ "dexter.service.purpleair.PurpleAirService", {
                 "sensor_id" : 12345,
                 "api_key"   : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
@@ -94,23 +145,32 @@
             }],
 
             [ "dexter.service.tplink_kasa.KasaService", {
+                // The bulbs, which can be turned on and off, or have their
+                // colours changed.
                 "bulbs" : {
+                    // NAME      ADDRESS/HOSTNAME
                     "the lamp" : "192.168.1.200",
                     "my light" : "192.168.1.201"
                 },
+                // Plugs, which can only be turned on and off
                 "plugs" : {
+                    // NAME      ADDRESS/HOSTNAME
                     "the outside lights" : "192.168.1.202"
                 }
             }],
 
+            // To turn the volume up and down. This one goes up to 11.
             [ "dexter.service.volume.VolumeService", {
             }],
 
             [ "dexter.service.weather.WeatherService", {
+                // The region is where the service is running
                 "region"      : "US",
+                // The coordinates, which can be pulled out of things like Google Maps
                 "coordinates" : "40.7484445,-73.9878531"
             }],
 
+            // To query Wikipedia about things
             [ "dexter.service.wikiquery.WikipediaService", {
             }]
         ]

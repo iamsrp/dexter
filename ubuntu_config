@@ -4,7 +4,7 @@
  * The example configuration file for running on a Raspberry Pi.
  *
  * For an explanation of the configuration file's format see the
- * pi_config example.
+ * example_config file.
  */
 {
     "key_phrases" : [
@@ -59,3 +59,4 @@
         ]
     }
 }
+
