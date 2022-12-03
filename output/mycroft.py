@@ -2,6 +2,7 @@
 Speech synthesis output using Mycroft's Mimic TTS models.
 
 @see https://mycroft-ai.gitbook.io/docs/mycroft-technologies/mimic-tts/mimic-3
+@see https://mycroftai.github.io/mimic3-voices/
 """
 
 # Doing a pip install seems to work for Ubuntu.
@@ -66,9 +67,10 @@ class Mimic3Output(SpeechOutput):
                  length_scale =1.0,
                  noise_scale  =0.66666,
                  noise_w      =0.8,
-                 voices_dir   =None,
                  use_cuda     =False,
                  deterministic=True,
+                 voices_dir   =None,
+                 language     ="en_UK",
                  voice        =None,
                  speaker      =None):
         """
@@ -86,15 +88,16 @@ class Mimic3Output(SpeechOutput):
         :param noise_w:
             Variation in cadence (``[0-1]``).
         :param voices_dir:
-            Directory with voices, format of ``<language>/<voice_name>``.
+            Directory with voices.
         :param use_cuda:
             Use Onnx CUDA execution provider (requires onnxruntime-gpu).
         :param deterministic:
             Ensure that the same audio is always synthesized from the same text.
         :param voice:
-             Name of voice, expected in ``<voices-dir>/<language>``.
+             Name of voice, expected in ``<voices-dir>``.
+             E.g. ``en_UK/apope_low``.
         :param speaker:
-            Name or number of speaker (default: first speaker)
+            Name or number of speaker, if not the first.
         """
         super(Mimic3Output, self).__init__(state)
 
@@ -112,15 +115,13 @@ class Mimic3Output(SpeechOutput):
                 length_scale             =length_scale,
                 noise_scale              =noise_scale,
                 noise_w                  =noise_w,
-                voices_directories       =voices_dir,
                 use_cuda                 =use_cuda,
                 use_deterministic_compute=deterministic,
+                voices_directories       =voices_dir,
+                voice                    =voice,
+                speaker                  =speaker,
             )
         )
-        if voice:
-            self_.tts.voice = voice
-        if speaker:
-            self_.tts.speaker = speaker
 
         # State
         self._queue       = []
