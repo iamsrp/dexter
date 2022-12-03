@@ -210,7 +210,7 @@ class Mimic3Output(SpeechOutput):
                             # It seems simplest to write out the raw bytes to a
                             # file and then just read that back in, since that
                             # way it gets the right frequency etc. without
-                            # haveing to mess with pygame's state. I know that
+                            # having to mess with pygame's state. I know that
                             # this is terrible but...
                             for dirname in ('/dev/shm', '/tmp', '/var/tmp', '.'):
                                 if Path(dirname).is_dir():
