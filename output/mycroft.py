@@ -173,7 +173,11 @@ class Mimic3Output(SpeechOutput):
         """
         from mimic3_tts import AudioResult
 
-        # Keep going until we're told to stop
+        # We make sure that we wait until the previous sentence has finished
+        # before we start the next one.
+        wait_until = 0
+
+        # Keep going until we're told to stop.
         while self.is_running:
             if len(self._queue) == 0:
                 time.sleep(0.1)
@@ -197,9 +201,7 @@ class Mimic3Output(SpeechOutput):
                 self._notify(Notifier.WORKING)
 
                 # Break this up into sentences so that we can handle
-                # interruptions. We make sure that we wait until the previous
-                # sentence has finished before we start the next one.
-                wait_until = 0
+                # interruptions.
                 for sentence in self._speechify(str(text)).split('. '):
                     # Turn the text into a wav
                     LOG.info("Saying '%s'", sentence)
