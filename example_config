@@ -51,6 +51,12 @@
         // The inputs are how requests get into Dexter. A simple socket-based
         // one can be used for testing, but most of them are speech-to-text
         // engines.
+        //
+        // Multiple ones are listed below but you will probably only want one of
+        // them in practice, else the system will get pretty confused. All the
+        // audio inputs have an optional `wav_dir` parameter which is to save
+        // out recordings of what is heard, which is mainly just useful for
+        // debugging.
         "inputs" : [
             // A simple input which you can telnet and type command into
             [ "dexter.input.socket.SocketInput", {
@@ -61,7 +67,25 @@
                 "prefix" : "Dexter"
 
             }],
-            
+
+            // Coqui's speech-to-ltext engine is not bad and will run on a
+            // Raspberry Pi 4 with reasonable speed.
+            [ "dexter.input.coqui.CoquiInput", {
+                "model"   : "${HOME}/coqui/model",
+                "scorer"  : "${HOME}/coqui/scorer"
+            }]
+
+            // Open AI's Whisper is the best speech-to-text engine out there
+            // right now. However, it needs a powerful machine to run on
+            // (likely with a GPU) so isn't great for the Raspberry Pi.
+            [ "dexter.input.openai_whisper.WhisperInput", {
+                "model" : "base"
+            }],
+
+
+            // If you want to offload the speech-to-text to a remote machine,
+            // using one of the blah_server.py scripts, then this is how you
+            // send out the requests.
             [ "dexter.input.remote.RemoteInput", {
                 "host"    : "192.168.1.100",
                 "port"    : "8008",
