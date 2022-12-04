@@ -238,4 +238,7 @@ class Mimic3Output(SpeechOutput):
                 LOG.error("Failed to say '%s': %s" % (text, e))
 
             finally:
+                # Go idle when we're done talking
+                while time.time() < wait_until:
+                    time.sleep(0.1)
                 self._notify(Notifier.IDLE)
