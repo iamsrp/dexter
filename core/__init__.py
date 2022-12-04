@@ -455,10 +455,14 @@ class Dexter(object):
 
                         # If we got something back then give it back to the user
                         if result is not None:
+                            # Send it to the outputs
                             self._respond(result)
 
-                        # And remember what was said
-                        self._last_response = result
+                            # And remember what was said in case the user asks
+                            # for it to be repeated. We remember when we said it
+                            # so that someone doesn't come along much later and
+                            # ask for a repeat (which would be sketchy).
+                            self._last_response = (time.time(), result)
 
                 # Wait for a bit before going around again
                 time.sleep(0.1)
@@ -649,10 +653,13 @@ class Dexter(object):
             try:
                 (start, end, score) = fuzzy_list_range(words[offset:], phrase)
                 if start == 0 and end >= len(words[offset:]):
-                    if self._last_response is None:
+                    # See if we have something recent. Don't repeat things from
+                    # more than a minute ago since that seems a little sketchy.
+                    if (self._last_response is None or
+                        self._last_response[0] < time.time() - 60):
                         return "I don't remember what I just said"
                     else:
-                        return self._last_response
+                        return self._last_response[1]
             except ValueError:
                 # No match
                 LOG.debug("No match for %s with %s", words[offset:], phrase)
