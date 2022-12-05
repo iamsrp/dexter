@@ -91,7 +91,7 @@ class _ClockHandler(Handler):
                     mm = 'oh %s' % number_to_words(int(mm))
                 else:
                     mm = number_to_words(int(mm))
-                result = "The current time is %s %s %s" % (hh, mm, p)
+                result = "It's %s %s %s" % (hh, mm, p)
 
             elif self._what == "date":
                 # Get the parts
@@ -127,7 +127,7 @@ class ClockService(Service):
     >>> s = ClockService(NOTIFIER)
     >>> handler = s.evaluate(tokenise('What\\'s the time?'))
     >>> result = handler.handle()
-    >>> result.text.startswith('The current time is')
+    >>> result.text.startswith('It\\'s')
     True
     """
     def __init__(self,
