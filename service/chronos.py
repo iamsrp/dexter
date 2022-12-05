@@ -110,7 +110,7 @@ class _ClockHandler(Handler):
                 else:
                     dom += 'th'
 
-                result = "The date is %s %s %s %s" % (day, month, dom, year)
+                result = "It's %s %s %s %s" % (day, month, dom, year)
 
             else:
                 result = "I'm sorry, I don't know what the %s is" % (self._what)
