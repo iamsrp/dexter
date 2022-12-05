@@ -97,7 +97,7 @@ class _ClockHandler(Handler):
                 # Get the parts
                 day   = time.strftime("%A", now)
                 month = time.strftime("%B", now)
-                dom   = time.strftime("%d", now)
+                dom   = time.strftime("%d", now).lstrip('0')
                 year  = time.strftime("%Y", now)
 
                 # Append a 'st', 'nd', 'rd', 'th' to the day
