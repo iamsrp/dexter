@@ -84,6 +84,17 @@ The Pi Zero 2 will also run Dexter as well but has, of course, just 512Mb of RAM
 The Pi also has some really great, and cheap, HATs which can be used for user feedback on status (see below). The current code supports a couple of these but adding support for new ones is pretty easy, should you be feeling keen.
 
 
+## Hardware
+
+When using a Raspberry Pi 4 to drive Dexter I've found the following work for me:
+ * [Samson Go Mic Portable USB Condenser Microphone](https://www.sweetwater.com/store/detail/GoMic--samson-go-mic-portable-usb-condenser-microphone)
+ * One of these is useful to tell you what it's thinking (and the Mini HATs have buttons, which can be handy):
+   - [Pimoroni Unicorn HAT Mini](https://shop.pimoroni.com/products/unicorn-hat-mini)
+   - [Pimoroni Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd)
+   - [Pimoroni Scroll HAT Mini](https://shop.pimoroni.com/products/scroll-hat-mini)
+ * Any old speaker!
+
+
 ## Configuration
 
 The configuration for Dexter is done via a [JSON5](https://pypi.org/project/json5/) file; sorry, but it was an easy way to do it. Unlike vanilla JSON, JSON5 supports comments so the example configuration files have some associated annotation.
@@ -103,10 +114,34 @@ You can run the client like this:
 
 ```bash
 cd the_checkout_directory
-./dexter.py -c test_config
+nohup ./dexter.py -c test_config > dexter.log 2>&1 &
 ```
 
+(If that crashes because the `DISPLAY` isn't accessible (thanks `pygame`) then add `env -u DISPLAY` at the start. Note, however, that more recent versions of `pygame` seem to do nasty things with `curses` which totally borks the terminal. Hence you need to pipe the output to a file like in the above. Yuck.)
+
 You can then stop it with a `CTRL-c` or by sending it a `SIGINT`.
+
+
+## Technical Details
+
+### Overview
+
+The system has the following main parts:
+ - Notifiers: These communicate state to the outside world
+ - Components: These are the active parts of the system
+   - Inputs: Get requests in
+   - Outputs: Communicate responses back out
+   - Services: Perform requested tasks
+
+The system has an event loop which listens for requests using the inputs and, when one comes in, it sends it to each of the services.
+
+Each service will determine whether it thinks it can handle the request and, if so, creates a `Handler` instance to do so. The service then hands this back to the system along with a belief value denoting how sure it was that the request was for it, and whether any handling should be exclusive.
+
+The system then orders the returned handlers according to belief and invokes the first one. If that handler was exclusive then it stops, otherwise it invokes the next, and so on.
+
+Services can register timer events with the event loop which. This is handy for, say, setting alarms to ring at certain times. They can also inform the system of their state (e.g. whether they're handling input, processing a request, performing an action, or outputting a response). The notifiers can use these status updates to inform the user of what's going on.
+
+And that's pretty much it. Mostly, if you want to add a service then it's probably easiest to take an existing one (e.g. the `EchoService` and use it as a template). Yes, it cargo cult programming but, at the end of the day, if it works then...
 
 
 ### Notifiers
@@ -164,16 +199,6 @@ A quick overview of the current set of service modules is:
  * Volume: Sound control
  * WikiQuery: Look up things on Wikipedia
 
-
-## Hardware
-
-When using a Raspberry Pi 4 to drive Dexter I've found the following work for me:
- * [Samson Go Mic Portable USB Condenser Microphone](https://www.sweetwater.com/store/detail/GoMic--samson-go-mic-portable-usb-condenser-microphone)
- * One of these is useful to tell you what it's thinking (and the Mini HATs have buttons, which can be handy):
-   - [Pimoroni Unicorn HAT Mini](https://shop.pimoroni.com/products/unicorn-hat-mini)
-   - [Pimoroni Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd)
-   - [Pimoroni Scroll HAT Mini](https://shop.pimoroni.com/products/scroll-hat-mini)
- * Any old speaker!
 
 ## Notes and Musings
 
