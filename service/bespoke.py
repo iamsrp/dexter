@@ -48,6 +48,21 @@ _PHRASES = (
     ("Exterminate",
      "You would make a good dah-lek.",
      False),
+    ("Where's my phone?",
+     "No idea. Did you check your jacket pocket?",
+     False),
+    ("Find my phone?",
+     "Sorry, but I'm afraid you'll have to find it yourself.",
+     False),
+    ("Go to sleep",
+     "Thanks. I could do with a quick nap.",
+     False),
+    ("Thank you",
+     "You're most welcome",
+     True),
+    ("Thanks",
+     "Sure, any time.",
+     True),
 )
 
 
