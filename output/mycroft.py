@@ -5,13 +5,17 @@ Speech synthesis output using Mycroft's Mimic TTS models.
 @see https://mycroftai.github.io/mimic3-voices/
 """
 
-# Doing a pip install seems to work for Ubuntu.
+# Doing a pip install seems to work for Ubuntu:
+#   pip install mycroft-mimic3-tts
 #
 # Installing on Raspberry Pi's 32bit OS is a little tricker though, since
 # onnxruntime isn't available from pip. You can build it yourself by following
 # the below onnxruntime instructions by just running the vanilla build.sh file,
 # see here:
 #   https://github.com/nknytk/built-onnxruntime-for-raspberrypi-linux/blob/master/BUILD.md
+#
+# The build might fail with an out-of-memory error on a Pi with less than 8Gb of
+# memory so you might have to be creative with swap maybe?
 #
 # The clone operation seems to download half the internet, so it will take a
 # while to do that, and then even longer to compile. And the 1.6.0 version in

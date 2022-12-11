@@ -29,7 +29,7 @@
                 "level" : "INFO"
             }],
 
-            [ "dexter.output.festvox.FestivalOutput", {
+            [ "dexter.output.mycroft.Mimic3Output", {
             }]
         ],
 
@@ -51,10 +51,6 @@
             }],
 
             [ "dexter.service.randomness.RandomService", {
-            }],
-
-            [ "dexter.service.purpleair.PurpleAirService", {
-                "sensor_id" : 1234
             }]
         ]
     }

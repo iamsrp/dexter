@@ -1,4 +1,14 @@
-#!/bin/bash -x
+#!/bin/bash
+#
+# The install script for Dexter's requirements.
+#
+
+# Run with
+#   bash -x ./requirements
+# to see what it's doing.
+# Run with
+#   ALL=true bash ./requirements
+# to install everything.
 
 # What you will need to make all of this work. Some things are optional, depending
 # on whether you don't care about certain modules. On Raspberry Pi OS and Ubuntu
@@ -6,10 +16,17 @@
 # depending on what platform you're on.
 
 # Let the user have some time to realise what we're doing
-echo "This will pip install a whole load of things on your system. If you don't want to do this then hit CTRL-c now..!"
+echo "This will install a whole load of things on your system. If you don't want to do this then hit CTRL-C now!"
 sleep 5
 
-# Things which we expect to have in both OSes
+# Set this to 'true' if you want to install everything. Otherwise we just
+# install the "default" set of things.
+: ${ALL:=false}
+$ALL &&
+    echo "Installing everything..." ||
+    echo "Installing default packages..."
+
+# Things which we expect to have in both OSes.
 sudo apt update
 sudo apt install -y \
      git swig \
@@ -17,24 +34,36 @@ sudo apt install -y \
      python3-espeak python3-fuzzywuzzy python3-httplib2 python3-mutagen python3-pygame \
      libpulse-dev libasound2-dev festival festival-dev festvox-us-slt-hts
 
-# Generally handy things
+# Required.
+pip3 install pyjson5
 pip3 install pyalsaaudio
+
+# You _probably_ want these so we optimistically install them. And, at the end
+# of the day, they are light so it doesn't hurt.
 pip3 install wikipedia
 pip3 install spotipy
 pip3 install pydictionary
 pip3 install git+https://github.com/techiaith/pyfestival#festival
 pip3 install python-kasa
-pip3 install pyjson5
+pip3 install blink1
 
-# Vosk is another STT engine
-pip3 install vosk || (
+# Vosk is another STT engine. This mostly only works for Ubuntu and 64bit
+# Raspbian that I can tell.
+$ALL && pip3 install vosk || (
     uname -m | grep -q aarch64 &&
         pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl
 )
 
-# And so Coqui (STT), which was DeepSpeech once upon a time
+# And so Coqui (STT), which was DeepSpeech once upon a time.
 pip3 install stt ||
     pip3 install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
+
+# Mycroft works for 64bit archs. Installing it for 32bit Raspbian is a little
+# more involved (see the module).
+uname -m | grep -Eq 'x86_64|aarch64' && (
+    # Mycroft for speech output
+    pip3 install mycroft-mimic3-tts
+)
 
 # Some things which only really work for 64bit OSs. While these theoretically
 # work for Raspbian, Whisper is _slow_ to the point of being unusable and Coqui
@@ -48,5 +77,14 @@ uname -m | grep -Eq 'x86_64' && (
     pip3 install git+https://github.com/openai/whisper.git && sudo apt install -y ffmpeg && pip3 install -U numpy
 
     # Coqui TTS, this depends on PyTorch (and about a million other things too)
-    pip3 install TTS
+    $ALL && pip3 install TTS
 )
+
+# Ensure that the user can access any audio devices. This is needed for Dexter
+# to hear things and say things.
+aplay -l |& grep -q 'no soundcards found' && {
+    groups | grep -q audio || {
+        sudo adduser $USER audio
+        echo "Added $USER to the audio group; you may need to log back into to pick up the change"
+    }
+}

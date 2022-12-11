@@ -33,6 +33,12 @@
         [ "dexter.notifier.logging.LogNotifier", {
         }],
 
+        // You will need to ensure that the user can access the USB device if
+        // this errors out with "open failed":
+        //   lsusb |
+        //       grep ThingM\ blink |
+        //       sed 's@Bus \([0-9]*\) Device \([0-9]*\): .*@sudo chmod 666 /dev/bus/usb/\1/\2@' |
+        //       sh -x
         [ "dexter.notifier.thingm.Blink1Notifier", {
         }],
 
