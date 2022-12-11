@@ -1,4 +1,14 @@
-# An example ALSA config file which uses a microphone plugged into the USB port`
+# An example ALSA config file which uses a microphone plugged into the USB port
+# (usually the second device) and assumes that the speakers are the first
+# device.
+#
+# Running:
+#   arecord -l
+#   aplay -l
+# should help you identify the values for the PCM strings, which are of the
+# form:
+#   "hw:<card,device>"
+#
 pcm.!default {
         type asym
         playback.pcm {

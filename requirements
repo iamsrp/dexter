@@ -16,8 +16,19 @@
 # depending on what platform you're on.
 
 # Let the user have some time to realise what we're doing
-echo "This will install a whole load of things on your system. If you don't want to do this then hit CTRL-C now!"
-sleep 5
+echo
+echo "                  *** WARNING ***"
+echo "  This will install A LOT of things on your system."
+echo "  If you don't want to do this then hit CTRL-C now!"
+echo "                  *** WARNING ***"
+echo
+echo -n "Installing in "
+for i in {10..1}
+do
+    echo -n "$i "
+    sleep 1
+done
+echo '.'
 
 # Set this to 'true' if you want to install everything. Otherwise we just
 # install the "default" set of things.
@@ -25,6 +36,8 @@ sleep 5
 $ALL &&
     echo "Installing everything..." ||
     echo "Installing default packages..."
+sleep 2
+echo
 
 # Things which we expect to have in both OSes.
 sudo apt update

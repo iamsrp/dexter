@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# Run Dexter forever:
+#   CONFIG=pi_config nohup ./run < /dev/null >> dexter.log 2>&1 &
+# changing 'pi_config' to the name of your config file, if need be.
+while true
+do
+     env -u DISPLAY ./dexter.py -c ${CONFIG=:-pi_config}
+done

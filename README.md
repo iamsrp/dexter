@@ -26,11 +26,11 @@ This is very much a toy project and should be considered work in progress. That 
 ## Quick start
 
 If you quickly want to get up and running then:
- - Do a git clone of the repo
- - Install the prerequisites
- - Make sure that the appropriate model etc. files are where the config file is looking for them
+ - Do a git clone of the repo: `git clone https://github.com/iamsrp/dexter`
+ - Install the prerequisites: `bash dexter/requirements`
  - Make sure you have a microphone and speaker
  - Try running dexter.py with the appropriate config file for your distro (e.g. `./dexter.py -c pi_config`)
+ - Possibly wait for a little bit while some of the inputs and outputs download their models for the first time
 
 You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
 

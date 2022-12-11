@@ -1,6 +1,8 @@
 """
 Notifiers which utilise the thingm Blink1 USB dongle.
 
+USE OF THIS MODULE SEEMS TO HANG EVERYTHING. USE AT YOUR OWN RISK.
+
 To make it work you will need to make it accessible. This is best done using
 their udev file (see the instructions in it)::
    https://raw.githubusercontent.com/todbot/blink1/main/linux/51-blink1.rules
@@ -60,28 +62,34 @@ class Blink1Notifier(ByComponentNotifier):
                     self._inputs.remove(component)
                 if len(self._inputs)   == 0:
                     self._input_time    = 0
+                    self._input_dir     = 0
             if self._is_service(component):
                 if component in self._services:
                     self._services.remove(component)
                 if len(self._services) == 0:
                     self._service_time  = 0
+                    self._service_dir   = 0
             if self._is_output(component):
                 if component in self._outputs:
                     self._outputs.remove(component)
                 if len(self._outputs)  == 0:
                     self._output_time   = 0
+                    self._output_dir    = 0
 
         else:
             # Gone non-idle, add it to the appropriate group and reset the time
             if self._is_input(component):
                 self._inputs.add(component)
                 self._input_time   = time.time()
+                self._input_dir    = 1 if status is Notifier.ACTIVE else -1
             if self._is_service(component):
                 self._services.add(component)
                 self._service_time = time.time()
+                self._service_dir  = 1 if status is Notifier.ACTIVE else -1
             if self._is_output(component):
                 self._outputs.add(component)
                 self._output_time  = time.time()
+                self._output_dir   = 1 if status is Notifier.ACTIVE else -1
 
 
     def _start(self):
@@ -120,9 +128,15 @@ class Blink1Notifier(ByComponentNotifier):
             now = time.time()
 
             # How long since these components went non-idle
-            i_since = now - self._input_time
-            s_since = now - self._service_time
-            o_since = now - self._output_time
+            i_since = (now - self._input_time  ) % 1.0
+            s_since = (now - self._service_time) % 1.0
+            o_since = (now - self._output_time ) % 1.0
+            if self._input_dir < 0:
+                i_since = 1.0 - i_since
+            if self._service_dir < 0:
+                s_since = 1.0 - s_since
+            if self._output_dir < 0:
+                o_since = 1.0 - o_since
 
             # Compute an level value from this
             level_scale = math.pi * 2
