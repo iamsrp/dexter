@@ -1028,3 +1028,55 @@ def homonize(word):
 
     # No match, give back the stripped form
     return alnum
+
+
+def as_list(obj):
+    """
+    Turn the given object into a `list`, if it isn't one already.
+
+    This is done by taking a single item and returning a singleton list. A
+    list-like (e.g. a `tuple` or non-string iterable) will be returned as a list
+    of its contents.
+
+    If ``obj`` was ``None`` or was already a list then just give it back.
+    """
+    if obj is None or isinstance(obj, list):
+        return obj
+
+    # Don't be fooled by strings or dicts, they are not list-likes even though
+    # they are iterable as such.
+    if isinstance(obj, (str, dict)):
+        return [obj]
+
+    # Just try to iterate through it 
+    try:
+        return [e for e in obj]
+    except TypeError:
+        return [obj]
+
+
+def as_tuple(obj):
+    """
+    Turn the given object into a `tuple`, if it isn't one already.
+
+    This is done by taking a single item and returning a singleton tuple. A
+    tuple-like (e.g. a `tuple` or non-string iterable) will be returned as a
+    tuple of its contents.
+
+    If ``obj`` was ``None`` or was already a tuple then just give it back.
+    """
+    if obj is None or isinstance(obj, tuple):
+        return obj
+
+    # Don't be fooled by strings or dicts, they are not tuple-likes even though
+    # they are iterable as such.
+    if isinstance(obj, (str, dict)):
+        return [obj]
+
+    # Just try to iterate through it 
+    try:
+        return [e for e in obj]
+    except TypeError:
+        return [obj]
+
+    
