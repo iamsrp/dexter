@@ -34,11 +34,9 @@
         }],
 
         // You will need to ensure that the user can access the USB device if
-        // this errors out with "open failed":
-        //   lsusb |
-        //       grep ThingM\ blink |
-        //       sed 's@Bus \([0-9]*\) Device \([0-9]*\): .*@sudo chmod 666 /dev/bus/usb/\1/\2@' |
-        //       sh -x
+        // this errors out with "open failed" then get the udev file file:
+        //   https://raw.githubusercontent.com/todbot/blink1/main/linux/51-blink1.rules
+        // and install it per the commands in its comments.
         [ "dexter.notifier.thingm.Blink1Notifier", {
         }],
 

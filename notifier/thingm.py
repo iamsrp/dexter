@@ -1,9 +1,9 @@
 """
 Notifiers which utilise the thingm Blink1 USB dongle.
 
-You might have to do this to make it work since udev doesn't seem to understand
-it::
-  lsusb | grep ThingM\ blink | sed 's@Bus \([0-9]*\) Device \([0-9]*\): .*@sudo chmod 666 /dev/bus/usb/\1/\2@' | sh -x
+To make it work you will need to make it accessible. This is best done using
+their udev file (see the instructions in it)::
+   https://raw.githubusercontent.com/todbot/blink1/main/linux/51-blink1.rules
 
 @see http://blink1.thingm.com/libraries/
 """
