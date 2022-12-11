@@ -5,5 +5,5 @@
 # changing 'pi_config' to the name of your config file, if need be.
 while true
 do
-     env -u DISPLAY ./dexter.py -c ${CONFIG=:-pi_config}
+     env -u DISPLAY ./dexter.py -c ${CONFIG:-pi_config}
 done
