@@ -1,0 +1,22 @@
+# A sample systemd config file. To make this work do the following:
+#  - Edit the username (all the 'pi's) and Dexter config in the below to match
+#    what you want
+#  - Copy the file to /etc/systemd/system/
+#  - Enable and start it:
+#    - sudo systemctl enable dexter
+#    - sudo systemctl start dexter
+# This seems to work for Ubuntu but not for Raspbian right now. WIP...
+
+[Unit]
+Description=Dexter
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/dexter
+ExecStart=env CONFIG=/home/pi/dexter/pi_config /home/pi/dexter/run
+Restart=on-failure # or always, on-abort, etc
+
+[Install]
+WantedBy=multi-user.target
