@@ -9,6 +9,9 @@
 # form:
 #   "hw:<card,device>"
 #
+# Beware that the ordering can change though so, if nothing seems to be working
+# check the card lists again.
+#
 pcm.!default {
         type asym
         playback.pcm {
