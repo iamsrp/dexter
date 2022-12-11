@@ -174,11 +174,14 @@
 
             [ "dexter.service.tplink_kasa.KasaService", {
                 // The bulbs, which can be turned on and off, or have their
-                // colours changed.
+                // colours changed. The IP addresses can be a string, or a list
+                // of strings if you want to have a group.
                 "bulbs" : {
-                    // NAME      ADDRESS/HOSTNAME
-                    "the lamp" : "192.168.1.200",
-                    "my light" : "192.168.1.201"
+                    // NAME            ADDRESSES/HOSTNAMES
+                    "the lamp"       :   "192.168.1.200",
+                    "my light"       :   "192.168.1.201",
+                    "all the lights" : [ "192.168.1.200"
+                                         "192.168.1.201" ]
                 },
                 // Plugs, which can only be turned on and off
                 "plugs" : {
