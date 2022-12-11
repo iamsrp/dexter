@@ -78,7 +78,7 @@ class CalculatorService(Service):
         ('tangent',     Tangent),
         ('log',         Log),
         ('log e',       NaturalLog),
-        ('natrual log', NaturalLog),
+        ('natural log', NaturalLog),
         ('log 2',       Log2),
         ('log two',     Log2),
     )
