@@ -54,7 +54,7 @@ class SpeechOutput(Output):
     """
     # How we turn letters into they phonetic versions
     _LETTERIFY = {
-        'a' : 'ay',
+        'a' : 'aay',
         'b' : 'bee',
         'c' : 'see',
         'd' : 'dee',
