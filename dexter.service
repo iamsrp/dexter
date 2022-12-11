@@ -1,3 +1,5 @@
+# This doesn't seem to work right now so is just here as an example...
+
 # A sample systemd config file. To make this work do the following:
 #  - Edit the username (all the 'pi's) and Dexter config in the below to match
 #    what you want
@@ -5,7 +7,6 @@
 #  - Enable and start it:
 #    - sudo systemctl enable dexter
 #    - sudo systemctl start dexter
-# This seems to work for Ubuntu but not for Raspbian right now. WIP...
 
 [Unit]
 Description=Dexter
@@ -16,7 +17,7 @@ Type=simple
 User=pi
 WorkingDirectory=/home/pi/dexter
 ExecStart=env CONFIG=/home/pi/dexter/pi_config /home/pi/dexter/run
-Restart=on-failure # or always, on-abort, etc
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
