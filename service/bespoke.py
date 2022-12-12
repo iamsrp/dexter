@@ -5,7 +5,7 @@ where you should put all the humourous request/response stuff.
 
 from dexter.service   import Service, Handler, Result
 from dexter.core.log  import LOG
-from dexter.core.util import fuzzy_list_range, to_alphanumeric
+from dexter.core.util import get_pygame, fuzzy_list_range, to_alphanumeric
 
 # ----------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ class _BespokeHandler(Handler):
 
 class BespokeService(Service):
     """
-    A service which simply parrots back what was given to it.
+    A service which reponds with stock replies to certain phrases.
     """
     def __init__(self, state):
         """
@@ -122,3 +122,84 @@ class BespokeService(Service):
                     return _BespokeHandler(self, tokens, reply)
             except ValueError as e:
                 LOG.debug("No match: %s", e)
+
+
+# ----------------------------------------------------------------------------
+
+
+class _ParrotHandler(Handler):
+    def __init__(self, service, tokens, sound, belief):
+        """
+        @see Handler.__init__()
+
+        :param sound:
+            What sound to play.
+        :param belief:
+            The belief in the match
+        """
+        super(_ParrotHandler, self).__init__(service, tokens, belief, True)
+        self._sound = sound
+
+
+    def handle(self):
+        """
+        @see Handler.handle()
+        """
+        # Play the given sound and give back an empty handler saying that we've
+        # handled it
+        self._sound.play()
+        return Result(self, None, True, False)
+
+
+class ParrotService(Service):
+    """
+    A service which plays select sounds in reponse to a given phrase.
+    """
+    def __init__(self, state, sounds=dict()):
+        """
+        @see Service.__init__()
+        """
+        super(ParrotService, self).__init__("Parrot", state)
+
+        # Triggers and their sounds
+        self._sounds = []
+
+        # Load in all the sounds and the trigger phrases
+        pygame = get_pygame()
+        for (trigger, filename) in sounds.items():
+            try:
+                words = [to_alphanumeric(word.lower().strip())
+                         for word in trigger.split()]
+                sound = pygame.mixer.Sound(filename)
+                self._sounds.append((words, trigger, sound))
+            except Exception as e:
+                LOG.warning("Skipping '%s' -> '%s': %s",
+                            trigger, filename, e)
+
+
+    def evaluate(self, tokens):
+        """
+        @see Service.evaluate()
+        """
+        # The incoming text
+        words = self._words(tokens)
+
+        # Look for matching phrases and save ones which seem plausible
+        best = []
+        for (trigger, raw, sound) in self._sounds:
+            try:
+                LOG.debug("Looking for %s in %s", trigger, words)
+                (start, end, score) = fuzzy_list_range(words, trigger)
+                LOG.debug("Matched [%d:%d] and score %d", start, end, score)
+                if score > 70 and start == 0 and end == len(trigger):
+                    best.append((score, raw, sound))
+            except ValueError as e:
+                LOG.info("No match: %s", e)
+
+        # If we had anything return the best one
+        if len(best) > 0:
+            (score, phrase, sound) = sorted(best, key=lambda pair: -pair[0])[0]
+            LOG.info("Matched '%s' with score %d", phrase, score)
+            return _ParrotHandler(self, tokens, sound, score / 100)
+        else:
+            return None
