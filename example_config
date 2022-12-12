@@ -98,15 +98,21 @@
         ],
 
         // The outputs are how Dexter communicates back. These are mostly
-        // text-to-speech engines.
+        // text-to-speech engines, of which you probably only want one (for
+        // obvious reasons).
         "outputs" : [
+            // Output to the logfile
             [ "dexter.output.io.LogOutput", {
                 "level" : "INFO"
             }],
 
+            // Output to the Ubuntu desktop via notifications
             [ "dexter.output.desktop.NotifierOutput", {
             }],
 
+            // Output via speech-to-text. Look in the following modules for the
+            // different STT engines (each of which has its own pros and cons):
+            //   coqui, espeak, festvox, mycroft
             [ "dexter.output.festvox.PyFestivalOutput", {
             }]
         ],
@@ -119,6 +125,14 @@
             // The Bespoke service has various stock phrases which it knows how
             // to respond to.
             [ "dexter.service.bespoke.BespokeService", {
+            }],
+
+            // The Parrot service is like the Bespoke one but plays audio files
+            // instead.
+            [ "dexter.service.bespoke.ParrotService", {
+                "sounds" : {
+                    "what am i" : "${HOME}/Music/smeghead.wav"
+                }
             }],
 
             [ "dexter.service.chronos.ClockService", {
