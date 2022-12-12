@@ -1,5 +1,3 @@
-# This seems to work okay on Ubuntu but not for Raspian right now.
-
 # A sample systemd config file. To make this work do the following:
 #  - Edit the username (all the 'pi's) and Dexter config in the below to match
 #    what you want

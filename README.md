@@ -29,7 +29,7 @@ If you quickly want to get up and running then:
  - Do a git clone of the repo: `git clone https://github.com/iamsrp/dexter`
  - Install the prerequisites: `bash dexter/requirements`
  - Make sure you have a microphone and speaker
- - Try running dexter.py with the appropriate config file for your distro (e.g. `./dexter.py -c pi_config`)
+ - Try running dexter.py with the appropriate config file for your distro (e.g. `env -u DISPLDAY TERM=dumb ./dexter.py -c pi_config`)
  - Possibly wait for a little bit while some of the inputs and outputs download their models for the first time
 
 You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
@@ -117,7 +117,7 @@ cd the_checkout_directory
 nohup ./dexter.py -c test_config > dexter.log 2>&1 &
 ```
 
-(If that crashes because the `DISPLAY` isn't accessible (thanks `pygame`) then add `env -u DISPLAY` at the start. Note, however, that more recent versions of `pygame` seem to do nasty things with `curses` which totally borks the terminal. Hence you need to pipe the output to a file like in the above. Yuck.)
+(If that crashes because the `DISPLAY` isn't accessible (thanks `pygame`) then add `env -u DISPLAY TERM-dumb` at the start. The `TERM=dumb` is needed since more recent versions of `pygame` seem to do nasty things with `curses` which totally borks the terminal. Hence you need to set the terminal to a dumb one, or pipe the output to a file like in the above, or both. Yuck.)
 
 You can then stop it with a `CTRL-c` or by sending it a `SIGINT`.
 
@@ -238,7 +238,15 @@ If you are running with an unaccessible `DISPLAY` then you might see pygame do t
 ```
 Fatal Python error: (pygame parachute) Segmentation Fault
 ```
-If that's the case, then simply unset the `DISPLAY` when running, e.g. with `env -u DISPLAY ./dexter.py -c config`. However, if the `DISPLAY` is not set then pygame will attempt to set up `curses` instead and this renders the terminal unusable. Because of that it's suggested that the output be redirected into a file, e.g. `env -u DISPLAY ./dexter.py -c config > dexter.log 2>&1`. Lovely.
+If that's the case, then simply unset the `DISPLAY` when running, e.g. with `env -u DISPLAY ./dexter.py -c config`. However, if the `DISPLAY` is not set then pygame may attempt to set up `curses` instead and this renders the terminal unusable. To avoid this  it's suggested that you set `TERM=dumb`:
+```
+env -u DISPLAY TERM=dumb ./dexter.py -c config
+```
+or redirect the output to a file:
+```
+env -u DISPLAY ./dexter.py -c config > dexter.log 2>&1
+```
+or both. xLovely.
 
 The speech recognition could do with some work:
  * Not perfect at detecting the start and end of speech
