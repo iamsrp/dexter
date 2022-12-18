@@ -1,11 +1,11 @@
 """
 Notifiers which utilise the thingm Blink1 USB dongle.
 
-USE OF THIS MODULE SEEMS TO HANG EVERYTHING. USE AT YOUR OWN RISK.
-
 To make it work you will need to make it accessible. This is best done using
 their udev file (see the instructions in it)::
    https://raw.githubusercontent.com/todbot/blink1/main/linux/51-blink1.rules
+
+I've seen this dongle misbehaving on some machines.
 
 @see http://blink1.thingm.com/libraries/
 """
@@ -35,6 +35,11 @@ class Blink1Notifier(ByComponentNotifier):
         self._input_time   = 0
         self._service_time = 0
         self._output_time  = 0
+
+        # The direction of motion
+        self._input_dir   = 0
+        self._service_dir = 0
+        self._output_dir  = 0
 
         # The currently non-idle components
         self._inputs   = set()
@@ -139,16 +144,16 @@ class Blink1Notifier(ByComponentNotifier):
                 o_since = 1.0 - o_since
 
             # Compute an level value from this
-            level_scale = math.pi * 2
+            level_scale = math.pi * 0.5
             i_level = 255 * (1 + math.sin(i_since * level_scale)) / 2
             s_level = 255 * (1 + math.sin(s_since * level_scale)) / 2
             o_level = 255 * (1 + math.sin(o_since * level_scale)) / 2
 
             # See what state we want these guys to be in. After 30s we figure
             # that the component is hung and turn it off.
-            i_state = 1.0 if i_since < 30.0 else 0.0
-            s_state = 1.0 if s_since < 30.0 else 0.0
-            o_state = 1.0 if o_since < 30.0 else 0.0
+            i_state = abs(self._input_dir  ) if i_since < 30.0 else 0.0
+            s_state = abs(self._service_dir) if s_since < 30.0 else 0.0
+            o_state = abs(self._output_dir ) if o_since < 30.0 else 0.0
 
             # Slide the multiplier accordingly
             f = 0.1
