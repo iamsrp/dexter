@@ -59,6 +59,7 @@ pip3 install pydictionary
 pip3 install git+https://github.com/techiaith/pyfestival#festival
 pip3 install python-kasa
 pip3 install blink1
+pip3 install blinkstick pyusb
 
 # Vosk is another STT engine. This mostly only works for Ubuntu and 64bit
 # Raspbian that I can tell.

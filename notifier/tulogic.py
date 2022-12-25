@@ -1,16 +1,17 @@
 """
-Notifiers which utilise the thingm Blink1 USB dongle.
+Notifiers which utilise the tulogic BlinkStick USB dongles.
 
-To make it work you will need to make it accessible. This is best done using
-their udev file (see the instructions in it)::
-   https://raw.githubusercontent.com/todbot/blink1/main/linux/51-blink1.rules
+You will this in ``/etc/udev/rules.d/51-blinkstick.rules``::
 
-I've seen this dongle misbehaving on some machines.
+    ATTRS{idVendor}=="20a0", ATTRS{idProduct}=="41e5", MODE:="660", GROUP="plugdev"
 
-@see http://blink1.thingm.com/libraries/
+to make it work. When you have it there, do ``sudo udevadm control --reload``
+and unplug and replug in the blinkstick dongle.
+
+@see https://github.com/arvydas/blinkstick-python
 """
 
-from   blink1.blink1   import Blink1
+from   blinkstick      import blinkstick
 from   dexter.core     import Notifier
 from   dexter.core.log import LOG
 from   dexter.notifier import PulsingNotifier
@@ -21,9 +22,9 @@ import time
 
 # ------------------------------------------------------------------------------
 
-class Blink1Notifier(PulsingNotifier):
+class BlinkStickNotifier(PulsingNotifier):
     """
-    A notifier for the Blink1 USB dongle.
+    A notifier for the BlinkStick USB dongle.
     """
     def __init__(self):
         """
@@ -32,7 +33,9 @@ class Blink1Notifier(PulsingNotifier):
         super().__init__()
 
         # The dongle handle
-        self._b1 = Blink1()
+        self._led = blinkstick.find_first()
+        if self._led is None:
+            raise ValueError("No blinkstick found")
 
         # How we scale the blinkiness
         self._scale = math.pi * 0.5
@@ -43,7 +46,7 @@ class Blink1Notifier(PulsingNotifier):
         @see Notifier._stop()
         """
         super()._stop()
-        self._b1.fade_to_rgb(0, 0, 0, 0)
+        self._led.set_color(red=0, green=0, blue=0)
 
 
     def _update(self, now, input_state, service_state, output_state):
@@ -70,5 +73,5 @@ class Blink1Notifier(PulsingNotifier):
         g = int(max(0, min(255, s_level * s_mult)))
         b = int(max(0, min(255, i_level * i_mult)))
 
-        # And set the value, instantaniously
-        self._b1.fade_to_rgb(0, r, g, b)
+        # And set the value
+        self._led.set_color(red=r, green=g, blue=b)
