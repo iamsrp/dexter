@@ -58,10 +58,24 @@ class BlinkStickNotifier(PulsingNotifier):
         (s_since, s_mult, s_dir, s_velocity) = service_state
         (o_since, o_mult, o_dir, o_velocity) = output_state
 
+        # Pulse the other way if we're negative
+        if i_velocity > 0:
+            i_since =       (i_since % 1.0)
+        else:
+            i_since = 1.0 - (i_since % 1.0)
+        if s_velocity > 0:
+            s_since =       (s_since % 1.0)
+        else:
+            s_since = 1.0 - (s_since % 1.0)
+        if o_velocity > 0:
+            o_since =       (o_since % 1.0)
+        else:
+            o_since = 1.0 - (o_since % 1.0)
+
         # Mod at 1 and scale into radians
-        i_theta = (i_since % 1.0) * i_velocity * self._scale
-        s_theta = (s_since % 1.0) * s_velocity * self._scale
-        o_theta = (o_since % 1.0) * o_velocity * self._scale
+        i_theta = i_since * i_velocity * self._scale
+        s_theta = s_since * s_velocity * self._scale
+        o_theta = o_since * o_velocity * self._scale
 
         # Compute a level value from this
         i_level = 255 * (1 + math.sin(i_theta)) / 2
