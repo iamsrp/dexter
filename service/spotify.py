@@ -11,16 +11,17 @@ will require getting the following::
   * Client ID
   * Client Secret
   * Redirect URI
+
 The Redirect URI should include a port, e.g. ``http://localhost:8765``, to make
 things work more seamlessly with this client. When you first start a session you
 will need to authenticate you'll see a ``https://accounts.spotify.com/...`` URL
-which, when opened, will redirect to a URL which starts with the Redirect
-URI. If a browser pops up (on the local machine's display) then it will have
-queried the client and you should be set. Else you can simply do that via
-``curl 'http://localhost:...``. Once you've authenticate once then you will have
-a ``.cache`` file which will be used next time around. The ``.cache`` file can
-also be copied from machine to machine, so it can work to authenticate on one
-with a web browser and copy file to one without.
+in Dexter's output which, when opened, will redirect to a URL which starts with
+the Redirect URI. If a browser pops up (on the local machine's display) then it
+will have queried the client and you should be set. Else you can simply do that
+via ``curl 'http://localhost:8765/...'``. Once you've authenticate once then you
+will have a ``.cache`` file which will be used next time around. The ``.cache``
+file can also be copied from machine to machine, so it can work to authenticate
+on one with a web browser and copy file to one without.
 
 This is all explained pretty well in the Spotipy docs:
     https://spotipy.readthedocs.io/
@@ -31,6 +32,26 @@ Spotify web player, there are various other ones like::
   * https://github.com/dtcooper/raspotify
   * https://github.com/Spotifyd/spotifyd
   * https://github.com/hrkfdn/ncspot [untested]
+
+On Ubuntu and Raspbian spotifyd works fine to. Only setting the following
+variables in the config file seems to be sufficient::
+
+ * username
+ * password
+ * backend
+ * mixer
+ * device_name
+ * bitrate
+ * no_audio_cache
+ * initial_volume
+ * volume_normalisation
+ * normalisation_pregain
+ * device_type
+I used the defaults in the README for everything except username, password and
+device_name.  To point Dexter at it you can set the device name to something
+like this (depending on what you set ``device_name`` to be in the config file):
+  ``"device_name"   : "dexter"``
+It then basically Just Works.
 
 The raspotify package, as is claimed, basically "Just Works" on a Raspberry
 Pi. However you might need to do the following to make it "Just Work" for
@@ -43,25 +64,6 @@ Dexter:
        ``"device_name"   : "raspotify (${HOSTNAME})"``
      where that name is the default. You can also set a specific name in the
      ``/etc/default/raspotify`` file and use that too.
-
-On Ubuntu spotifyd works fine to. Only setting the following variables in the
-config file seems to be sufficient::
- * username
- * password
- * backend
- * mixer
- * on_song_change_hook
- * device_name
- * bitrate
- * no_audio_cache
- * initial_volume
- * volume_normalisation
- * normalisation_pregain
- * device_type
-I used the defaults in the README for everything except username and password.
-To point Dexter at it you can set the device name to something like this:
-  ``"device_name"   : "Spotifyd@${HOSTNAME}"``
-It then basically Just Works too.
 """
 
 from   dexter.core.audio        import MIN_VOLUME, MAX_VOLUME

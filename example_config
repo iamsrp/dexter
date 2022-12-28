@@ -176,6 +176,21 @@
                 "dirname" : "${HOME}/Music"
             }],
 
+            // For playing music from Spotify. See the copious notes in the
+            // `service/spoify.py` file.
+            [ "dexter.service.spotify.SpotifyService", {
+                // These come from the app settings in My Dashboard on the
+                // Spotify developer site:
+                //   https://developer.spotify.com/dashboard/
+                "client_id"     : "0123456789abcdef01234567890abcde",
+                "client_secret" : "0123456789abcdef01234567890abcde",
+                "redirect_uri"  : "http://localhost:8765",
+                // This is the name of the device which you want to have play
+                // the music etc. If it's something like `spotifyd` then you
+                // set this in the config file.
+                "device_name"   : "dexter"
+            }],
+
             // A way to query your PurpleAir sensor, if you know the ID of one.
             // You'll need an API key to get this to work (see the code).
             [ "dexter.service.purpleair.PurpleAirService", {
