@@ -109,7 +109,7 @@ class RemoteInput(AudioInput):
             (count,) = struct.unpack("!q", length)
 
             # Read in the string
-            LOG.info("Reading %d chars" % (count,))
+            LOG.debug("Reading %d chars" % (count,))
             result = b''
             while len(result) < count:
                 got = self._sckt.recv(count - len(result))
