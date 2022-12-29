@@ -151,8 +151,9 @@ class PulsingNotifier(ByComponentNotifier):
             s_state = 1.0 if s_since < 30.0 else 0.0
             o_state = 1.0 if o_since < 30.0 else 0.0
 
-            # Slide the multiplier and direction accordingly
-            f = 0.2
+            # Slide the multiplier and velocity to slowly match their underlying
+            # values
+            f = 0.1
             i_mult = (1.0 - f) * i_mult + f * i_state
             s_mult = (1.0 - f) * s_mult + f * s_state
             o_mult = (1.0 - f) * o_mult + f * o_state
