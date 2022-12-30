@@ -626,8 +626,8 @@ class Dexter(object):
             return None
 
         # Special handling if we have active outputs and someone said "stop"
+        stopped = False
         if offset == len(words) - 1 and words[-1] == "stop":
-            stopped = False
             for component in  self._inputs + self._outputs + self._services:
                 # If this component is busy doing something then we tell it to stop
                 # doing that thing with interrupt(). (stop() means shutdown.)
@@ -639,11 +639,6 @@ class Dexter(object):
                         stopped = True
                     except:
                         pass
-
-            # If we managed to stop one of the output components then we're
-            # done. We don't want another component to pick up this command.
-            if stopped:
-                return None
 
         # See if we've been asked to repeat what was just said
         for phrase in (('what', 'did', 'you', 'say'),
@@ -689,7 +684,13 @@ class Dexter(object):
 
         # Anything?
         if len(handlers) == 0:
-            return "I'm sorry, I don't know how to help with that"
+            if stopped:
+                # We handled a 'stop' command so it's all good
+                return None
+            else:
+                # We didn't handle a stop command so we don't know what to do
+                # with this
+                return "I'm sorry, I don't know how to help with that"
 
         # Okay, put the handlers into order of belief and try them. Notice that
         # we want the higher beliefs first so we reverse the sign in the key.
