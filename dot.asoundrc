@@ -12,14 +12,37 @@
 # Beware that the ordering can change though so, if nothing seems to be working
 # check the card lists again.
 #
+# We configure things so that they may be shared between processes.
+
 pcm.!default {
+         type plug
+         slave.pcm "duplex"
+}
+
+pcm.duplex {
         type asym
-        playback.pcm {
-                type plug
-                slave.pcm "hw:0,0"
-        }
-        capture.pcm {
-                type plug
-                slave.pcm "hw:1,0"
-        } 
+                capture.pcm "input"
+                playback.pcm "output"
+}
+
+pcm.output {
+        type dmix
+        ipc_key 1024
+        slave {
+	        pcm "hw:0,0"
+		period_time 0
+		period_size 1024
+		buffer_size 8192
+		rate 44100
+	}
+	bindings {
+		0 0
+		1 1
+	}
+}
+
+
+pcm.input {
+        type asym
+        slave.pcm "hw:1,0"
 }
