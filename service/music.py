@@ -111,18 +111,22 @@ class MusicService(Service):
         # See if it ends with "on <platform>", if so then we can see if it's for
         # us specificaly.
         platform_match = False
-        if self._matches(words[-2], "on"):
-            # Handle partial matches on the service name since, for example,
-            # "spotify" often gets interpreted as "spotty"
-            if fuzz.ratio(words[-1], self._platform.lower()) > 50:
-                # This is definitely for us
-                platform_match = True
+        for back in range(-2, -5, -1):
+            if self._matches(words[back], "on"):
+                # Handle partial matches on the service name since, for example,
+                # "spotify" often gets interpreted as "spotty"
+                if fuzz.ratio(words[-1], self._platform.lower()) > 50:
+                    # This is definitely for us
+                    platform_match = True
+    
+                    # Strip off the platfrom now so that we can match other things
+                    words = words[:back]
+                else:
+                    # Looks like it's for a different platform
+                    return None
 
-                # Strip off the platfrom now so that we can match other things
-                words = words[:-2]
-            else:
-                # Looks like it's for a different platform
-                return None
+                # And whatever happened above we matched to 'on' we we're done
+                break
 
         # See if we have an artist
         artist = None
