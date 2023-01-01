@@ -9,6 +9,7 @@ from   dexter.core.util import (COLORS,
                                 as_list,
                                 fuzzy_list_range,
                                 parse_number,
+                                to_alphanumeric,
                                 to_letters)
 from   dexter.service   import Service, Handler, Result
 from   fuzzywuzzy       import fuzz
@@ -178,7 +179,7 @@ class KasaService(Service):
                 name = ' '.join(words[1:-1])
 
             # We have something, so figure out the action
-            action = to_letters(words[-1])
+            action = to_alphanumeric(words[-1]).rstrip('.')
             if action in ("on", "off"):
                 LOG.info("Matched 'set|turn <something> [to] %s' in '%s'", action, words)
 
@@ -323,7 +324,7 @@ class KasaService(Service):
         if number := parse_number(word) is not None:
             # We will say that the brightness goes from 0 to 10. Only volume
             # goes up to 11.
-            return min(100, max(0, int(number) * 10))
+            return min(100, max(1, int(number) * 10))
 
         # Look for max and min phrases
         elif word in ('maximum', 'max', 'bright', 'brightest'):
