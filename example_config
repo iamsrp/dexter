@@ -176,6 +176,10 @@
                 "dirname" : "${HOME}/Music"
             }],
 
+            // Simple mathematics
+            [ "dexter.service.numeric.CalculatorService", {
+            }],
+
             // For playing music from Spotify. See the copious notes in the
             // `service/spoify.py` file.
             [ "dexter.service.spotify.SpotifyService", {

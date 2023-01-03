@@ -194,7 +194,7 @@ class ParrotService(Service):
                 if score > 70 and start == 0 and end == len(trigger):
                     best.append((score, raw, sound))
             except ValueError as e:
-                LOG.info("No match: %s", e)
+                LOG.debug("No match: %s", e)
 
         # If we had anything return the best one
         if len(best) > 0:

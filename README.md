@@ -2,9 +2,7 @@
 
 Dexter is a voice-controlled assistant, akin to Google Home and Alexa. Dexter's your right hand (in theory).
 
-Originally developed for Raspberry Pi OS, it also works on Ubuntu.
-
-This is very much a toy project and should be considered work in progress. That being said, it kinda works for me; it might for you too.
+It is actively developed on Raspberry Pi OS and Ubuntu. Dexter is very much a toy project and should be considered work in progress. That being said, it kinda works for me; it might for you too.
 
 **Table of Contents**
 
@@ -20,6 +18,7 @@ This is very much a toy project and should be considered work in progress. That 
 - [Notes](#notes-and-musings)
 - [Related work](#related-work)
 - [Project status](#project-status)
+- [Press](#press)
 - [Bugs](#bugs)
 
 
@@ -29,48 +28,43 @@ If you quickly want to get up and running then:
  - Do a git clone of the repo: `git clone https://github.com/iamsrp/dexter`
  - Install the prerequisites: `bash dexter/requirements`
  - Make sure you have a microphone and speaker
- - Try running dexter.py with the appropriate config file for your distro (e.g. `env -u DISPLDAY TERM=dumb ./dexter.py -c pi_config`)
+ - Try running dexter.py with the appropriate config file for your distro (e.g. `env -u DISPLAY TERM=dumb ./dexter.py -c pi_config`)
  - Possibly wait for a little bit while some of the inputs and outputs download their models for the first time
 
-You will then be hugely underwhelmed, but at least the basic functionality should be there at this point.
+The `example_config` file has a decent overview of the various services, and it's recommended that you crib from that. More documentation on the different components can be found in their modules. 
 
 
 ## Prerequisites
 
 * Linux:
   - Raspberry Pi OS (on a Raspberry Pi); 64bit version for some speech-to-text systems
-  - Ubuntu (on an x64-86 box or the StarFive VisionFive2 RISC-V board)
+  - Ubuntu
+    - Any x64-86 box
+    - StarFive VisionFive2 RISC-V board
 * [Python 3](https://www.python.org/).
-* Around 1G to 2G of free disk space, if you want to use Coqui or Vosk with a good model.
+* Around 1G to 2G of free disk space, if you want to use Whisper, Coqui or Vosk with a good model.
 * Most of what is listed in the `requirements` file. What you actually need will depend on what components you add.
-
-If you want to use [Vosk](https://alphacephei.com/vosk/) for speech-to-text then the _Usage examples_ section on its [install page](https://alphacephei.com/vosk/install) should be enough to tell you how to install it. The various models are on its [models](https://alphacephei.com/vosk/models) page, though you will need the 64bit version of Raspberry Pi OS if you want to load in the full model, since it needs about 6Gb to instantiate. (See the Vosk install page for info on getting the 64bit `whl` file.) Per the Vosk developers, you can remove `rescore` and `rnnlm` folders from the models to make the full model run if memory is limited.
-
-You'll also need the trained models and scorer from [Coqui](https://github.com/coqui-ai/stt). For more information on setting up Coqui read their [project page](https://github.com/coqui-ai/stt) and [documentation](https://stt.readthedocs.io/en/latest/).
 
 Some of the components need extra package installed to make them work (e.g. Spotify needs various magic); this is generally documented in the module's PyDoc.
 
-When it comes to recording, make sure that you have a decent microphone with no noise; try listening to some `arecord` output to make sure it sounds clear. You can also provide a `wav_dir` argument for some of the audio input components, like `dexter.input.openai_whisper.WhisperInput`.
+
+### Speech Recognition Notes
+
+The most accurate Speech-to-Text (STT) engine is OpenAI's Whisper, but it's also the heaviest and requires mildly decent hardware in order to run at a reasonable speed. You can also run an STT engine on a remote host and 
+
+If you want to use the [Vosk](https://alphacephei.com/vosk/) STT engine then the _Usage examples_ section on its [install page](https://alphacephei.com/vosk/install) should be enough to tell you how to install it. The various models are on its [models](https://alphacephei.com/vosk/models) page, though you will need the 64bit version of Raspberry Pi OS if you want to load in the full model, since it needs about 6Gb to instantiate. (See the Vosk install page for info on getting the 64bit `whl` file.) Per the Vosk developers, you can remove `rescore` and `rnnlm` folders from the models to make the full model run if memory is limited.
+
+For [Coqui](https://github.com/coqui-ai/stt) you'll need the trained models and scorer from their site. For more information on setting up Coqui read their [project page](https://github.com/coqui-ai/stt) and [documentation](https://stt.readthedocs.io/en/latest/).
+
+When it comes to audio input, make sure that you have a decent microphone with no noise; try listening to some `arecord` output to make sure it sounds clear. You can also provide a `wav_dir` argument for all of the audio input components, like `dexter.input.openai_whisper.WhisperInput`.
 
 
 ### Architecture Specifics
 
-Dexter has been tested and developed using, most recently a 4Gb Raspberry Pi 4.
+Dexter has been developed using a 4Gb Raspberry Pi 4 and a x86_64 Ubuntu machine. It's also been tested on various other hardware.
 
-If you're running Dexter on a Raspberry Pi or the StarFive VisionFive2 then make sure that ALSA is working by testing `aplay` and `arecord`, tweaking volume and recording levels with `alsamixer`. If it is not then you may well get strange errors from `pyaudio`. You might also want a `/home/pi/.asoundrc` file which looks something like this:
-   ```
-pcm.!default {
-        type asym
-        playback.pcm {
-                type plug
-                slave.pcm "hw:0,0"
-        }
-        capture.pcm {
-                type plug
-                slave.pcm "hw:1,0"
-        }
-}
-```
+If you're running Dexter on a Raspberry Pi or the StarFive VisionFive2 then make sure that ALSA is working by testing `aplay` and `arecord`, tweaking volume and recording levels with `alsamixer`. If it is not then you may well get strange errors from `pyaudio`. You might also want a `/home/pi/.asoundrc` file, see the `dot.asoundrc` example in the top-level directory.
+
 You can see the different hardware devices in `alsamixer`, via F6. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference. On the StarFive board the built-in audio-out doesn't currently work and using a USB audio adapter seems wonky too.
 
 For input, Coqui supports Tensorflow Light and it does a pretty decent job of recognition in near realtime. Vosk is also a more recent speech-to-text engine which seems to work well.
@@ -103,7 +97,7 @@ The file is expected to have three main dict entries: `key_phrases`, `notifiers`
 
 The `notifiers` are ways in which Dexter let's the user know what it's currently doing (e.g. actively listening, speaking back to you, etc.).
 
-The `components` should be a dict with the following entires: `inputs`, `outputs` and `services`; each of these is a list of component definitions. Each component definition is a `[string,dict]` pair. The string is the fully-qualified name of the component class; the dict is a list of keyword arguments (kwargs; variable name & value pairs) which will be used to instantiate the class. The values in the kwargs may contain environment variables enclosed by dollar-sign-denoted curly braces, of the form `${VARIABLE_NAME}`.
+The `components` should be a dict with the following entries: `inputs`, `outputs` and `services`; each of these is a list of component definitions. Each component definition is a `[string,dict]` pair. The string is the fully-qualified name of the component class; the dict is a list of keyword arguments (kwargs; variable name & value pairs) which will be used to instantiate the class. The values in the kwargs may contain environment variables enclosed by dollar-sign-denoted curly braces, of the form `${VARIABLE_NAME}`.
 
 See the `test_config` file as a simple example, and the platform specific ones which are more fleshed out.
 
@@ -191,18 +185,21 @@ A quick overview of the current set of service modules is:
  * Bespoke: Canned responses to certain phrases
  * Chronos: Services to do with time (timers etc.)
  * Developer: Simple services to help with Dexter development work
- * Fortune: Pulls fortunes out of BSD Fortune
- * Language: Looking up words in a dictionary etc.
+ * Fortune: Pulls fortunes out of BSD Fortune files
+ * Language: Looking up words in a dictionary, spelling
+ * Numeric: Simple mathematic functions
  * Music & Spotify: Play music from local disk, Spotify, etc.
  * PurpleAir: Look up stats from the [Purple Air](https://purpleair.com/) air sensors
  * Randomness: Various random generators
+ * TPLink Kasa: Control the TP Link Kasa IOT plugs and lightbulbs
  * Volume: Sound control
- * WikiQuery: Look up things on Wikipedia
+ * Weather: Get the (US) weather
+ * WikiQuery: Look up things on (surpise!) Wikipedia
 
 
 ## Notes and Musings
 
-This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS (both 32bit and 64bit versions), but also works on x86-64 Ubuntu. I've not tried it on Ubuntu on a Pi.
+This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS (both 32bit and 64bit versions), but also works on x86-64 Ubuntu.
 
 Right now, a bunch of basic services are there like setting timers, asking about things and playing music. That's pretty much most people tend to use their home assistant for anyhow it seems.
 
@@ -227,14 +224,21 @@ How is Dexter different? Well, that's in the eye of the beholder really. The bas
 
 ## Project status
 
-Right now Dexter is at the point where it does pretty much what I wanted it to and so most of the work happening on it is related to bug fixes and tweaks, as opposed to adding new features. I'll also be keeping it ticking over with the updates to underlying libraries etc. so that it still works out of the box. Development work on it has been rather quiet of late, but don't consider it to be abandonware.
+Right now Dexter is at the point where it does pretty much what I wanted it to and so most of the work happening on it is related to bug fixes and tweaks, as opposed to adding new features. I'll also be keeping it ticking over with the updates to underlying libraries etc. so that it still works out of the box.
+
+The open source release of OpenAI's Whisper STT engine in July 2022 (thank you!) breathed new life into this project since, for the first time, it actually felt _usable_. Since they I added a bunch of features which I (and my "beta testers") wanted. I also took the opportunity to get it going on a refurbished [Dell OptiPlex 7050 Micro](https://duckduckgo.com/?t=ffsb&q=Dell+OptiPlex+7050+Micro+Core+i5+2.7+GHz+&ia=web) running Ubuntu.
+
+
+## Press
+
+Shameless self-promotion on HN: https://news.ycombinator.com/item?id=25718392
 
 
 ## Bugs
 
 At some point it should be fixed to use `setup.py` to install itself.
 
-If you are running with an unaccessible `DISPLAY` then you might see pygame do this:
+If you are running with an inaccessible `DISPLAY` then you might see pygame do this:
 ```
 Fatal Python error: (pygame parachute) Segmentation Fault
 ```
@@ -246,7 +250,7 @@ or redirect the output to a file:
 ```
 env -u DISPLAY ./dexter.py -c config > dexter.log 2>&1
 ```
-or both. xLovely.
+or both. lovely.
 
 The speech recognition could do with some work:
  * Not perfect at detecting the start and end of speech
