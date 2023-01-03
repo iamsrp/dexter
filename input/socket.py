@@ -48,7 +48,7 @@ class SocketInput(Input):
         """
         if len(self._output) > 0:
             try:
-                return self._output.pop()
+                return self._output.pop(0)
             except:
                 pass
 
