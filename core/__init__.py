@@ -11,8 +11,10 @@ from dexter.core.util   import (to_alphanumeric,
                                 fuzzy_list_range)
 
 from fuzzywuzzy.process import fuzz
+from threading          import Thread
 
 import heapq
+import os
 import queue
 import sys
 import time
@@ -225,15 +227,33 @@ class Dexter(object):
             :param notifiers:
                 The other notifiers that we hold.
             """
-            self._notifiers     = tuple(notifiers)
+            self._notifiers     = list(notifiers)
             self._speakers      = set()
             self._last_response = None
+            self._started       = False
+
+
+        def add_notifier(self, notifier):
+            """
+            Add in a notifier. May not be done after start() has been called.
+            """
+            if notifier is None:
+                raise ValueError("Given None")
+            if self._started:
+                raise ValueError(
+                    "Cannot add a notifier after start() has been called"
+                )
+            self._notifiers.append(notifier)
 
 
         def start(self):
             """
             Start all the notifiers going.
             """
+            if self._started:
+                raise ValueError("Already started")
+            self._started = True
+
             for notifier in self._notifiers:
                 try:
                     LOG.info("Starting %s" % notifier)
@@ -402,6 +422,28 @@ class Dexter(object):
             for (classname, kwargs) in components.get('services', [])
         ]
 
+        # See if we have a GUI component
+        gui = config.get('gui', None)
+        if gui is not None:
+            # Lazy import so that Kivy doesn't initialise when we don't need
+            # it. Also prevent Kivy from trying to process the command line or
+            # do any logging itself. (Some of these environment variables differ
+            # between Kivy 1 and Kivy 2.)
+            os.environ["KIVY_NO_ARGS"      ] = "1"
+            os.environ["KIVY_LOG_MODE"     ] = "PYTHON"
+            os.environ["KIVY_NO_CONSOLELOG"] = "1"
+            os.environ["KIVY_NO_FILELOG"   ] = "1"
+            from dexter.gui import DexterGui
+            self._gui = DexterGui(self, **gui)
+
+            # Add all the GUI's components in
+            self._inputs .extend(self._gui.get_inputs())
+            self._outputs.extend(self._gui.get_outputs())
+            for notifier in self._gui.get_notifiers():
+                self._state.add_notifier(notifier)
+        else:
+            self._gui = None
+
         # When we last heard just the keyphrase on its own, in seconds since
         # epoch
         self._last_keyphrase_only = 0
@@ -414,13 +456,48 @@ class Dexter(object):
         self._running  = True
 
 
+    @property
+    def key_phrases(self):
+        """
+        The key-phrases used by the system.
+        """
+        # Give back a copy, just in case
+        return tuple(self._key_phrases)
+
+
+    @property
+    def state(self):
+        """
+        Get the system `State`..
+        """
+        return self._state
+
+
     def run(self):
         """
-        The main worker.
+        Enter the event loop.
         """
         LOG.info("Starting the system")
         self._start()
 
+        # If we have a GUI then it needs to be the main event loop thread, else
+        # we can be
+        if self._gui is None:
+            self._run()
+        else:
+            # Spawn a thread for Dexter and start it
+            thread = Thread(name='Dexter', target=self._run)
+            thread.daemon = True
+            thread.start()
+
+            # And enter the GUI's main event loop
+            self._gui.run()
+
+
+    def _run(self):
+        """
+        The main worker.
+        """
         LOG.info("Entering main loop")
         while self._running:
             try:

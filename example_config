@@ -22,6 +22,17 @@
         "Hey Computer"
     ],
 
+    // The settings for the GUI. If the `gui` label is defined then Dexter will
+    // attempt to create a user interface, either in a window or at the console.
+    "gui" : {
+        // See the `dexter.gui.MainScreen` constructor for the meaning of these
+        // parameters.
+        "scale"         : 1.0,
+        "message_scale" : 1.0,
+        "clock_scale"   : 1.0,
+        "clock_format"  : "24h"
+    },
+
     // The notifiers are what tells the user whether Dexter's components are
     // doing something. Some notifiers might employ hardware add-ons, like a
     // small LED display for examople. The format is the same as that of the
