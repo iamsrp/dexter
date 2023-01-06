@@ -703,8 +703,9 @@ class Dexter(object):
             return None
 
         # Special handling if we have active outputs and someone said "stop"
-        stopped = False
+        is_stop = False
         if offset == len(words) - 1 and words[-1] == "stop":
+            is_stop = True
             for component in  self._inputs + self._outputs + self._services:
                 # If this component is busy doing something then we tell it to stop
                 # doing that thing with interrupt(). (stop() means shutdown.)
@@ -713,7 +714,6 @@ class Dexter(object):
                         # Best effort
                         LOG.info("Interrupting %s", component)
                         component.interrupt()
-                        stopped = True
                     except:
                         pass
 
@@ -761,8 +761,8 @@ class Dexter(object):
 
         # Anything?
         if len(handlers) == 0:
-            if stopped:
-                # We handled a 'stop' command so it's all good
+            if is_stop:
+                # We got a 'stop' command so it's all good
                 return None
             else:
                 # We didn't handle a stop command so we don't know what to do
