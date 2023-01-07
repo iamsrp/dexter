@@ -239,10 +239,15 @@
             }],
 
             [ "dexter.service.weather.WeatherService", {
-                // The region is where the service is running
+                // The region is where the service is running; only 'US' and
+                // 'UK' are supported right now.
                 "region"      : "US",
-                // The coordinates, which can be pulled out of things like Google Maps
+                // The latitude and longitude coordinates, which can be pulled
+                // out of things like Google Maps.
                 "coordinates" : "40.7484445,-73.9878531"
+                // If the UK then an API key is needed from the Met Office
+                // website.
+                "api_key"     : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
             }],
 
             // To query Wikipedia about things
