@@ -138,21 +138,21 @@ class Result(object):
     """
     The result of caling L{Handler.handle()}.
 
-    This might be a simple response, for example:
+    This might be a simple response, for example::
       User:     Hey Computer, what's the capital of France.
       Computer: Paris.
-    Or it might be something which requires more input from the user:
+    Or it might be something which requires more input from the user::
       User:     Hey Computer, tell me a joke.
       Computer: Knock, knock...
       ...
 
     Some results of a query might be considered canonical for a particular
-    service. For example:
+    service. For example::
       User:    Hey Computer, play Captain Underpants by Weird Al.
       Computer: Okay, playing Captain Underpants Theme Song by Weird Al
                 Yankovic.
     Here you would not want another service to also play Captain Underpants at
-    the same time that the responding one does.
+    the same time that the responding one does, once is plenty.
     """
     def __init__(self, handler, text, is_query, exclusive):
         """
