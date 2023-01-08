@@ -193,7 +193,7 @@ A quick overview of the current set of service modules is:
  * Randomness: Various random generators
  * TPLink Kasa: Control the TP Link Kasa IOT plugs and lightbulbs
  * Volume: Sound control
- * Weather: Get the (US) weather
+ * Weather: Get the weather (US or UK only)
  * WikiQuery: Look up things on (surpise!) Wikipedia
 
 
