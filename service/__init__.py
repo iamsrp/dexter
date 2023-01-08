@@ -67,11 +67,13 @@ class Handler(object):
     tokens.
 
     The belief of the handler is how well the service thinks it matched the
-    query defined by the tokens. For example:
+    query defined by the tokens. For example::
       User:     Hey Computer, what's the grime?
       Computer: The time is six forty eight PM.
     might result in a belief of 0.8 since only two thirds of the words were
-    matched but the final word was _almost_ matched.
+    matched but the final word was _almost_ matched. If multiple handlers match
+    a query string then the one with the highest belief is selected by the
+    system..
     """
     def __init__(self, service, tokens, belief, exclusive):
         """
