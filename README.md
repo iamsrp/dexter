@@ -1,8 +1,6 @@
 # Dexter, A Voice-Controlled Assistant
 
-Dexter is a voice-controlled assistant, akin to Google Home and Alexa. Dexter's your right hand (in theory).
-
-It is actively developed on Raspberry Pi OS and Ubuntu. Dexter is very much a toy project and should be considered work in progress. That being said, it kinda works for me; it might for you too.
+Dexter is a voice-controlled assistant, akin to Google Home and Alexa. Dexter's your right hand.
 
 **Table of Contents**
 
@@ -28,8 +26,8 @@ If you quickly want to get up and running then:
  - Do a git clone of the repo: `git clone https://github.com/iamsrp/dexter`
  - Install the prerequisites: `bash dexter/requirements`
  - Make sure you have a microphone and speaker
- - Try running dexter.py with the appropriate config file for your distro (e.g. `env -u DISPLAY TERM=dumb ./dexter.py -c pi_config`)
- - Possibly wait for a little bit while some of the inputs and outputs download their models for the first time
+ - Try running `dexter.py` with the appropriate config file for your distro (e.g. `env -u DISPLAY TERM=dumb ./dexter.py -c pi_config`)
+ - Possibly wait for a little bit while some of the input and output components download their models for the first time
 
 The `example_config` file has a decent overview of the various services, and it's recommended that you crib from that. More documentation on the different components can be found in their modules. 
 
@@ -37,12 +35,10 @@ The `example_config` file has a decent overview of the various services, and it'
 ## Prerequisites
 
 * Linux:
-  - Raspberry Pi OS (on a Raspberry Pi); 64bit version for some speech-to-text systems
-  - Ubuntu
-    - Any x64-86 box
-    - StarFive VisionFive2 RISC-V board
+  - Raspberry Pi OS, on a Raspberry Pi
+  - Ubuntu x86_64
 * [Python 3](https://www.python.org/).
-* Around 1G to 2G of free disk space, if you want to use Whisper, Coqui or Vosk with a good model.
+* Around 1G to 2G of free disk space (if you want to use Whisper, Coqui or Vosk with a good model).
 * Most of what is listed in the `requirements` file. What you actually need will depend on what components you add.
 
 Some of the components need extra package installed to make them work (e.g. Spotify needs various magic); this is generally documented in the module's PyDoc.
@@ -250,7 +246,7 @@ or redirect the output to a file:
 ```
 env -u DISPLAY ./dexter.py -c config > dexter.log 2>&1
 ```
-or both. lovely.
+or both. Lovely.
 
 The speech recognition could do with some work:
  * Not perfect at detecting the start and end of speech
