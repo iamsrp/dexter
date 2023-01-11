@@ -122,7 +122,7 @@ class ScrollHatMiniNotifier(ByComponentNotifier):
         scrollphathd.set_brightness(self._brightness)
 
         # The thread which will maintain the display
-        thread = Thread(target=self._updater)
+        thread = Thread(name='ScrollHatUpdater', target=self._updater)
         thread.deamon = True
         thread.start()
 

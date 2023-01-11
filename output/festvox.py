@@ -76,7 +76,7 @@ class FestivalOutput(SpeechOutput):
         self._subproc.stdin.flush()
 
         # Now spawn the worker thread
-        thread = Thread(target=self._run)
+        thread = Thread(name='FestVoxOutput', target=self._run)
         thread.daemon = True
         thread.start()
 
@@ -201,7 +201,7 @@ class PyFestivalOutput(SpeechOutput):
         self._notify(Notifier.INIT)
 
         # Now spawn the worker thread
-        thread = Thread(target=self._run)
+        thread = Thread(name='FestVoxOutput', target=self._run)
         thread.daemon = True
         thread.start()
 

@@ -80,7 +80,7 @@ class SysTrayNotifier(ByComponentNotifier):
         """
         # Not entirely sure if we need this or whether it will play nicely if we
         # have other gtk threads kicking about
-        thread = Thread(target=self._gtk.main)
+        thread = Thread(name='DesktopNotifierMainLoop', target=self._gtk.main)
         thread.deamon = True
         thread.start()
 

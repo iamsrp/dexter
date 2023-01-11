@@ -69,10 +69,11 @@ class SocketInput(Input):
             while self._running:
                 (sckt, addr) = self._socket.accept()
                 LOG.info("Got connection from %s" % (addr,))
-                thread = Thread(target=lambda: self._handle(sckt))
+                thread = Thread(name='SocketInput',
+                                target=lambda: self._handle(sckt))
                 thread.daemon = True
                 thread.start()
-        thread = Thread(target=acceptor)
+        thread = Thread(name='SocketListener', target=acceptor)
         thread.daemon = True
         thread.start()
 

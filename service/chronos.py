@@ -326,7 +326,7 @@ class Timer(object):
         """
         Start this timer.
         """
-        thread = Thread(target=self._run)
+        thread = Thread(name='DexterTimer', target=self._run)
         thread.daemon = True
         thread.start()
 
@@ -700,7 +700,7 @@ class Alarm(object):
         """
         Start this alarm.
         """
-        thread = Thread(target=self._run)
+        thread = Thread(name='DexterAlarm', target=self._run)
         thread.daemon = True
         thread.start()
 

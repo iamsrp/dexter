@@ -58,7 +58,7 @@ class EspeakOutput(SpeechOutput):
         """
         @see Component._start()
         """
-        thread = Thread(target=self._do_notify)
+        thread = Thread(name='ESpeakNotifier', target=self._do_notify)
         thread.daemon = True
         thread.start()
 

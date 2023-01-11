@@ -105,7 +105,7 @@ class MediaKeyInput(Input):
 
         # And start the main loop in its own thread
         self._loop = GLib.MainLoop()
-        thread = Thread(target=self._loop.run)
+        thread = Thread(name='MediaKeyMainLoop', target=self._loop.run)
         thread.daemon = True
         thread.start()
 

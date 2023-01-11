@@ -63,7 +63,7 @@ class _KasaHandler(Handler):
                     LOG.warning("Failed to run coroutine: %s", e)
 
         # Spawn it and give it back
-        thread = Thread(target=target)
+        thread = Thread(name='KasaWorker', target=target)
         thread.daemon = True
         thread.start()
         return thread

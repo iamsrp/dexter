@@ -114,7 +114,7 @@ class PulsingNotifier(ByComponentNotifier):
         @see Notifier._start()
         """
         # The thread which will maintain the display
-        thread = Thread(target=self._updater)
+        thread = Thread(name='NotifierUpdater', target=self._updater)
         thread.deamon = True
         thread.start()
 

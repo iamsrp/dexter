@@ -158,7 +158,7 @@ class Mimic3Output(SpeechOutput):
 
         # And now start everything
         self._pygame = util.get_pygame()
-        thread = Thread(target=self._run)
+        thread = Thread(name='Mimic3Output', target=self._run)
         thread.daemon = True
         thread.start()
 

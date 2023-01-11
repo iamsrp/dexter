@@ -98,11 +98,11 @@ class AudioInput(Input):
         @see Component._start()
         """
         # Start the component's worker threads
-        thread = Thread(target=self._run)
+        thread = Thread(name='AudioInput', target=self._run)
         thread.daemon = True
         thread.start()
 
-        thread = Thread(target=self._handler)
+        thread = Thread(name='AudioDecoder', target=self._handler)
         thread.daemon = True
         thread.start()
 

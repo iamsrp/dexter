@@ -115,7 +115,7 @@ class CoquiOutput(SpeechOutput):
         @see Component._start()
         """
         self._pygame = util.get_pygame()
-        thread = Thread(target=self._run)
+        thread = Thread(name='CoquiOutput', target=self._run)
         thread.daemon = True
         thread.start()
 

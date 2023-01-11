@@ -230,7 +230,7 @@ class PandoraService(MusicService):
         LOG.error("Playing station %s", self._station)
 
         # And play it, in a new thread since it is blocking
-        thread = Thread(target=self._play_station)
+        thread = Thread(name='Pandora', target=self._play_station)
         thread.daemon = True
         thread.start()
 

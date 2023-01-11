@@ -27,7 +27,7 @@ class SimpleMP3Player(object):
         self._paused = False
 
         # Set the controller thread going
-        thread = Thread(target=self._controller)
+        thread = Thread(name='MP3Player', target=self._controller)
         thread.daemon = True
         thread.start()
 
