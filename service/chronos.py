@@ -525,7 +525,10 @@ class _SetAlarmHandler(Handler):
                 # tomorrow morning
                 LOG.debug("Parsing X o'clock time")
                 hh_am = parse_number(timespec[-2])
-                hh_pm = hh_am + 12
+                if hh_am < 12:
+                    hh_pm = hh_am + 12
+                else:
+                    hh_pm = hh_am
                 dt_am = datetime(now.year, now.month, now.day, hh_am, 0)
                 dt_pm = datetime(now.year, now.month, now.day, hh_pm, 0)
                 if day_offset == 0:
@@ -558,7 +561,7 @@ class _SetAlarmHandler(Handler):
                 elif len(timespec) == 3: # "4 32 pm"
                     hh = parse_number(timespec[0])
                     mm = parse_number(timespec[1])
-                if timespec[-1] == 'pm':
+                if timespec[-1] == 'pm' and hh < 12:
                     hh += 12
 
                 # Now construct the time
@@ -588,8 +591,12 @@ class _SetAlarmHandler(Handler):
                     mm = parse_number(timespec[1])
 
                 # Same logic as above
-                dt_am = datetime(now.year, now.month, now.day, hh,      mm)
-                dt_pm = datetime(now.year, now.month, now.day, hh + 12, mm)
+                if hh < 12:
+                    hh_pm = hh + 12
+                else:
+                    hh_pm = hh
+                dt_am = datetime(now.year, now.month, now.day, hh,    mm)
+                dt_pm = datetime(now.year, now.month, now.day, hh_pm, mm)
                 if day_offset == 0:
                     if dt_am > now:
                         seconds = dt_am.timestamp()
