@@ -56,7 +56,7 @@ It then basically Just Works.
 The raspotify package, as is claimed, basically "Just Works" on a Raspberry
 Pi. However you might need to do the following to make it "Just Work" for
 Dexter:
-  1. If the audio doesn't work then you might need to put your ALSA config 
+  1. If the audio doesn't work then you might need to put your ALSA config
      into ``/etc/asoundrc``. See also the Troubleshooting section of the
      package's README.
   2. If you want to always connect to that instance (likely) then you should
@@ -83,7 +83,7 @@ class _SpotifyServicePauseHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_SpotifyServicePauseHandler, self).__init__(
+        super().__init__(
             service,
             tokens,
             1.0 if service.is_playing() else 0.0,
@@ -108,7 +108,7 @@ class _SpotifyServiceUnpauseHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_SpotifyServiceUnpauseHandler, self).__init__(
+        super().__init__(
             service,
             tokens,
             1.0,
@@ -132,7 +132,7 @@ class _SpotifyServiceTogglePauseHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_SpotifyServiceTogglePauseHandler, self).__init__(
+        super().__init__(
             service,
             tokens,
             1.0,
@@ -170,7 +170,7 @@ class _SpotifyServicePlayHandler(Handler):
             The match score out of 1.0.
         """
         # We deem ourselves exclusive since we had a match
-        super(_SpotifyServicePlayHandler, self).__init__(
+        super().__init__(
             service,
             tokens,
             score,
@@ -188,6 +188,38 @@ class _SpotifyServicePlayHandler(Handler):
         self.service.play(self._uris)
         return Result(self, '', False, True)
 
+
+class _SpotifyServiceNoMatchHandler(Handler):
+    def __init__(self, service, tokens, what):
+        """
+        @see Handler.__init__()
+
+        :type  what: str
+        :param what:
+            What we tried to match, like "Blah Blah by Fred"
+        """
+        # We deem ourselves exclusive since we had a match
+        super().__init__(
+            service,
+            tokens,
+            0, # Zero score since we didn't match
+            True
+        )
+        self._what = what
+
+
+    def handle(self):
+        """
+        @see Handler.handle()`
+        """
+
+        return Result(
+            self,
+            'Sorry, I could not find %s' % self._what,
+            False,
+            True
+        )
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 class SpotifyService(MusicService):
@@ -195,10 +227,11 @@ class SpotifyService(MusicService):
     Spotify client music service.
     """
     def __init__(self, state,
-                 client_id    =None,
-                 client_secret=None,
-                 redirect_uri =None,
-                 device_name  =None):
+                 client_id      =None,
+                 client_secret  =None,
+                 redirect_uri   =None,
+                 device_name    =None,
+                 match_threshold=75):
         """
         @see Service.__init__()
 
@@ -221,18 +254,23 @@ class SpotifyService(MusicService):
         :type  device_name: str
         :param device_name:
             The name of the device to control, if not the default one.
+        :type  match_threshold: int
+        :param match_threshold:
+            The fuzzy match threshold to use when trying to match
+            song/album/artist names.
         """
-        super(SpotifyService, self).__init__("SpotifyService",
-                                             state,
-                                             "Spotify")
+        super().__init__("SpotifyService",
+                         state,
+                         "Spotify")
 
-        self._client_id     = client_id
-        self._client_secret = client_secret
-        self._redirect_uri  = redirect_uri
-        self._device_name   = device_name
-        self._device_id     = None        
-        self._spotify       = None
-        self._volume        = None
+        self._client_id       = str(client_id)
+        self._client_secret   = str(client_secret)
+        self._redirect_uri    = str(redirect_uri)
+        self._device_name     = str(device_name) if device_name else None
+        self._match_threshold = int(match_threshold)
+        self._device_id       = None
+        self._spotify         = None
+        self._volume          = None
 
 
     def set_volume(self, volume):
@@ -372,7 +410,7 @@ class SpotifyService(MusicService):
             for item in items:
                 name = item.get('name', '').lower()
                 LOG.debug("Matching against '%s'", name)
-                if fuzz.ratio(name, artist) > 80:
+                if fuzz.ratio(name, artist) > self._match_threshold:
                     return True
         return False
 
@@ -424,58 +462,79 @@ class SpotifyService(MusicService):
         # Search by track name then album name, these are essentially the same
         # logic
         for which in ('track', 'album'):
-            LOG.info("Looking for '%s'%s as a %s",
-                     name,
-                     " by '%s'" % artist if artist else '',
-                     which)
-
-            # This is the key in the results
-            plural = which + 's'
-
-            # Try using the song_or_album as the name
-            result = self._spotify.search(name, type=which)
-            if not result:
-                LOG.info("No results")
-                continue
-
-            # Did we get back any tracks
-            if plural not in result:
-                LOG.error("%s was not in result keys: %s", plural, result.keys())
-                continue
-
-            # We got some results back, let's assign scores to them all
-            results = result[plural]
+            # What we matched on
             matches = []
-            for item in results.get('items', []):
-                # It must have a uri
-                if 'uri' not in item and item['uri']:
-                    LOG.error("No URI in %s", item)
+            for with_artist in (True, False):
+                if with_artist:
+                    if not artist:
+                        continue
+                    search = '%s by %s' % (name, artist)
+                    LOG.info("Looking for '%s' by %s as a %s",
+                             name, artist, which)
+                else:
+                    search = name
+                    LOG.info("Looking for '%s' as a %s",
+                             name, which)
 
-                # Look at all the candidate entries
-                if 'name' in item:
-                    # See if this is better than any existing match
-                    name_score = fuzz.ratio(name, item['name'].lower())
-                    LOG.debug("'%s' matches '%s' with score %d",
-                              item['name'], name, name_score)
+                # This is the key in the results
+                plural = which + 's'
 
-                    # Check to make sure that we have an artist match as well
-                    if artist is None:
-                        # Treat as a wildcard
-                        artist_score = 100
-                    else:
-                        artist_score = 0
-                        for entry in item.get('artists', []):
-                            score = fuzz.ratio(artist, entry.get('name','').lower())
-                            LOG.debug("Artist match score for '%s' was %d",
-                                      entry.get('name',''), score)
-                            if score > artist_score:
-                                artist_score = score
-                    LOG.debug("Artist match score was %d", artist_score)
+                # Try using the song_or_album as the name
+                result = self._spotify.search(search, type=which)
+                if not result:
+                    LOG.info("No results")
+                    continue
 
-                    # Only consider cases where the scores look "good enough"
-                    if name_score > 75 and artist_score > 75:
-                        LOG.debug("Adding match")
-                        matches.append((item, name_score, artist_score))
+                # Did we get back any tracks
+                if plural not in result:
+                    LOG.error("%s was not in result keys: %s",
+                              plural, result.keys())
+                    continue
+
+                # We got some results back, let's assign scores to them all
+                results = result[plural]
+                for item in results.get('items', []):
+                    # It must have a uri
+                    if 'uri' not in item and item['uri']:
+                        LOG.error("No URI in %s", item)
+
+                    # Look at all the candidate entries
+                    if 'name' in item:
+                        # See if this is better than any existing match
+                        name_score = fuzz.ratio(name, item['name'].lower())
+                        LOG.debug("'%s' matches '%s' with score %d",
+                                  item['name'], name, name_score)
+
+                        # Check to make sure that we have an artist match as well
+                        if artist is None:
+                            # Treat as a wildcard
+                            artist_score = 100
+                        else:
+                            artist_score = 0
+                            for entry in item.get('artists', []):
+                                score = fuzz.ratio(artist, entry.get('name','').lower())
+                                LOG.debug("Artist match score for '%s' was %d",
+                                          entry.get('name',''), score)
+                                if score > artist_score:
+                                    artist_score = score
+                        LOG.debug("Artist match score was %d", artist_score)
+
+                        # Only consider cases where the scores look "good enough"
+                        if name_score > self._match_threshold and \
+                           artist_score > self._match_threshold:
+                            LOG.info(
+                                "Adding match of %s by %s "
+                                "with name score %d and album score %d",
+                                item['name'],
+                                ' '.join(e.get('name', 'unknown artist')
+                                         for e in item.get(
+                                                 'artists',
+                                                 [{'name' : 'unknown artist'}]
+                                         )),
+                                name_score,
+                                artist_score
+                            )
+                            matches.append((item, name_score, artist_score))
 
             # Anything?
             if len(matches) > 0:
@@ -558,8 +617,10 @@ class SpotifyService(MusicService):
                                     uris.extend([track['uri']
                                                  for track in tracks['items']])
 
-        # And now we can give it back, if we had something
+        # And now we can give it back, if we had something, otherwise we say we
+        # didn't match
         if len(uris) > 0:
+            # We have something to play
             return _SpotifyServicePlayHandler(
                 self,
                 tokens,
@@ -568,5 +629,15 @@ class SpotifyService(MusicService):
                 score
             )
         else:
-            # We got nothing
-            return None
+            # Build up what we were asked to play
+            if genre is not None:
+                what = '%s music' % genre
+            else:
+                what = ' '.join(song_or_album)
+                if artist is not None:
+                    what += ' by %s' % artist
+            return _SpotifyServiceNoMatchHandler(
+                self,
+                tokens,
+                what
+            )
