@@ -6,6 +6,7 @@
 # Run with
 #   bash -x ./requirements
 # to see what it's doing.
+#
 # Run with
 #   ALL=true bash ./requirements
 # to install everything.
@@ -17,13 +18,18 @@
 
 # Let the user have some time to realise what we're doing
 echo
-echo "                  *** WARNING ***"
-echo "  This will install A LOT of things on your system."
-echo "  If you don't want to do this then hit CTRL-C now!"
-echo "                  *** WARNING ***"
+echo "                   *** WARNING ***"
+echo
+echo "   This will install A LOT of things on your system."
+echo "   If you don't want to do this then hit CTRL-C now!"
+echo
+echo "  It is recommended that you run this in a virtualenv"
+echo "      when installing on a non-dedicated host."
+echo
+echo "                   *** WARNING ***"
 echo
 echo -n "Installing in "
-for i in {10..1}
+for i in 10 9 8 7 6 5 4 3 2 1
 do
     echo -n "$i "
     sleep 1
