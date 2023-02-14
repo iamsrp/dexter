@@ -24,7 +24,7 @@ echo "   This will install A LOT of things on your system."
 echo "   If you don't want to do this then hit CTRL-C now!"
 echo
 echo "  It is recommended that you run this in a virtualenv"
-echo "      when installing on a non-dedicated host."
+echo "       when installing on a non-dedicated host."
 echo
 echo "                   *** WARNING ***"
 echo
