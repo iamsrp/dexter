@@ -67,6 +67,18 @@ pip install python-kasa
 pip install blink1
 pip install blinkstick pyusb
 
+# Ubuntu has this, Raspbian does not, so try both locations
+sudo apt install -y python3-levenshtein || pip install python-Levenshtein
+
+# Optionally install VLC since, including its dependencies, there's a lot of
+# it. We currently only need it for the UPnP stuff so bundle that into this
+# section too.
+$ALL && (
+    sudo apt install -y python3-vlc
+    pip install python-didl-lite
+    pip install git+https://github.com/iamsrp/upnpy
+)
+
 # Vosk is another STT engine. This mostly only works for Ubuntu and 64bit
 # Raspbian that I can tell.
 $ALL && pip install vosk || (

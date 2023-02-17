@@ -4,6 +4,7 @@ A way to index media.
 
 from   dexter.core.log import LOG
 from   fuzzywuzzy      import process
+from   threading       import Lock
 
 import math
 import mutagen
@@ -12,35 +13,17 @@ import time
 
 # ------------------------------------------------------------------------------
 
-class MusicIndex(object):
+class MusicIndex:
     """
     Index music in various ways.
     """
-    def __init__(self, roots):
-        """
-        :type  roots: tuple(str)
-        :param roots:
-            The list of URLs to search for music on. In the simplest form these
-            will likely just be a bunch of strings looking something like:
-                C{file:///home/pi/Music}
-        """
+    def __init__(self):
         # The various indices. These are of the form <str,tuple(_Entry)>.
         self._by_name   = {}
         self._by_artist = {}
         self._by_album  = {}
-
-        # Tupleize, just in case someone passed in a string or whathaveyou
-        if isinstance(roots, str):
-            roots = (roots,)
-        elif not isinstance(roots, (tuple, list)):
-            roots = tuple(roots)
-
-        if roots is not None:
-            for root in roots:
-                start = time.time()
-                self._build(root)
-                end  = time.time()
-                LOG.info("Indexed %s in %0.1f seconds", root, end - start)
+        self._count     = 0
+        self._lock      = Lock()
 
 
     def lookup(self, name=None, artist=None, album=None):
@@ -62,24 +45,26 @@ class MusicIndex(object):
            The potential entries, in order of likely match. Possibly empty.
         """
         # Look in all our indices. We will create lists of (Entry,score) pairs
-        # for each.
-        if name is not None and len(self._by_name) > 0:
-            key, score = process.extractOne(name, self._by_name.keys())
-            by_name    = [(entry, score) for entry in self._by_name[key]]
-        else:
-            by_name = None
+        # for each. We do this under the lock so that nothing changes in the
+        # dicts.
+        with self._lock:
+            if name is not None and len(self._by_name) > 0:
+                key, score = process.extractOne(name, self._by_name.keys())
+                by_name    = [(entry, score) for entry in self._by_name[key]]
+            else:
+                by_name = None
 
-        if artist is not None and len(self._by_artist) > 0:
-            key, score = process.extractOne(artist, self._by_artist.keys())
-            by_artist  = [(entry, score) for entry in self._by_artist[key]]
-        else:
-            by_artist = None
+            if artist is not None and len(self._by_artist) > 0:
+                key, score = process.extractOne(artist, self._by_artist.keys())
+                by_artist  = [(entry, score) for entry in self._by_artist[key]]
+            else:
+                by_artist = None
 
-        if album is not None and len(self._by_album) > 0:
-            key, score = process.extractOne(album, self._by_album.keys())
-            by_album   = [(entry, score) for entry in self._by_album[key]]
-        else:
-            by_album = None
+            if album is not None and len(self._by_album) > 0:
+                key, score = process.extractOne(album, self._by_album.keys())
+                by_album   = [(entry, score) for entry in self._by_album[key]]
+            else:
+                by_album = None
 
         # Now combine the results by intersecting all the matches
         results = None
@@ -105,6 +90,100 @@ class MusicIndex(object):
                 result[0]
                 for result in sorted(results, key=lambda e: e[1], reverse=True)
             )
+
+
+    def _add_entry(self, entry):
+        """
+        Add an entry to the index.
+
+        :type  entry: _Entry
+        :param entry:
+            The entry to add to the index.
+        """
+        # Ignore entries with no name
+        if entry.name is None:
+            return
+        LOG.debug("Adding '%s'", entry.name if entry.name else entry.url)
+
+        # Sanitise the strings thusly. This attempts to do a little data
+        # cleaning along the way.
+        def tidy(string):
+            # Deal with empty strings
+            string = _clean_string(string)
+            if string is None:
+                return None
+
+            # Handle "_"s instead of spaces
+            string = string.replace('_', ' ')
+            string = _clean_string(string)
+            if string is None:
+                return None
+
+            # Put ", The" back on the front
+            if string.endswith(' The'):
+                if string.endswith(', The'):
+                    string = "The " + string[:-5]
+                else:
+                    string = "The " + string[:-4]
+
+            # And, finally, make it all lower case so that we don't get fooled
+            # by funny capitalisation
+            string = string.lower()
+
+            # And give it back
+            return string.lower()
+
+        # How we add the entry to an index
+        def add(key, index, entry_):
+            if key is not None:
+                if key in index:
+                    index[key].append(entry_)
+                else:
+                    index[key] = [entry_]
+
+        # Add to the various indices. We do this under the lock so that readers
+        # are not confused.
+        with self._lock:
+            add(tidy(entry.name  ), self._by_name,   entry)
+            add(tidy(entry.artist), self._by_artist, entry)
+            add(tidy(entry.album ), self._by_album,  entry)
+
+        # And update the stats
+        self._count += 1
+        if (self._count % 1000) == 0:
+            LOG.info("Added a total of %d entries...", self._count)
+
+
+    def __len__(self):
+        return self._count
+
+
+class FileMusicIndex(MusicIndex):
+    """
+    Index music from a filesystem.
+    """
+    def __init__(self, roots):
+        """
+        :type  roots: tuple(str)
+        :param roots:
+            The list of URLs to search for music on. In the simplest form these
+            will likely just be a bunch of strings looking something like:
+                C{file:///home/pi/Music}
+        """
+        super().__init__()
+
+        # Tupleize, just in case someone passed in a string or whathaveyou
+        if isinstance(roots, str):
+            roots = (roots,)
+        elif not isinstance(roots, (tuple, list)):
+            roots = tuple(roots)
+
+        if roots is not None:
+            for root in roots:
+                start = time.time()
+                self._build(root)
+                end  = time.time()
+                LOG.info("Indexed %s in %0.1f seconds", root, end - start)
 
 
     def _build(self, root):
@@ -155,71 +234,16 @@ class MusicIndex(object):
                     LOG.warning("Failed to index %s: %s", path, e)
 
 
-    def _add_entry(self, entry):
-        """
-        Add an entry to the index.
 
-        :type  entry: _Entry
-        :param entry:
-            The entry to add to the index.
-        """
-        # Ignore entries with no name
-        if entry.name is None:
-            return
-
-        # We're adding it then
-        LOG.info("Adding %s", entry.url)
-
-        # Sanitise the strings thusly. This attempts to do a little data
-        # cleaning along the way.
-        def tidy(string):
-            # Deal with empty strings
-            string = _clean_string(string)
-            if string is None:
-                return None
-
-            # Handle "_"s instead of spaces
-            string = string.replace('_', ' ')
-            string = _clean_string(string)
-            if string is None:
-                return None
-
-            # Put ", The" back on the front
-            if string.endswith(' The'):
-                if string.endswith(', The'):
-                    string = "The " + string[:-5]
-                else:
-                    string = "The " + string[:-4]
-
-            # And, finally, make it all lower case so that we don't get fooled
-            # by funny capitalisation
-            string = string.lower()
-
-            # And give it back
-            return string.lower()
-
-        # How we add the entry to an index
-        def add(key, index, entry_):
-            if key is not None:
-                if key in index:
-                    index[key].append(entry_)
-                else:
-                    index[key] = [entry_]
-
-        # Add to the various indices
-        add(tidy(entry.name  ), self._by_name,   entry)
-        add(tidy(entry.artist), self._by_artist, entry)
-        add(tidy(entry.album ), self._by_album,  entry)
-
-
-class _Entry(object):
+class _Entry:
     """
     An entry in the media index. This contains all the details which you need to
     know about a particular piece of media.
     """
     # The types of file which we know about
-    MP3  = 'mp3'
-    FLAC = 'flac'
+    MP3    = 'mp3'
+    FLAC   = 'flac'
+    STREAM = 'stream'
 
 
     def __init__(self, name, url, file_type):
@@ -242,7 +266,7 @@ class _Entry(object):
     @property
     def name(self):
         """
-        The name of the entry, An audio track title, for example.
+        The name of the entry. An audio track title, for example.
 
         :rtype: str
         :return:
@@ -359,6 +383,43 @@ class AudioEntry(_Entry):
 
         # And construct
         return AudioEntry(name, url, _Entry.FLAC, track, album, artist)
+
+
+    @staticmethod
+    def from_music_track(track):
+        """
+        Factory method to create an entry from a DLNA MusicTrack object.
+
+        :type  track: didl_lite.didl_lite.MusicTrack
+        :param track:
+            The MusicTrack object..
+        """
+        # Sanity
+        if track is None:
+            return None
+
+        # Get the URL. We must have this or we can't do anything.
+        url = None
+        for res in getattr(track, 'res', []):
+            uri = getattr(res, 'uri', None)
+            if uri and uri.startswith('http'):
+                url = uri
+                break
+        if not url:
+            return None
+
+        # Pull out the info
+        name   = (getattr(track, 'title',                 '') or '').strip() or None
+        track  = (getattr(track, 'original_track_number', '') or '').strip() or None
+        album  = (getattr(track, 'album',                 '') or '').strip() or None
+        artist = (getattr(track, 'artist',                '') or '').strip() or None
+
+        # We need a name too
+        if not name:
+            return
+
+        # And construct
+        return AudioEntry(name, url, _Entry.STREAM, track, album, artist)
 
 
     def __init__(self, name, url, file_type, track, album, artist):

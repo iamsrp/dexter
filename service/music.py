@@ -4,7 +4,7 @@ Base class for various music playing services.
 
 from   dexter.core.audio        import MIN_VOLUME, MAX_VOLUME
 from   dexter.core.log          import LOG
-from   dexter.core.media_index  import MusicIndex, AudioEntry
+from   dexter.core.media_index  import FileMusicIndex, AudioEntry
 from   dexter.core.player       import SimpleMP3Player
 from   dexter.core.util         import homonize, fuzzy_list_range
 from   dexter.service           import Service, Handler, Result

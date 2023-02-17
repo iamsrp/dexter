@@ -80,7 +80,6 @@
                 // Always prefix what is received with this. This saves the user
                 // having to type the prefix themselves.
                 "prefix" : "Dexter"
-
             }],
 
             // Coqui's speech-to-ltext engine is not bad and will run on a
@@ -191,6 +190,16 @@
             [ "dexter.service.numeric.CalculatorService", {
             }],
 
+            // A way to query your PurpleAir sensor, if you know the ID of one.
+            // You'll need an API key to get this to work (see the code).
+            [ "dexter.service.purpleair.PurpleAirService", {
+                "sensor_id" : 12345,
+                "api_key"   : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+            }],
+
+            [ "dexter.service.randomness.RandomService", {
+            }],
+
             // For playing music from Spotify. See the copious notes in the
             // `service/spoify.py` file.
             [ "dexter.service.spotify.SpotifyService", {
@@ -204,16 +213,6 @@
                 // the music etc. If it's something like `spotifyd` then you
                 // set this in the config file.
                 "device_name"   : "dexter"
-            }],
-
-            // A way to query your PurpleAir sensor, if you know the ID of one.
-            // You'll need an API key to get this to work (see the code).
-            [ "dexter.service.purpleair.PurpleAirService", {
-                "sensor_id" : 12345,
-                "api_key"   : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-            }],
-
-            [ "dexter.service.randomness.RandomService", {
             }],
 
             [ "dexter.service.tplink_kasa.KasaService", {
@@ -233,6 +232,24 @@
                     "the outside lights" : "192.168.1.202"
                 }
             }],
+
+            // For playing music from UPnP servers on your network
+            [ "dexter.service.upnp.UpnpMusicService", {
+                // Jellyfin is a pretty decent media server in general. It
+                // supports UPnP out of the box by default. The server name
+                // is 'Jellyfin - <machine name>' by default. If you can't
+                // determine it then the service will tell you the servers
+                // which it finds.
+                'server_name' : 'Jellyfin - mediabox',
+                // We'll call this player 'jelly fin' in case the speech to
+                // text engines don't render it as one word.
+                'alias'       : 'jelly fin',
+                // Only index songs matching this "path" on the server, since
+                // we can find a lot of things presented as "Latest/..." and
+                // so on. This can be a single string or a list of strings.
+                'globs'       : '*/Songs/*'
+            }],
+
 
             // To turn the volume up and down. This one goes up to 11.
             [ "dexter.service.volume.VolumeService", {
