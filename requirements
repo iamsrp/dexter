@@ -54,35 +54,35 @@ sudo apt install -y \
      python3-kivy libpulse-dev libasound2-dev festival festival-dev festvox-us-slt-hts
 
 # Required.
-pip3 install pyjson5
-pip3 install pyalsaaudio
+pip install pyjson5
+pip install pyalsaaudio
 
 # You _probably_ want these so we optimistically install them. And, at the end
 # of the day, they are light so it doesn't hurt.
-pip3 install wikipedia
-pip3 install spotipy
-pip3 install pydictionary
-pip3 install git+https://github.com/techiaith/pyfestival#festival
-pip3 install python-kasa
-pip3 install blink1
-pip3 install blinkstick pyusb
+pip install wikipedia
+pip install spotipy
+pip install pydictionary
+pip install git+https://github.com/techiaith/pyfestival#festival
+pip install python-kasa
+pip install blink1
+pip install blinkstick pyusb
 
 # Vosk is another STT engine. This mostly only works for Ubuntu and 64bit
 # Raspbian that I can tell.
-$ALL && pip3 install vosk || (
+$ALL && pip install vosk || (
     uname -m | grep -q aarch64 &&
-        pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl
+        pip install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl
 )
 
 # And so Coqui (STT), which was DeepSpeech once upon a time.
-pip3 install stt ||
-    pip3 install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
+pip install stt ||
+    pip install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
 
 # Mycroft works for 64bit archs. Installing it for 32bit Raspbian is a little
 # more involved (see the module).
 uname -m | grep -Eq 'x86_64|aarch64' && (
     # Mycroft for speech output
-    pip3 install mycroft-mimic3-tts
+    pip install mycroft-mimic3-tts
 )
 
 # Some things which only really work for 64bit OSs. While these theoretically
@@ -94,10 +94,10 @@ uname -m | grep -Eq 'x86_64' && (
     # 64bit only. (PyTorch looks to need a more up-to-date numpy than is
     # currently available via apt.) We only install ffmpeg and upgrade numpy if
     # it succeeds.
-    pip3 install git+https://github.com/openai/whisper.git && sudo apt install -y ffmpeg && pip3 install -U numpy
+    pip install git+https://github.com/openai/whisper.git && sudo apt install -y ffmpeg && pip install -U numpy
 
     # Coqui TTS, this depends on PyTorch (and about a million other things too)
-    $ALL && pip3 install TTS
+    $ALL && pip install TTS
 )
 
 # Ensure that the user can access any audio devices. This is needed for Dexter
