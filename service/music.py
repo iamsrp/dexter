@@ -37,6 +37,7 @@ class MusicService(Service):
         """
         # Get stripped text, for matching
         words = [homonize(w) for w in self._words(tokens)]
+        LOG.debug("Handling: %s", ' '.join(words))
 
         # Look for specific control words, doing a fuzzy match for single
         # tokens, but an exact match for the "special" phrases (since they
@@ -98,11 +99,13 @@ class MusicService(Service):
         #  Play <song or album> by <artist>
         if len(words) < 3:
             # We can't match on this
+            LOG.debug("Can't match on too few words")
             return None
 
         # See if the first word is "play"
         if not self._matches(words[0], "play"):
             # Nope, probably not ours then
+            LOG.debug("'play' not the first word")
             return None
 
         # Okay, strip off "play"
@@ -115,7 +118,8 @@ class MusicService(Service):
             if self._matches(words[back], "on"):
                 # Handle partial matches on the service name since, for example,
                 # "spotify" often gets interpreted as "spotty"
-                if fuzz.ratio(words[-1], self._platform.lower()) > 50:
+                platform = ' '.join(words[back+1:])
+                if fuzz.ratio(platform.lower(), self._platform.lower()) > 50:
                     # This is definitely for us
                     platform_match = True
     
@@ -123,6 +127,8 @@ class MusicService(Service):
                     words = words[:back]
                 else:
                     # Looks like it's for a different platform
+                    LOG.debug("Given platform '%s' didn't match '%s'",
+                              platform, self._platform)
                     return None
 
                 # And whatever happened above we matched to 'on' we we're done
@@ -158,6 +164,10 @@ class MusicService(Service):
             words = []
 
         # Okay, ready to make the hand-off call to the subclass
+        LOG.debug("Looking for %s%s with%s platform match",
+                  song_or_album,
+                  f' by {artist}' if artist is not None else '',
+                  '' if platform_match else ' no')
         return self._get_handler_for(tokens,
                                      platform_match,
                                      genre,
