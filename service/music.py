@@ -325,36 +325,35 @@ class MusicService(Service):
         # To be implemented by subclasses
         raise NotImplementedError("Abstract method called")
 
-# ------------------------------------------------------------------------------
 
-class _LocalMusicServicePauseHandler(Handler):
+class MusicServicePauseHandler(Handler):
     def __init__(self, service, tokens):
         """
         @see Handler.__init__()
         """
-        super(_LocalMusicServicePauseHandler, self).__init__(
+        super(MusicServicePauseHandler, self).__init__(
             service,
             tokens,
             1.0 if service.is_playing() else 0.0,
-            True
+            False
         )
 
 
     def handle(self):
         """
-        @see Handler.handle()`
+        @see Handler.handle()
         """
         was_playing = self.service.is_playing()
         self.service.pause()
         return Result(self, '', False, was_playing)
 
 
-class _LocalMusicServiceUnpauseHandler(Handler):
+class MusicServiceUnpauseHandler(Handler):
     def __init__(self, service, tokens):
         """
         @see Handler.__init__()
         """
-        super(_LocalMusicServiceUnpauseHandler, self).__init__(
+        super(MusicServiceUnpauseHandler, self).__init__(
             service,
             tokens,
             1.0  if service.is_paused() else 0.0,
@@ -364,19 +363,19 @@ class _LocalMusicServiceUnpauseHandler(Handler):
 
     def handle(self):
         """
-        @see Handler.handle()`
+        @see Handler.handle()
         """
         was_paused = self.service.is_paused()
         self.service.unpause()
         return Result(self, '', False, was_paused)
 
 
-class _LocalMusicServiceTogglePauseHandler(Handler):
+class MusicServiceTogglePauseHandler(Handler):
     def __init__(self, service, tokens):
         """
         @see Handler.__init__()
         """
-        super(_LocalMusicServiceTogglePauseHandler, self).__init__(
+        super(MusicServiceTogglePauseHandler, self).__init__(
             service,
             tokens,
             1.0  if service.is_paused() or service.is_playing() else 0.0,
@@ -386,7 +385,7 @@ class _LocalMusicServiceTogglePauseHandler(Handler):
 
     def handle(self):
         """
-        @see Handler.handle()`
+        @see Handler.handle()
         """
         if self.service.is_playing():
             self.service.pause()
@@ -397,6 +396,19 @@ class _LocalMusicServiceTogglePauseHandler(Handler):
         else:
             handled = False
         return Result(self, '', False, handled)
+
+# ------------------------------------------------------------------------------
+
+class _LocalMusicServicePauseHandler(MusicServicePauseHandler):
+    pass
+
+
+class _LocalMusicServiceUnpauseHandler(MusicServiceUnpauseHandler):
+    pass
+
+
+class _LocalMusicServiceTogglePauseHandler(MusicServiceTogglePauseHandler):
+    pass
 
 
 class _LocalMusicServicePlayHandler(Handler):

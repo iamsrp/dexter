@@ -299,6 +299,14 @@ class _Entry:
         return self._type
 
 
+    def __str__(self):
+        if self.url and len(self) > 80:
+            url = self.url[:80] + "..."
+        else:
+            url = self.url
+        return f'{self.name}<{self.file_type}|{url}>'
+
+
 class AudioEntry(_Entry):
     """
     An entry for an audio file, like MP3 or Flac.

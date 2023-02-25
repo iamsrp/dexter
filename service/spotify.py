@@ -74,84 +74,24 @@ from   fuzzywuzzy               import fuzz
 from   math                     import sqrt
 from   spotipy                  import Spotify
 from   spotipy.oauth2           import SpotifyOAuth
-from   .music                   import MusicService
+from   .music                   import (MusicService,
+                                        MusicServicePauseHandler,
+                                        MusicServiceTogglePauseHandler,
+                                        MusicServiceUnpauseHandler)
 
 # ------------------------------------------------------------------------------
 
-class _SpotifyServicePauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super().__init__(
-            service,
-            tokens,
-            1.0 if service.is_playing() else 0.0,
-            True
-        )
+
+class SpotifyServicePauseHandler(MusicServicePauseHandler):
+    pass
 
 
-    def handle(self):
-        """
-        @see Handler.handle()`
-        """
-        try:
-            was_playing = self.service.is_playing()
-            self.service.pause()
-            return Result(self, '', False, was_playing)
-        except:
-            return Result(self, '', False, False)
+class SpotifyServiceUnpauseHandler(MusicServiceUnpauseHandler):
+    pass
 
 
-class _SpotifyServiceUnpauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super().__init__(
-            service,
-            tokens,
-            1.0,
-            True
-        )
-
-
-    def handle(self):
-        """
-        @see Handler.handle()`
-        """
-        try:
-            self.service.unpause()
-            return Result(self, '', False, True)
-        except:
-            return Result(self, '', False, False)
-
-
-class _SpotifyServiceTogglePauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super().__init__(
-            service,
-            tokens,
-            1.0,
-            True
-        )
-
-
-    def handle(self):
-        """
-        @see Handler.handle()`
-        """
-        try:
-            if self.service.is_playing():
-                self.service.pause()
-            else:
-                self.service.unpause()
-            return Result(self, '', False, True)
-        except Exception as e:
-            return Result(self, '', False, False)
+class SpotifyServiceTogglePauseHandler(MusicServiceTogglePauseHandler):
+    pass
 
 
 class _SpotifyServicePlayHandler(Handler):

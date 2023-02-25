@@ -14,86 +14,26 @@ from   dexter.service           import Service, Handler, Result
 from   pandora                  import clientbuilder
 from   pydora.audio_backend     import VLCPlayer
 from   threading                import Thread
-from   .music                   import MusicService
+from   .music                   import (MusicService,
+                                        MusicServicePauseHandler,
+                                        MusicServiceTogglePauseHandler,
+                                        MusicServiceUnpauseHandler)
 
 import sys
 
 # ------------------------------------------------------------------------------
 
-class _PandoraServicePauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super(_PandoraServicePauseHandler, self).__init__(
-            service,
-            tokens,
-            1.0 if service.is_playing() else 0.0,
-            True
-        )
+
+class PandoraServicePauseHandler(MusicServicePauseHandler):
+    pass
 
 
-    def handle(self):
-        """
-        @see Handler.handle()`
-        """
-        try:
-            was_playing = self.service.is_playing()
-            self.service.pause()
-            return Result(self, '', False, was_playing)
-        except:
-            return Result(self, '', False, False)
+class PandoraServiceUnpauseHandler(MusicServiceUnpauseHandler):
+    pass
 
 
-class _PandoraServiceUnpauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super(_PandoraServiceUnpauseHandler, self).__init__(
-            service,
-            tokens,
-            1.0,
-            True
-        )
-
-
-    def handle(self):
-        """
-        @see Handler.handle()`
-        """
-        try:
-            self.service.unpause()
-            return Result(self, '', False, True)
-        except:
-            return Result(self, '', False, False)
-
-
-class _PandoraServiceTogglePauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super(_PandoraServiceTogglePauseHandler, self).__init__(
-            service,
-            tokens,
-            1.0,
-            True
-        )
-
-
-    def handle(self):
-        """
-        @see Handler.handle()`
-        """
-        try:
-            if self.service.is_playing():
-                self.service.pause()
-            else:
-                self.service.unpause()
-            return Result(self, '', False, True)
-        except Exception as e:
-            return Result(self, '', False, False)
+class PandoraServiceTogglePauseHandler(MusicServiceTogglePauseHandler):
+    pass
 
 
 class _PandoraServicePlayHandler(Handler):

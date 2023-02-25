@@ -11,7 +11,10 @@ from   didl_lite                import didl_lite
 from   fnmatch                  import fnmatch
 from   fuzzywuzzy               import fuzz
 from   threading                import Thread
-from   .music                   import MusicService
+from   .music                   import (MusicService,
+                                        MusicServicePauseHandler,
+                                        MusicServiceTogglePauseHandler,
+                                        MusicServiceUnpauseHandler)
 
 import time
 import upnpy
@@ -22,76 +25,17 @@ import vlc
 # We'll use VLC as the player for the UPnP music service. This might be handy
 # elsewhere, so we may choose to move it out at some point.
 
-class _VlcMusicServicePauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super().__init__(
-            service,
-            tokens,
-            1.0 if service.is_playing() else 0.0,
-            True
-        )
+
+class _VlcMusicServicePauseHandler(MusicServicePauseHandler):
+    pass
 
 
-    def handle(self):
-        """
-        @see Handler.handle()
-        """
-        was_playing = self.service.is_playing()
-        self.service.pause()
-        return Result(self, '', False, was_playing)
+class _VlcMusicServiceUnpauseHandler(MusicServiceUnpauseHandler):
+    pass
 
 
-class _VlcMusicServiceUnpauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super().__init__(
-            service,
-            tokens,
-            1.0  if service.is_paused() else 0.0,
-            True if service.is_paused() else False,
-        )
-
-
-    def handle(self):
-        """
-        @see Handler.handle()
-        """
-        was_paused = self.service.is_paused()
-        self.service.unpause()
-        return Result(self, '', False, was_paused)
-
-
-class _VlcMusicServiceTogglePauseHandler(Handler):
-    def __init__(self, service, tokens):
-        """
-        @see Handler.__init__()
-        """
-        super().__init__(
-            service,
-            tokens,
-            1.0  if service.is_paused() or service.is_playing() else 0.0,
-            True if service.is_paused() or service.is_playing() else False,
-        )
-
-
-    def handle(self):
-        """
-        @see Handler.handle()
-        """
-        if self.service.is_playing():
-            self.service.pause()
-            handled = True
-        elif self.service.is_paused():
-            self.service.unpause()
-            handled = True
-        else:
-            handled = False
-        return Result(self, '', False, handled)
+class _VlcMusicServiceTogglePauseHandler(MusicServiceTogglePauseHandler):
+    pass
 
 
 class _VlcMusicServicePlayHandler(Handler):
