@@ -214,6 +214,14 @@
                 "phrase" : "saying"
             }],
 
+            // In case you want to buy things. Handy in conjunction with the
+            // email configuration since you can say,
+            //   Hey Dexter, email me what's on my shopping list
+            // and it almost sounds natrual.
+            [ "dexter.service.life.ShoppingListService", {
+                "filename" : "${HOME}/shopping_list"
+            }],
+
             // For playing music from disk
             [ "dexter.service.music.LocalMusicService", {
                 "dirname" : "${HOME}/Music"
