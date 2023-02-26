@@ -33,6 +33,31 @@
         "clock_format"  : "24h"
     },
 
+    // How we configure email. The email functionality only works with STARTTLS
+    // right now and needs to be accessible by basic SMTP. (GMail no longer allows
+    // this easily but Outlook Mail does.)
+    //
+    // Note that this requires you to store the email login details in plaintext
+    // in the config so it is suggested that you use an email account which you
+    // don't care about being compromised.
+    //
+    // In order to use the email functionality, you just say something like,
+    //    Hey Dexter, email me what's the weather tomorrow
+    // where the format is
+    //    Hey Dexter, email <alias> <request>
+    "email" : {
+        "host"      : "smtp.office365.com",
+        "port"      : 587,
+        "login"     : "username@outlook.com",
+        "password"  : "password",
+        "addresses" : {
+            // Alias        Address
+            "me"          : "your.name.here@gmail.com",
+            "me at work"  : "you@yourwork.com",
+            "my phone"    : "2125551234@tmomail.net",
+        }
+    },
+
     // The notifiers are what tells the user whether Dexter's components are
     // doing something. Some notifiers might employ hardware add-ons, like a
     // small LED display for examople. The format is the same as that of the
@@ -179,6 +204,14 @@
             [ "dexter.service.language.DictionaryService", {
             }],
             [ "dexter.service.language.SpellingService", {
+            }],
+
+            // A service which just echoes back what you said. Possibly not very
+            // interesting but, when combined with email, can be used to send
+            // yourself a note:
+            //   Hey Dexter, email me saying remember to water the plants.
+            [ "dexter.service.language.EchoService", {
+                "phrase" : "saying"
             }],
 
             // For playing music from disk

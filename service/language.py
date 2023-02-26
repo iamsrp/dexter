@@ -2,11 +2,11 @@
 Services related to natural language.
 """
 
-from   dexter.core.log  import LOG
-from   dexter.core.util import fuzzy_list_range, to_alphanumeric
-from   dexter.service   import Service, Handler, Result
-from   math             import sqrt
-from   PyDictionary     import PyDictionary
+from   dexter.core.log    import LOG
+from   dexter.core.util   import fuzzy_list_range, to_alphanumeric
+from   dexter.service     import Service, Handler, Result
+from   fuzzywuzzy.process import fuzz
+from   math               import sqrt
 
 # ----------------------------------------------------------------------
 
@@ -74,6 +74,9 @@ class DictionaryService(Service):
         :param limit:
             The limit results per word type (noun, verb, etc.).
         """
+        # Lazy import since it might be broken
+        from PyDictionary import PyDictionary
+
         super(DictionaryService, self).__init__("Dictionary", state)
 
         limit = int(limit)
@@ -233,3 +236,72 @@ class SpellingService(Service):
         else:
             # Nope, we got nothing
             return None
+
+# ----------------------------------------------------------------------
+
+class _EchoHandler(Handler):
+    def __init__(self, service, belief, tokens):
+        """
+        @see Handler.__init__()
+        """
+        super(_EchoHandler, self).__init__(service, tokens, belief, True)
+
+
+    def handle(self):
+        """
+        @see Handler.handle()
+        """
+        return Result(
+            self,
+            ' '.join([token.element
+                      for token in self._tokens
+                      if token.verbal]),
+            False,
+            True
+        )
+
+
+class EchoService(Service):
+    """
+    A service which simply parrots back what was given to it.
+    """
+    def __init__(self, state, phrase=None):
+        """
+        @see Service.__init__()
+        """
+        super(EchoService, self).__init__("Echo", state)
+        if phrase:
+            self._phrase        = phrase.lower()
+            self._phrase_length = len(phrase.split())
+        else:
+            self._phrase        = None
+            self._phrase_length = 0
+
+
+    def evaluate(self, tokens):
+        """
+        @see Service.evaluate()
+        """
+        # If we have a key-phrase then attempt to match on it
+        if self._phrase:
+            # Junk non-speech tokens
+            tokens = [t for t in tokens if t.verbal]
+            if len(tokens) < self._phrase_length:
+                return None
+
+            # Do the match
+            words = ' '.join(self._words(tokens[:self._phrase_length]))
+            score = fuzz.ratio(self._phrase, words.lower())
+            if score < 80:
+                # Not for us
+                return None
+
+            # Trim off the phrase which we matched
+            tokens = tokens[self._phrase_length:]
+
+        else:
+            # No phrase means we always match
+            score = 100
+
+        # If we go here then we handle it
+        return _EchoHandler(self, score/100, tokens)

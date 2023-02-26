@@ -2,20 +2,23 @@
 The heart of the system.
 """
 
-from dexter.core.audio  import get_volume, set_volume
-from dexter.core.event  import TimerEvent
-from dexter.core.log    import LOG
-from dexter.core.util   import (to_alphanumeric,
-                                to_letters,
-                                list_index,
-                                fuzzy_list_range)
-
-from fuzzywuzzy.process import fuzz
-from threading          import Thread
+from   dexter.core.audio    import get_volume, set_volume
+from   dexter.core.event    import TimerEvent
+from   dexter.core.log      import LOG
+from   dexter.core.util     import (to_alphanumeric,
+                                    to_letters,
+                                    list_index,
+                                    fuzzy_list_range)
+from   email.mime.text      import MIMEText
+from   email.mime.multipart import MIMEMultipart
+from   fuzzywuzzy.process   import fuzz
+from   threading            import Thread
 
 import heapq
 import os
 import queue
+import smtplib
+import ssl
 import sys
 import time
 import traceback
@@ -27,7 +30,7 @@ class _Startable(object):
     A class which may be started and stopped.
     """
     def __init__(self):
-        super(_Startable, self).__init__()
+        super().__init__()
         self._running  = False
 
 
@@ -79,7 +82,7 @@ class Component(_Startable):
         The overall state of the system.
     """
     def __init__(self, state):
-        super(Component, self).__init__()
+        super().__init__()
         self._state      = state
         self._status     = None
         self._status_mod = 0
@@ -211,7 +214,6 @@ class State(Notifier):
         raise NotImplementedError("Abstract method called")
 
 # ------------------------------------------------------------------------------
-
 
 class Dexter(object):
     """
@@ -443,6 +445,15 @@ class Dexter(object):
                 self._state.add_notifier(notifier)
         else:
             self._gui = None
+
+        # See if we have an email handler. Even though this is a "service" we
+        # don't add it as one since it's only classed as a service for the
+        # purposes of notification.
+        email_cfg = config.get('email', None)
+        if email_cfg is not None:
+            self._mailer = _Mailer(self._state, email_cfg)
+        else:
+            self._mailer = None
 
         # When we last heard just the keyphrase on its own, in seconds since
         # epoch
@@ -735,6 +746,16 @@ class Dexter(object):
                 # No match
                 LOG.debug("No match for %s with %s", words[offset:], phrase)
 
+        # See if we've been asked to email the result of the query
+        mailer_function = None
+        if self._mailer is not None:
+            mailer_result = self._mailer.handle(words [offset:],
+                                                tokens[offset:])
+            if mailer_result is not None:
+                (offset_incr, mailer_function) = mailer_result
+                offset += offset_incr
+                LOG.info("Request now: %s", ' '.join(words[offset:]))
+
         # See which services want them
         handlers = []
         for service in self._services:
@@ -825,6 +846,12 @@ class Dexter(object):
         if error_service:
             return "Sorry, there was a problem with %s" % (error_service,)
         elif len(response) > 0:
+            if mailer_function is not None:
+                self._state.update_status(self._mailer, Notifier.ACTIVE)
+                try:
+                    response = mailer_function(response)
+                finally:
+                    self._state.update_status(self._mailer, Notifier.IDLE)
             return '\n'.join(response)
         else:
             return None
@@ -849,3 +876,159 @@ class Dexter(object):
             except:
                 LOG.error("Failed to respond with %s:\n%s" %
                 (output, traceback.format_exc()))
+
+# ------------------------------------------------------------------------------
+
+class _Mailer(Component):
+    """
+    The email handler.
+    """
+    # TYhe HTML template for emails
+    _HTML = """\
+<html>
+  <body>
+    {}
+  </body>
+</html>
+"""
+
+    def __init__(self, state, cfg):
+        super().__init__(state)
+
+        # Get the configs
+        self._host      = cfg.get('host',      '')
+        self._port      = cfg.get('port',      587) # TLS by default
+        self._login     = cfg.get('login',     '')
+        self._password  = cfg.get('password',  '')
+        self._sender    = cfg.get('from',      self._login)
+        self._addresses = cfg.get('addresses', dict())
+
+        # Verify the configs
+        if not self._login:
+            raise ValueError("No email login supplied")
+        if not self._password:
+            raise ValueError("No email password supplied")
+
+        if not self._host:
+            if   self._login.endswith('@outlook.com'):
+                self._host = 'smtp.office365.com'
+            elif self._login.endswith('@gmail.com'):
+                self._host = 'smtp.gmail.com'
+            else:
+                raise ValueError("No outgoing SMTP host supplied")
+        if not self._port:
+            raise ValueError("No outgoing SMTP port supplied")
+        else:
+            try:
+                self._port = int(self._port)
+            except ValueError:
+                raise ValueError("Bad SMTP port value: '%s'", self._port)
+        if self._sender is None:
+            raise ValueError("No from address supplied")
+
+        # We'll need this for sending
+        self._context = ssl.create_default_context()
+
+
+    def handle(self, words, tokens):
+        """
+        Handle the list of words and see if we want to create an intercepting
+        function for the result.
+        """
+        # We need something like:
+        #  email me blah blah
+        if words is None:
+            return None
+        if len(words) < 3:
+            return None
+        if fuzz.ratio('email', words[0].lower()) < 70:
+            return None
+
+        # Okay, we have the email keyword, now look for a matching alias. We
+        # scale the score by the length of the name since we want to match the
+        # longest one the most.
+        LOG.info("Looking to match email addresses against: %s",
+                 ' '.join(words[1:]))
+        best = None
+        for (alias, address) in self._addresses.items():
+            alias = alias.lower()
+            count = len(alias.split())
+            subwords = ' '.join(w.lower() for w in words[1:count+1])
+            score = fuzz.ratio(subwords, alias)
+            if score > 70:
+                score *= count
+                if best is None or score > best[0]:
+                    LOG.debug("Matched '%s' against '%s' with score %d",
+                              subwords, alias, score)
+                    best = (score, count, alias, address)
+
+        # Anything?
+        if best is None:
+            LOG.info("No match")
+            return None
+
+        # We got a match, so give back the offset tweak and the function. For
+        # this we will need to create the email subject, which we try to make
+        # pretty.
+        (score, count, alias, address) = best
+        LOG.info("Got match '%s' with score %d", alias, score)
+        offset = count + 1
+        subject = ' '.join(token.element
+                           for token in tokens[offset:]
+                           if token.verbal)
+        subject = subject[0].upper() + subject[1:]
+        if len(subject) > 80:
+            subject = subject[:77] + '...'
+        return (offset,
+                self._create_function(alias, address, subject))
+
+
+    def _create_function(self, alias, address, subject):
+        """
+        Create a handler function.
+        """
+        def f(response):
+            # Tweak the alias if it have "me" or "my" in it since we want to
+            # respond to the user referring to them, not to ourselves
+            alias_ = ' '.join(w.lower().replace('me', 'you')
+                                       .replace('my', 'your')
+                              for w in alias.split())
+
+            # Create both HTML and ASCII versions of the response, and turn them
+            # into MIMEText
+            text = '\n'.join(response)
+            html = self._HTML.format('<br>\n    '.join(response))
+            text = MIMEText(text, "plain")
+            html = MIMEText(html, "html")
+
+            # Create the message
+            message = MIMEMultipart("alternative")
+            message["Subject"] = subject
+            message["From"]    = self._sender
+            message["To"]      = address
+            message.attach(text)
+            message.attach(html)
+
+            # And send it. We use the notifiers to show that we're doing
+            # something.
+            try:
+                with smtplib.SMTP(host=self._host,
+                                  port=self._port) as server:
+                    server.starttls(context=self._context)
+                    server.login(self._login, self._password)
+                    server.sendmail(self._sender,
+                                    address,
+                                    message.as_string())
+                LOG.info(f"Sent email to \"{alias}\"<{address}>")
+                return [
+                    f"Okay, I sent that as an email to {alias_}"
+                ]
+
+            except Exception as e:
+                LOG.error("Problem sending email: %s", e)
+                return [
+                    f"I'm sorry, there was a problem sending the email to {alias_}"
+                ]
+
+        # And give back this new function
+        return f
