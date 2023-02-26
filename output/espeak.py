@@ -30,7 +30,7 @@ class EspeakOutput(SpeechOutput):
         :param voice:
             The voice to use. See C{espeak.list_voices()}.
         """
-        super(EspeakOutput, self).__init__(state)
+        super().__init__(state)
 
         if rate is not None:
             espeak.set_parameter(espeak.Parameter.Rate, int(rate))

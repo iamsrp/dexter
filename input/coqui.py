@@ -72,7 +72,7 @@ class CoquiInput(AudioInput):
             rate = self._model.sampleRate()
 
         # Wen can now init the superclass
-        super(CoquiInput, self).__init__(
+        super().__init__(
             notifier,
             format=pyaudio.paInt16,
             channels=1,

@@ -36,8 +36,8 @@ class RemoteInput(AudioInput):
         :param port:
             The port to connect to.
         """
-        super(RemoteInput, self).__init__(state,
-                                          wav_dir=wav_dir)
+        super().__init__(state,
+                         wav_dir=wav_dir)
         self._host   = host
         self._port   = int(port)
         self._sckt   = None

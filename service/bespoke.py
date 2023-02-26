@@ -75,7 +75,7 @@ class _BespokeHandler(Handler):
         :param reply:
             What to respond with.
         """
-        super(_BespokeHandler, self).__init__(service, tokens, belief, True)
+        super().__init__(service, tokens, belief, True)
         self._reply = reply
 
 
@@ -94,7 +94,7 @@ class BespokeService(Service):
         """
         @see Service.__init__()
         """
-        super(BespokeService, self).__init__("Bespoke", state)
+        super().__init__("Bespoke", state)
 
         self._belief = float(belief)
 
@@ -139,7 +139,7 @@ class _ParrotHandler(Handler):
         :param belief:
             The belief in the match
         """
-        super(_ParrotHandler, self).__init__(service, tokens, belief, True)
+        super().__init__(service, tokens, belief, True)
         self._sound = sound
 
 
@@ -161,7 +161,7 @@ class ParrotService(Service):
         """
         @see Service.__init__()
         """
-        super(ParrotService, self).__init__("Parrot", state)
+        super().__init__("Parrot", state)
 
         # Triggers and their sounds
         self._sounds = []

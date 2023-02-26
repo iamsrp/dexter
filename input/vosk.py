@@ -58,13 +58,11 @@ class VoskInput(AudioInput):
         LOG.info("Model loaded")
 
         # Wen can now init the superclass
-        super(VoskInput, self).__init__(
-            notifier,
-            format=pyaudio.paInt16,
-            channels=1,
-            rate=rate,
-            wav_dir=wav_dir
-        )
+        super().__init__(notifier,
+                         format  =pyaudio.paInt16,
+                         channels=1,
+                         rate    =rate,
+                         wav_dir =wav_dir)
 
         # Where we put the results
         self._results = []

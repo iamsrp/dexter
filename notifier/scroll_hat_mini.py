@@ -28,7 +28,7 @@ class ScrollHatMiniNotifier(ByComponentNotifier):
             How bright the display should be overall. A value between 0.0
             and 1.0.
         """
-        super(ScrollHatMiniNotifier, self).__init__()
+        super().__init__()
 
         # How bright do we want it?
         self._brightness = min(1.0, max(0.0, float(brightness)))

@@ -22,7 +22,7 @@ class _FortuneHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_FortuneHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._fortune = fortune
 
 
@@ -57,7 +57,7 @@ class FortuneService(Service):
         :param max_length:
             The maximum length of a selected fortune, in bytes.
         """
-        super(FortuneService, self).__init__("Fortune", state)
+        super().__init__("Fortune", state)
 
         self._phrase    = [str(word).lower() for word in phrase.split() if word]
         self._dir       = fortunes_dir

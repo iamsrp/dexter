@@ -447,7 +447,7 @@ class AudioEntry(_Entry):
         :param artist:
             The name of the artist, if any
         """
-        super(AudioEntry, self).__init__(name, url, file_type)
+        super().__init__(name, url, file_type)
         self._track  = _clean_int   (track)
         self._album  = _clean_string(album)
         self._artist = _clean_string(artist)

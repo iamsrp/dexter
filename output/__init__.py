@@ -22,7 +22,7 @@ class Output(Component):
         :param state:
             The global State instance.
         """
-        super(Output, self).__init__(state)
+        super().__init__(state)
 
 
     @property

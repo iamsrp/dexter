@@ -32,7 +32,7 @@ class FestivalOutput(SpeechOutput):
         :param voice:
             The voice to use.
         """
-        super(FestivalOutput, self).__init__(state)
+        super().__init__(state)
 
         self._voice       = voice
         self._queue       = []
@@ -168,7 +168,7 @@ class PyFestivalOutput(SpeechOutput):
         :param voice:
             The voice to use.
         """
-        super(PyFestivalOutput, self).__init__(state)
+        super().__init__(state)
 
         self._voice         = voice
         self._queue         = []

@@ -23,7 +23,7 @@ class _Handler(Handler):
         :param thing:
             What, or who, is being asked about.
         """
-        super(_Handler, self).__init__(service, tokens, belief, True)
+        super().__init__(service, tokens, belief, True)
         self._thing = str(thing)
 
 
@@ -87,7 +87,7 @@ class WikipediaService(Service):
         """
         @see Service.__init__()
         """
-        super(WikipediaService, self).__init__("Wikipedia", state)
+        super().__init__("Wikipedia", state)
 
 
     def evaluate(self, tokens):

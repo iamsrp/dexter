@@ -43,7 +43,7 @@ class MediaKeyInput(Input):
         :param prev_key:
             What string to send when the Previous key is pressed.
         """
-        super(MediaKeyInput, self).__init__(state)
+        super().__init__(state)
 
         def tokenize(string):
             if string and str(string).strip():

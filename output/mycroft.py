@@ -103,7 +103,7 @@ class Mimic3Output(SpeechOutput):
         :param speaker:
             Name or number of speaker, if not the first.
         """
-        super(Mimic3Output, self).__init__(state)
+        super().__init__(state)
 
         # We will need pygame for this, but grab it lazily later
         self._pygame = None

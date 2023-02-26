@@ -13,7 +13,7 @@ class _CoinTossHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_CoinTossHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
 
 
     def handle(self):
@@ -34,7 +34,7 @@ class _DiceHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_DiceHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._sides = sides
 
 
@@ -55,7 +55,7 @@ class _RangeHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_RangeHandler, self).__init__(service, tokens, 1.0, False)
+        super().__init__(service, tokens, 1.0, False)
         self._start = start
         self._end   = end
 
@@ -80,7 +80,7 @@ class RandomService(Service):
         """
         @see Service.__init__()
         """
-        super(RandomService, self).__init__("Random", state)
+        super().__init__("Random", state)
 
 
     def evaluate(self, tokens):

@@ -56,7 +56,7 @@ class AudioInput(Input):
         :param wav_dir:
             Where to save WAV files to, if we are doing so.
         """
-        super(AudioInput, self).__init__(state)
+        super().__init__(state)
 
         # Microphone stream config
         self._format     = format

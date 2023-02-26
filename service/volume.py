@@ -18,7 +18,7 @@ class _SetHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_SetHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._volume = volume
 
 
@@ -69,7 +69,7 @@ class _AdjustHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_AdjustHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._delta = delta
 
 
@@ -111,7 +111,7 @@ class VolumeService(Service):
         """
         @see Service.__init__()
         """
-        super(VolumeService, self).__init__("Volume", state)
+        super().__init__("Volume", state)
 
 
     def evaluate(self, tokens):

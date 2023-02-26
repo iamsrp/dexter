@@ -30,7 +30,7 @@ class VoiceBonnetInput(Input):
         :param button:
             What string to send when the button is pressed.
         """
-        super(VoiceBonnetInput, self).__init__(state)
+        super().__init__(state)
 
         def tokenize(string):
             if string and str(string).strip():

@@ -28,7 +28,7 @@ class SocketInput(Input):
         :param prefix:
             What to prefix to the beginning of any input.
         """
-        super(SocketInput, self).__init__(state)
+        super().__init__(state)
 
         self._port = int(port)
         if prefix and str(prefix).strip():
@@ -134,6 +134,6 @@ class SocketInput(Input):
 
     def __str__(self):
         return "%s[Listening on *:%d]" % (
-            super(SocketInput, self).__str__(),
+            super().__str__(),
             self._port
         )

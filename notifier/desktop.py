@@ -26,7 +26,7 @@ class SysTrayNotifier(ByComponentNotifier):
             The name of the icon to use. On Ubuntu these can be found in the
             ``/usr/share/icons/.../scalable/status`` directories.
         """
-        super(SysTrayNotifier, self).__init__()
+        super().__init__()
 
         # Importing from GI requires some presetting
         import gi

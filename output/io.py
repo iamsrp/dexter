@@ -23,7 +23,7 @@ class _FileOutput(Output):
         :param handle:
             The file handle to write to.
         """
-        super(_FileOutput, self).__init__(state)
+        super().__init__(state)
         assert handle is None or (hasattr(handle, 'write') and
                                   hasattr(handle, 'flush') and
                                   hasattr(handle, 'closed')), (

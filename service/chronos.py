@@ -49,7 +49,7 @@ class _ClockHandler(Handler):
         :param easter_egg_prob: The probability of whether to have snarky
                                 comments as potential replies.
         """
-        super(_ClockHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._what = what
         self._easter_egg_prob = easter_egg_prob
 
@@ -139,7 +139,7 @@ class ClockService(Service):
         :param easter_egg_prob: The probability of whether to have snarky
                                 comments as potential replies.
         """
-        super(ClockService, self).__init__("Clock", state)
+        super().__init__("Clock", state)
         self._easter_egg_prob = max(0.0, min(1.0, float(easter_egg_prob)))
 
 
@@ -182,7 +182,7 @@ class _SetTimerHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_SetTimerHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._times = times
 
 
@@ -278,7 +278,7 @@ class _CancelTimerHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_CancelTimerHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._words = words
 
 
@@ -361,7 +361,7 @@ class TimerService(Service):
         :param duration:
             How long to ring for, in seconds.
         """
-        super(TimerService, self).__init__("Timer", state)
+        super().__init__("Timer", state)
 
         self._timers  = []
 
@@ -478,7 +478,7 @@ class _SetAlarmHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_SetAlarmHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._timespec = timespec
 
 
@@ -658,7 +658,7 @@ class _CancelAlarmHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_CancelAlarmHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
         self._words = words
 
 
@@ -743,7 +743,7 @@ class AlarmService(Service):
         :param duration:
             How long to ring for, in seconds.
         """
-        super(AlarmService, self).__init__("Alarm", state)
+        super().__init__("Alarm", state)
 
         self._alarms  = []
 

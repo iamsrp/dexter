@@ -48,7 +48,7 @@ class CoquiOutput(SpeechOutput):
             The model to use. See the list of models in the
             ``$TTS/.models.json`` file in the TTS tree in GitHub.
         """
-        super(CoquiOutput, self).__init__(state)
+        super().__init__(state)
 
         # We will need pygame for this, but grab it lazily later
         self._pygame = None

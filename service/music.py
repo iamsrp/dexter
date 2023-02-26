@@ -26,7 +26,7 @@ class MusicService(Service):
             The name of the platform that this service streams music from, like
             C{Spotify}, C{Pandora}, C{Edna}, C{Local Disk}, etc.
         """
-        super(MusicService, self).__init__(name, state)
+        super().__init__(name, state)
 
         self._platform = platform
 
@@ -331,7 +331,7 @@ class MusicServicePauseHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(MusicServicePauseHandler, self).__init__(
+        super().__init__(
             service,
             tokens,
             1.0 if service.is_playing() else 0.0,
@@ -353,7 +353,7 @@ class MusicServiceUnpauseHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(MusicServiceUnpauseHandler, self).__init__(
+        super().__init__(
             service,
             tokens,
             1.0  if service.is_paused() else 0.0,
@@ -375,7 +375,7 @@ class MusicServiceTogglePauseHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(MusicServiceTogglePauseHandler, self).__init__(
+        super().__init__(
             service,
             tokens,
             1.0  if service.is_paused() or service.is_playing() else 0.0,
@@ -427,12 +427,7 @@ class _LocalMusicServicePlayHandler(Handler):
             The match score out of 1.0.
         """
         # We deem ourselves exclusive since we had a match
-        super(_LocalMusicServicePlayHandler, self).__init__(
-            service,
-            tokens,
-            score,
-            True
-        )
+        super().__init__(service, tokens, score, True)
         self._filenames = filenames
         self._what      = what
 
@@ -458,9 +453,7 @@ class LocalMusicService(MusicService):
         :param dirname:
             The directory where all the music lives.
         """
-        super(LocalMusicService, self).__init__("LocalMusic",
-                                                state,
-                                                "Local")
+        super().__init__("LocalMusic", state, "Local")
 
         if dirname is None:
             raise ValueError("Not given a directory name")

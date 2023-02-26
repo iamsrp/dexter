@@ -27,7 +27,7 @@ class _KasaHandler(Handler):
 
         :param routines: The generators for coroutines to execute.
         """
-        super(_KasaHandler, self).__init__(service, tokens, score, True)
+        super().__init__(service, tokens, score, True)
 
         self._routines = routines
 
@@ -87,7 +87,7 @@ class KasaService(Service):
         :param bulbs: The dict of bulb names to IP addresses.
         :param plugs: The dict of plug names to IP addresses.
         """
-        super(KasaService, self).__init__("Kasa", state)
+        super().__init__("Kasa", state)
 
         self._bulbs = {
             name : [

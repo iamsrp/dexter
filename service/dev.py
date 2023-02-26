@@ -12,7 +12,7 @@ class _EchoHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_EchoHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
 
 
     def handle(self):
@@ -37,7 +37,7 @@ class EchoService(Service):
         """
         @see Service.__init__()
         """
-        super(EchoService, self).__init__("Echo", state)
+        super().__init__("Echo", state)
 
 
     def evaluate(self, tokens):
@@ -54,7 +54,7 @@ class _MatchHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_MatchHandler, self).__init__(service, tokens, best / 100, True)
+        super().__init__(service, tokens, best / 100, True)
         self._matches = matches
 
 
@@ -86,7 +86,7 @@ class MatchService(Service):
         """
         @see Service.__init__()
         """
-        super(MatchService, self).__init__("Match", state)
+        super().__init__("Match", state)
 
         self._phrases = tuple(
             tuple(

@@ -43,7 +43,7 @@ class NotifierOutput(Output):
             default. Note that using different DBus looptypes of different DBus
             components (e.g. MediaKeyInput) can result in breakage.
         """
-        super(NotifierOutput, self).__init__(state)
+        super().__init__(state)
 
         self._summary   = str(summary)    if summary    else None
         self._icon      = str(icon)       if icon       else None

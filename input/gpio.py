@@ -44,7 +44,7 @@ class _HatMiniInput(Input):
         :param y_button:
             What string to send when the Y button is pressed.
         """
-        super(_HatMiniInput, self).__init__(state)
+        super().__init__(state)
 
         def tokenize(string):
             if string and str(string).strip():

@@ -64,7 +64,7 @@ class TimerEvent(Event):
         @parse schedule_time:
             The time at which this event should fire. In seconds since epoch.
         """
-        super(TimerEvent, self).__init__(runnable=runnable)
+        super().__init__(runnable=runnable)
         self._schedule_time = float(schedule_time)
 
 

@@ -19,7 +19,7 @@ class _PurpleAirHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_PurpleAirHandler, self).__init__(service, tokens, 1.0, True)
+        super().__init__(service, tokens, 1.0, True)
 
 
     def _get_data(self):
@@ -76,7 +76,7 @@ class _AQHandler(_PurpleAirHandler):
         """
         @see Handler.__init__()
         """
-        super(_AQHandler, self).__init__(service, tokens)
+        super().__init__(service, tokens)
         self._raw = raw
 
 
@@ -127,7 +127,7 @@ class _HumidityHandler(_PurpleAirHandler):
         """
         @see Handler.__init__()
         """
-        super(_HumidityHandler, self).__init__(service, tokens)
+        super().__init__(service, tokens)
 
 
     def handle(self):
@@ -153,7 +153,7 @@ class _TemperatureHandler(_PurpleAirHandler):
         """
         @see Handler.__init__()
         """
-        super(_TemperatureHandler, self).__init__(service, tokens)
+        super().__init__(service, tokens)
 
 
     def handle(self):
@@ -205,7 +205,7 @@ class PurpleAirService(Service):
         :param api_key:
             The API read key for the PurleAir API. This is reqiured.
         """
-        super(PurpleAirService, self).__init__("PurpleAir", state)
+        super().__init__("PurpleAir", state)
 
         if sensor_id is None:
             raise ValueError("Sensor ID was not given")

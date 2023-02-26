@@ -64,13 +64,11 @@ class DeepSpeechInput(AudioInput):
             rate = self._model.sampleRate()
 
         # Wen can now init the superclass
-        super(DeepSpeechInput, self).__init__(
-            notifier,
-            format=pyaudio.paInt16,
-            channels=1,
-            rate=rate,
-            wav_dir=wav_dir
-        )
+        super().__init__(notifier,
+                         format  =pyaudio.paInt16,
+                         channels=1,
+                         rate    =rate,
+                         wav_dir =wav_dir)
 
         # Where we put the stream context
         self._context = None

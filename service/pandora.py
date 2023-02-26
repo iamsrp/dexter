@@ -52,12 +52,7 @@ class _PandoraServicePlayHandler(Handler):
             The match score out of 1.0.
         """
         # We deem ourselves exclusive since we had a match
-        super(_PandoraServicePlayHandler, self).__init__(
-            service,
-            tokens,
-            score,
-            True
-        )
+        super().__init__(service, tokens, score, True)
         self._token = token
         self._what  = what
 
@@ -110,9 +105,7 @@ class PandoraService(MusicService):
         :param config_file:
             The path to the config file, if not the default.
         """
-        super(PandoraService, self).__init__("PandoraService",
-                                             state,
-                                             "Pandora")
+        super().__init__("PandoraService", state, "Pandora")
 
         self._config_file = config_file
         self._pandora     = None

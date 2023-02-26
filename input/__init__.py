@@ -61,7 +61,7 @@ class Input(Component):
         """
         @see Component.__init__()
         """
-        super(Input, self).__init__(state)
+        super().__init__(state)
 
 
     @property

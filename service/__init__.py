@@ -23,7 +23,7 @@ class Service(Component):
         :param state:
             The global State instance.
         """
-        super(Service, self).__init__(state)
+        super().__init__(state)
         self._name = name
 
 
@@ -91,7 +91,7 @@ class Handler(object):
         :param exclusive:
             Whether this handler should be the only one to be called.
         """
-        super(Handler, self).__init__()
+        super().__init__()
         self._service   = service
         self._tokens    = tokens
         self._belief    = belief
@@ -171,7 +171,7 @@ class Result(object):
             Whether this response should prevent the processing of any further
             ones.
         """
-        super(Result, self).__init__()
+        super().__init__()
         self._handler   = handler
         self._text      = text
         self._is_query  = is_query

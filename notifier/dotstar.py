@@ -29,7 +29,7 @@ class VoiceBonnetNotifier(ByComponentNotifier):
         :param brightness:
             The dots' LED brightness.
         """
-        super(VoiceBonnetNotifier, self).__init__()
+        super().__init__()
 
         # The time, since epoch, when each component type stopped being active
         self._input_time   = 0

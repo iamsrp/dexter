@@ -22,7 +22,7 @@ class _DictionaryHandler(Handler):
         :param word:
             The single word to look up.
         """
-        super(_DictionaryHandler, self).__init__(service, tokens, belief, True)
+        super().__init__(service, tokens, belief, True)
         self._word  = str(word)
         self._limit = limit
 
@@ -77,7 +77,7 @@ class DictionaryService(Service):
         # Lazy import since it might be broken
         from PyDictionary import PyDictionary
 
-        super(DictionaryService, self).__init__("Dictionary", state)
+        super().__init__("Dictionary", state)
 
         limit = int(limit)
         if limit < 0:
@@ -171,7 +171,7 @@ class _SpellingHandler(Handler):
         :param words:
             The words to spell.
         """
-        super(_SpellingHandler, self).__init__(service, tokens, belief, True)
+        super().__init__(service, tokens, belief, True)
         self._words = words
 
 
@@ -201,7 +201,7 @@ class SpellingService(Service):
         """
         @see Service.__init__()
         """
-        super(SpellingService, self).__init__("Spelling", state)
+        super().__init__("Spelling", state)
 
 
     def evaluate(self, tokens):
@@ -244,7 +244,7 @@ class _EchoHandler(Handler):
         """
         @see Handler.__init__()
         """
-        super(_EchoHandler, self).__init__(service, tokens, belief, True)
+        super().__init__(service, tokens, belief, True)
 
 
     def handle(self):
@@ -269,7 +269,7 @@ class EchoService(Service):
         """
         @see Service.__init__()
         """
-        super(EchoService, self).__init__("Echo", state)
+        super().__init__("Echo", state)
         if phrase:
             self._phrase        = phrase.lower()
             self._phrase_length = len(phrase.split())

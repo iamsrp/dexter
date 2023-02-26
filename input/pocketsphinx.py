@@ -23,8 +23,8 @@ class PocketSphinxInput(AudioInput):
         """
         @see AudioInput.__init__()
         """
-        super(PocketSphinxInput, self).__init__(state,
-                                                wav_dir=wav_dir)
+        super().__init__(state,
+                         wav_dir=wav_dir)
 
         # Create a decoder with certain model.
         config = Decoder.default_config()
