@@ -67,7 +67,7 @@ _PHRASES = (
 
 
 class _BespokeHandler(Handler):
-    def __init__(self, service, tokens, reply):
+    def __init__(self, service, tokens, reply, belief):
         """
         @see Handler.__init__()
 
@@ -75,7 +75,7 @@ class _BespokeHandler(Handler):
         :param reply:
             What to respond with.
         """
-        super(_BespokeHandler, self).__init__(service, tokens, 1.0, True)
+        super(_BespokeHandler, self).__init__(service, tokens, belief, True)
         self._reply = reply
 
 
@@ -90,11 +90,13 @@ class BespokeService(Service):
     """
     A service which reponds with stock replies to certain phrases.
     """
-    def __init__(self, state):
+    def __init__(self, state, belief=0.75):
         """
         @see Service.__init__()
         """
         super(BespokeService, self).__init__("Bespoke", state)
+
+        self._belief = float(belief)
 
         # Pre-process the stored data to get it into a form which is easier to
         # process in evaluate().
@@ -119,7 +121,7 @@ class BespokeService(Service):
                 (start, end, score) = fuzzy_list_range(words, phrase)
                 LOG.debug("Matched [%d:%d] and score %d", start, end, score)
                 if start == 0 and (not is_prefix or end == len(phrase)):
-                    return _BespokeHandler(self, tokens, reply)
+                    return _BespokeHandler(self, tokens, reply, self._belief)
             except ValueError as e:
                 LOG.debug("No match: %s", e)
 
