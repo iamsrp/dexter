@@ -261,7 +261,7 @@ class ShoppingListService(Service):
                     try:
                         # Look for the prefix in the words
                         (start, end, score) = fuzzy_list_range(words, phrase)
-                        LOG.info ("%s matches %s with from %d to %d with score %d",
+                        LOG.debug("%s matches %s with from %d to %d with score %d",
                                   phrase, words, start, end, score)
                         if score >= threshold and \
                            (match is None or match[2] < score):
@@ -285,11 +285,11 @@ class ShoppingListService(Service):
             try:
                 # Look for the prefix in the words
                 (start, end, score) = fuzzy_list_range(words, phrase)
-                LOG.info ("%s matches %s with from %d to %d with score %d",
+                LOG.debug("%s matches %s with from %d to %d with score %d",
                           phrase, words, start, end, score)
                 if score >= threshold and \
                    start == 0 and end == len(words):
-                    LOG.info ("Matched '%s' with score %d for '%s'",
+                    LOG.debug("Matched '%s' with score %d for '%s'",
                               ' '.join(phrase),
                               score,
                               ' '.join(words))
@@ -512,6 +512,7 @@ class ShoppingListService(Service):
             try:
                 with open(self._filename, 'w') as fh:
                     json.dump(self._list, fh)
+                LOG.info("Saved to %s", self._filename)
             except Exception as e:
                 LOG.error("Error saving to %s: %s", self._filename, e)
 
@@ -524,5 +525,6 @@ class ShoppingListService(Service):
             try:
                 with open(self._filename, 'r') as fh:
                     self._list = json.load(fh)
+                LOG.info("Loaded from %s", self._filename)
             except Exception as e:
                 LOG.error("Error loading from %s: %s", self._filename, e)
