@@ -64,6 +64,15 @@ Dexter:
        ``"device_name"   : "raspotify (${HOSTNAME})"``
      where that name is the default. You can also set a specific name in the
      ``/etc/default/raspotify`` file and use that too.
+
+Finally, it looks like Spotify will "forget" about a player if it has been
+inactive for a period of time. That means that this Spotify Service will also
+stop working. If you have a way to periodically restart the Spotify instance
+which you are using then that might fix it. E.g. a ``root`` crontab entry like::
+
+  00 04 * * * systemctl restart spotifyd
+
+might do the trick, unless you enjoy partying late into the night.
 """
 
 from   dexter.core.audio        import MIN_VOLUME, MAX_VOLUME
