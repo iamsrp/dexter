@@ -489,7 +489,13 @@ class Dexter(object):
         Enter the event loop.
         """
         LOG.info("Starting the system")
-        self._start()
+        try:
+            self._start()
+        except Exception as e:
+            LOG.fatal("Failed to start the system: %s", e)
+            LOG.fatal("Quitting...")
+            self._stop()
+            return
 
         # If we have a GUI then it needs to be the main event loop thread, else
         # we can be
@@ -572,8 +578,8 @@ class Dexter(object):
         try:
             self._state.start()
         except Exception as e:
-            LOG.fatal("Failed to start notifiers: %s" % (e,))
-            sys.exit(1)
+            LOG.error("Failed to start notifiers: %s" % (e,))
+            raise
 
         # And the components
         for component in self._inputs + self._outputs + self._services:
@@ -582,8 +588,8 @@ class Dexter(object):
             try:
                 component.start()
             except Exception as e:
-                LOG.fatal("Failed to start %s: %s" % (component, e))
-                sys.exit(1)
+                LOG.error("Failed to start %s: %s" % (component, e))
+                raise
 
 
     def _stop(self):
