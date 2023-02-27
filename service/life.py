@@ -137,8 +137,8 @@ class _GetListHandler(Handler):
         if lst:
             # We have stuff!
             response = \
-                "Your shopping list contains:\n%s" % (
-                    '\n'.join(
+                "Your shopping list contains:\n%s." % (
+                    ',\n'.join(
                         "%d %s" % (
                             v,
                             (self.service.singularise(k) if v == 1 else
@@ -468,6 +468,17 @@ class ShoppingListService(Service):
                     words = (words[:start-1] +
                              [words[start-1] + frac] +
                              words[end:])
+            except ValueError:
+                pass
+
+        # And '1 dozen' becomes 12 etc.
+        for i in range(1, 13):
+            try:
+                # See if we have it
+                (start, end, score) = fuzzy_list_range(words, (str(i), 'dozen'))
+                if end < len(words) and score > 75:
+                    # Replace it
+                    words = (words[:start] + [str(12 * i)] + words[end:])
             except ValueError:
                 pass
 
