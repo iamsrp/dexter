@@ -988,30 +988,35 @@ class _Mailer(Component):
         Create a handler function.
         """
         def f(response):
-            # Tweak the alias if it have "me" or "my" in it since we want to
-            # respond to the user referring to them, not to ourselves
-            alias_ = ' '.join(w.lower().replace('me', 'you')
-                                       .replace('my', 'your')
-                              for w in alias.split())
-
-            # Create both HTML and ASCII versions of the response, and turn them
-            # into MIMEText
-            text = '\n'.join(response)
-            html = self._HTML.format('<br>\n    '.join(response))
-            text = MIMEText(text, "plain")
-            html = MIMEText(html, "html")
-
-            # Create the message
-            message = MIMEMultipart("alternative")
-            message["Subject"] = subject
-            message["From"]    = self._sender
-            message["To"]      = address
-            message.attach(text)
-            message.attach(html)
-
-            # And send it. We use the notifiers to show that we're doing
-            # something.
             try:
+                # Tweak the alias if it have "me" or "my" in it since we want to
+                # respond to the user referring to them, not to ourselves
+                alias_ = ' '.join(w.lower().replace('me', 'you')
+                                           .replace('my', 'your')
+                                  for w in alias.split())
+
+                # Create both HTML and ASCII versions of the response, and turn them
+                # into MIMEText
+                text = '\n'.join(response)
+                html = self._HTML.format(
+                           '<br>\n    '.join(
+                               r.replace('\n', '<br>\n    ')
+                               for r in response
+                           )
+                       )
+                text = MIMEText(text, "plain")
+                html = MIMEText(html, "html")
+
+                # Create the message
+                message = MIMEMultipart("alternative")
+                message["Subject"] = subject
+                message["From"]    = self._sender
+                message["To"]      = address
+                message.attach(text)
+                message.attach(html)
+
+                # And send it. We use the notifiers to show that we're doing
+                # something.
                 with smtplib.SMTP(host=self._host,
                                   port=self._port) as server:
                     server.starttls(context=self._context)
