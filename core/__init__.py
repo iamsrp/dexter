@@ -906,6 +906,7 @@ class _Mailer(Component):
         self._port      = cfg.get('port',      587) # TLS by default
         self._login     = cfg.get('login',     '')
         self._password  = cfg.get('password',  '')
+        self._name      = cfg.get('name',      "Dexter")
         self._sender    = cfg.get('from',      self._login)
         self._addresses = cfg.get('addresses', dict())
 
@@ -1012,11 +1013,15 @@ class _Mailer(Component):
                        )
                 text = MIMEText(text, "plain")
                 html = MIMEText(html, "html")
+                if '<' not in self._sender:
+                    sender = f"{self._name} <{self._sender}>"
+                else:
+                    sender = self._sender
 
                 # Create the message
                 message = MIMEMultipart("alternative")
                 message["Subject"] = subject
-                message["From"]    = self._sender
+                message["From"]    = sender
                 message["To"]      = address
                 message.attach(text)
                 message.attach(html)
