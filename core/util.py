@@ -673,7 +673,7 @@ def parse_number(words):
         try:
             return mult * _WORDS_TO_NUMBERS.parse(words)
         except Exception as e:
-            LOG.error("Failed to parse '%s': %s" % (words, e))
+            LOG.debug("Failed to parse '%s': %s" % (words, e))
             return None
 
 
