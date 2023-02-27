@@ -170,8 +170,8 @@ There are other simple input types mostly for physical interaction:
 ### Outputs
 
 These are ways to get Dexter's responses back to the user. These currently:
- * Speech-to-text via [Festival](http://www.cstr.ed.ac.uk/projects/festival/) and [ESpeak](http://espeak.sourceforge.net/).
- * Simple logging via the `LogOutput`
+ * Speech-to-text via engines like [Mimic3](https://mycroft-ai.gitbook.io/docs/mycroft-technologies/mimic-tts/mimic-3/), [Festival](http://www.cstr.ed.ac.uk/projects/festival/) or [ESpeak](http://espeak.sourceforge.net/).
+ * Text output via the `LogOutput` or Ubuntu desktop notifiers
  * Transmission to an unsecured remote socket
 
 
@@ -185,11 +185,13 @@ A quick overview of the current set of service modules is:
  * Developer: Simple services to help with Dexter development work
  * Fortune: Pulls fortunes out of BSD Fortune files
  * Language: Looking up words in a dictionary, spelling
+ * Life: The day-to-day of things.
  * Numeric: Simple mathematic functions
  * Music & Spotify: Play music from local disk, Spotify, etc.
  * PurpleAir: Look up stats from the [Purple Air](https://purpleair.com/) air sensors
  * Randomness: Various random generators
  * TPLink Kasa: Control the TP Link Kasa IOT plugs and lightbulbs
+ * UPnP: Services which employ UPnP
  * Volume: Sound control
  * Weather: Get the weather (US or UK only)
  * WikiQuery: Look up things on (surpise!) Wikipedia
@@ -198,8 +200,6 @@ A quick overview of the current set of service modules is:
 ## Notes and Musings
 
 This is an attempt to create a home assistant, akin to Google Home, Siri or Alexa, but without reliance on connecting to a proprietary cloud service to do the heavy lifting. It was originally designed to work on a Raspberry Pi running the standard Raspberry Pi OS (both 32bit and 64bit versions), but also works on x86-64 Ubuntu.
-
-Right now, a bunch of basic services are there like setting timers, asking about things and playing music. That's pretty much most people tend to use their home assistant for anyhow it seems.
 
 Writing components for Dexter should, in theory, be simple and intuitive. Most of the time you'll probably wind up writing services for it, though other types of notifier might be handy too. I generally find that you can get a beta version of something up and running in an hour or so. Of course, you then spend three more hours fiddling with it in various ways; that is probably the way of *most* coding projects though.
 
