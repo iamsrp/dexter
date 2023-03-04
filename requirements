@@ -108,8 +108,10 @@ uname -m | grep -Eq 'x86_64' && (
     # it succeeds.
     pip install git+https://github.com/openai/whisper.git && sudo apt install -y ffmpeg && pip install -U numpy
 
-    # Coqui TTS, this depends on PyTorch (and about a million other things too)
-    $ALL && pip install TTS
+    # Coqui TTS, this depends on PyTorch (and about a million other things
+    # too). We don't install it anymore since its requirements conflict with
+    # Mycroft's Mimic3.
+    #$ALL && pip install TTS
 )
 
 # Ensure that the user can access any audio devices. This is needed for Dexter
