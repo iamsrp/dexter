@@ -116,42 +116,48 @@ class DexterGui(App):
         """
         Set the text of the inputs widget.
         """
-        self._inputs_widget.text = text
+        if self._inputs_widget:
+            self._inputs_widget.text = text
 
 
     def set_inputs_color(self, color):
         """
         Set the text color of the inputs widget.
         """
-        self._inputs_widget.color = color
+        if self._inputs_widget:
+            self._inputs_widget.color = color
 
 
     def set_outputs_text(self, text):
         """
         Set the text of the outputs widget.
         """
-        self._outputs_widget.text = text
+        if self._outputs_widget:
+            self._outputs_widget.text = text
 
 
     def set_outputs_color(self, color):
         """
         Set the text color of the outputs widget.
         """
-        self._outputs_widget.color = color
+        if self._outputs_widget:
+            self._outputs_widget.color = color
 
 
     def set_services_text(self, text):
         """
         Set the text of the services widget.
         """
-        self._services_widget.text = text
+        if self._services_widget:
+            self._services_widget.text = text
 
 
     def set_services_color(self, color):
         """
         Set the text color of the services widget.
         """
-        self._services_widget.color = color
+        if self._services_widget:
+            self._services_widget.color = color
 
 
     def _stop(self):
