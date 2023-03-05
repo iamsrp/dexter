@@ -465,7 +465,7 @@ class LocalMusicService(MusicService):
         self._media_index = None
         def create_index():
             try:
-                self._media_index = MusicIndex(dirname)
+                self._media_index = FileMusicIndex(dirname)
             except Exception as e:
                 LOG.error("Failed to create music index: %s", e)
         thread = Thread(name='MusicIndexer', target=create_index)
