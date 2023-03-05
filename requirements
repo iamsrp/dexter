@@ -2,29 +2,56 @@
 #
 # The install script for Dexter's requirements.
 #
+# This won't install everything by default, it will look to pick the best things
+# it can but you can configure it by invoking it with different options.
 
-# Run with
-#   bash -x ./requirements
-# to see what it's doing.
-#
-# Run with
-#   ALL=true bash ./requirements
-# to install everything.
+usage() {
+     echo "Install the requirements for Dexter"
+     echo
+     echo "By default the script will attempt to do what's right for your system"
+     echo "but you can use the options to change that behaviour."
+     echo
+     echo "It should be safe to run this script multiple times, but some "
+     echo "dependencies may clash with others."
+     echo
+     echo "Usage:"
+     echo "    `basename $0` [options]"
+     echo "        --whisper-stt  Install the Whisper speech-to-text engine"
+     echo "        --vosk-stt     Install the Vosk speech-to-text engine"
+     echo "        --coqui-stt    Install the Coqui speech-to-text engine"
+     echo "        --mimic3-tts   Install the Mimic3 text-to-speech engine"
+     echo "        --coqui-tts    Install the Coqui text-to-speech engine"
+     echo "        --festival-tts Install the Festival text-to-speech engine"
+     echo "        --upnp         Install UPnP dependencies, including VLC"
+}
 
-# What you will need to make all of this work. Some things are optional, depending
-# on whether you don't care about certain modules. On Raspberry Pi OS and Ubuntu
-# the following should mostly work. If you see errors then it might be fine
-# depending on what platform you're on.
+# Cheesy getopt implementation follows. Please don't judge me.
+for arg in $@
+do
+    case $arg in
+        --whisper-stt)  INSTALL_WHISPER_STT=true;;
+        --vosk-stt)     INSTALL_VOSK_STT=true;;
+        --coqui-stt)    INSTALL_COQUI_STT=true;;
+        --mimic3-tts)   INSTALL_MIMIC3_TTS=true;;
+        --coqui-tts)    INSTALL_COQUI_TTS=true;;
+        --festival-tts) INSTALL_FESTIVAL_TTS=true;;
+        --upnp)         INSTALL_UPNP=true;;
+        *)              usage ; exit 1 ;;
+    esac
+done
 
-# Let the user have some time to realise what we're doing
+# ----------------------------------------------------------------------------
+
+# Let the user have some time to realise what we're doing.
 echo
 echo "                   *** WARNING ***"
 echo
-echo "   This will install A LOT of things on your system."
-echo "   If you don't want to do this then hit CTRL-C now!"
+echo "   This will install A LOT of things on your system"
 echo
-echo "  It is recommended that you run this in a virtualenv"
-echo "       when installing on a non-dedicated host."
+echo "   If you don't want to do this then hit CTRL-C now"
+echo
+echo "     Consider running this script in a virtualenv"
+echo "       when installing on a non-dedicated host"
 echo
 echo "                   *** WARNING ***"
 echo
@@ -36,89 +63,233 @@ do
 done
 echo '.'
 
-# Set this to 'true' if you want to install everything. Otherwise we just
-# install the "default" set of things.
-: ${ALL:=false}
-$ALL &&
-    echo "Installing everything..." ||
-    echo "Installing default packages..."
-sleep 2
-echo
+# ----------------------------------------------------------------------------
+
+# We'll need to know some things about our environment for some of the below.
+if uname -m | grep -q aarch64
+then
+    AARCH64=true
+else
+    AARCH64=false
+fi
+if uname -m | grep -q 'x86_64'
+then
+    X86_64=true
+else
+    X86_64=false
+fi
+
+# ----------------------------------------------------------------------------
+
+# Now install what you will need to make all of this work. Some things are not
+# required, depending on whether you don't care about certain modules. On
+# Raspberry Pi OS and Ubuntu the following should mostly work. If you see errors
+# then it might be fine depending on what platform you're on.
 
 # Things which we expect to have in both OSes.
+echo
+echo "Running apt update"
 sudo apt update
+echo
+echo "Installing common requirements"
 sudo apt install -y \
-     git swig \
-     python3-pip python3-numpy python3-scipy python3-pyaudio python3-argh python3-pyalsa \
+     git swig portaudio19-dev \
+     python3-pip python3-numpy python3-scipy python3-argh python3-pyalsa \
      python3-espeak python3-fuzzywuzzy python3-httplib2 python3-mutagen python3-pygame \
-     python3-kivy libpulse-dev libasound2-dev festival festival-dev festvox-us-slt-hts
+     python3-kivy libpulse-dev libasound2-dev
 
 # Required.
+echo
+echo "Installing common Python requirements"
+pip install pyaudio
 pip install pyjson5
 pip install pyalsaaudio
 
 # You _probably_ want these so we optimistically install them. And, at the end
 # of the day, they are light so it doesn't hurt.
+echo
+echo "Installing service Python requirements"
 pip install wikipedia
 pip install spotipy
-pip install pydictionary
-pip install git+https://github.com/techiaith/pyfestival#festival
+#pip install pydictionary # Broken...
 pip install python-kasa
 pip install blink1
 pip install blinkstick pyusb
 
-# Ubuntu has this, Raspbian does not, so try both locations
+# Ubuntu has this, Raspbian does not, so try both locations.
 sudo apt install -y python3-levenshtein || pip install python-Levenshtein
 
-# Optionally install VLC since, including its dependencies, there's a lot of
-# it. We currently only need it for the UPnP stuff so bundle that into this
-# section too.
-$ALL && (
+# Optionally install VLC since, including its dependencies, since there's a lot
+# of it. We currently only need it for the UPnP stuff.
+if ${INSTALL_UPNP:-false}
+then
+    echo
+    echo "Installing VLC and UPnP libraries"
     sudo apt install -y python3-vlc
     pip install python-didl-lite
     pip install git+https://github.com/iamsrp/upnpy
-)
+fi
 
-# Vosk is another STT engine. This mostly only works for Ubuntu and 64bit
+# ----------------------------------------------------------------------------
+
+# Now the Speech-to-Text and Text-to-Speech engines. We only try to install one
+# of these since they can conflict with one another and you should only need one
+# of each anyhow.
+
+# Speech-to-Text.
+
+# Look for Whisper first, that's the best one but requires a fast CPU (or a
+# GPU). This will currently clash with Coqui so don't install it if that's been
+# selected.
+if $X86_64
+then
+    if ${INSTALL_COQUI_STT:-false}
+    then
+        : ${INSTALL_WHISPER_STT:=false}
+    else
+        : ${INSTALL_WHISPER_STT:=true}
+    fi
+else
+    : ${INSTALL_WHISPER_STT:=false}
+fi
+
+# Vosk is another decent STT engine. This mostly only works for Ubuntu and 64bit
 # Raspbian that I can tell.
-$ALL && pip install vosk || (
-    uname -m | grep -q aarch64 &&
-        pip install https://github.com/alphacep/vosk-api/releases/download/v0.3.31/vosk-0.3.31-py3-none-linux_aarch64.whl
-)
+if $INSTALL_WHISPER_STT
+then
+    : ${INSTALL_VOSK_STT:=false}
+elif $AARCH64 || $X86_64
+then
+    : ${INSTALL_VOSK_STT:=true}
+else
+    : ${INSTALL_VOSK_STT:=false}
+fi
 
-# And so Coqui (STT), which was DeepSpeech once upon a time.
-pip install stt ||
-    pip install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
+# If we aren't installing Whisper then Coqui is a good alternative.
+if $INSTALL_WHISPER_STT || $INSTALL_VOSK_STT
+then
+    : ${INSTALL_COQUI_STT:=false}
+else
+    : ${INSTALL_COQUI_STT:=true}
+fi
 
-# Mycroft works for 64bit archs. Installing it for 32bit Raspbian is a little
-# more involved (see the module).
-uname -m | grep -Eq 'x86_64|aarch64' && (
-    # Mycroft for speech output
-    pip install mycroft-mimic3-tts
-)
+# Text-to-Speech.
 
-# Some things which only really work for 64bit OSs. While these theoretically
-# work for Raspbian, Whisper is _slow_ to the point of being unusable and Coqui
-# TTS has Numpy versioning issues. So we only install for Ubuntu x86_64 by
-# default.
-uname -m | grep -Eq 'x86_64' && (
+# Mycroft is the best sounding TTS IMHO so prefer that one first. You can
+# install it on 32bit Raspbian bit it requires human intervention so we don't
+# try that here.
+if $AARCH64 || $X86_64
+then
+    : ${INSTALL_MIMIC3_TTS:=true}
+else
+    : ${INSTALL_MIMIC3_TTS:=false}
+fi
+
+# And the Coqui STT, which was DeepSpeech once upon a time, is a good fallback
+# but has Numpy versioning issues and depends on PyTorch (and about a million
+# other things too). So we only install for Ubuntu x86_64 by default.
+if $INSTALL_MIMIC3_TTS
+then
+    : ${INSTALL_COQUI_TTS:=false}
+elif $X86_64
+then
+    : ${INSTALL_COQUI_TTS:=true}
+else
+    : ${INSTALL_COQUI_TTS:=false}
+fi
+
+# If none of those are being installed then Festival is a fine fallback.
+if $INSTALL_COQUI_TTS || $INSTALL_MIMIC3_TTS
+then
+    : ${INSTALL_FESTIVAL_TTS:=false}
+else
+    : ${INSTALL_FESTIVAL_TTS:=true}
+fi
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Now the actual installs...
+
+if $INSTALL_WHISPER_STT
+then
     # Whisper only works on the 64bit Pi OS since it needs PyTorch, which is
     # 64bit only. (PyTorch looks to need a more up-to-date numpy than is
     # currently available via apt.) We only install ffmpeg and upgrade numpy if
     # it succeeds.
-    pip install git+https://github.com/openai/whisper.git && sudo apt install -y ffmpeg && pip install -U numpy
+    echo
+    echo "Installing Whisper and ffmpeg"
+    pip install git+https://github.com/openai/whisper.git &&
+        sudo apt install -y ffmpeg &&
+        pip install -U numpy
+fi    
+if $INSTALL_VOSK_STT
+then
+    # See https://github.com/alphacep/vosk-api/releases/
+    echo
+    echo "Installing Vosk"
+    pip install vosk ||
+        pip install https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-0.3.45-py3-none-linux_`uname -m`.whl
+fi
+if $INSTALL_COQUI_STT
+then
+    # See https://github.com/coqui-ai/STT/releases/
+    echo
+    echo "Installing Coqui STT"
+    pip install stt ||
+        pip install https://github.com/coqui-ai/STT/releases/download/v1.4.0/stt-1.4.0-cp39-cp39-linux_`uname -m`.whl
+fi
+if $INSTALL_MIMIC3_TTS
+then
+    # Mycroft works for 64bit archs. Installing it for 32bit Raspbian is a little
+    # more involved (see the module).
+    echo
+    echo "Installing Mycroft Mimic3 TTS"
+    pip install mycroft-mimic3-tts
+fi
+if $INSTALL_COQUI_TTS
+then
+    echo
+    echo "Installing Coqui TTS"
+    pip install TTS
+fi
+if $INSTALL_FESTIVAL_TTS
+then
+    sudo apt install -y festival festival-dev festvox-us-slt-hts
+    pip install git+https://github.com/techiaith/pyfestival#festival
+fi
 
-    # Coqui TTS, this depends on PyTorch (and about a million other things
-    # too). We don't install it anymore since its requirements conflict with
-    # Mycroft's Mimic3.
-    #$ALL && pip install TTS
-)
+# ----------------------------------------------------------------------------
 
 # Ensure that the user can access any audio devices. This is needed for Dexter
 # to hear things and say things.
 aplay -l |& grep -q 'no soundcards found' && {
     groups | grep -q audio || {
         sudo adduser $USER audio
-        echo "Added $USER to the audio group; you may need to log back into to pick up the change"
+        echo
+        echo "WARNING  *********************************************************"
+        echo "WARNING  **          Added $USER to the audio group             **"
+        echo "WARNING  ** you may need to log back into to pick up the change **"
+        echo "WARNING  *********************************************************"
     }
 }
+
+# On Ubuntu 22.10 Pipewire is the default audio engine but it doesn't work with
+# PyAudio, which uses ALSA under the hood and Pipewire breaks ALSA. If we
+# detect this then let the user know.
+dpkg -l pipewire 2> /dev/null | grep -q '^ii' && {
+    echo
+    echo "INFO     *********************************************************"
+    echo "INFO     **        Detected Pipewire audio is installed.        **"
+    echo "INFO     **       This may mean that ALSA audio is broken.      **"
+    echo "INFO     **   If audio doesn't work then remove Pipewire with:  **"
+    echo "INFO     **                sudo dpkg -r pipewire                **"
+    echo "INFO     **      which should revert back to PulseAudio.        **"
+    echo "INFO     *********************************************************"
+}
+
+# ----------------------------------------------------------------------------
+
+# And we're done!
+echo
+echo "Installation complete!"
+echo
