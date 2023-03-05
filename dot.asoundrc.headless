@@ -2,6 +2,8 @@
 # (usually the second device) and assumes that the speakers are the first
 # device.
 #
+# This config works for headless devices.
+#
 # Running:
 #   arecord -l
 #   aplay -l

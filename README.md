@@ -63,7 +63,7 @@ When it comes to audio input, make sure that you have a decent microphone with n
 
 Dexter has been developed using a 4Gb Raspberry Pi 4 and a x86_64 Ubuntu machine. It's also been tested on various other hardware.
 
-If you're running Dexter on a Raspberry Pi or the StarFive VisionFive2 then make sure that ALSA is working by testing `aplay` and `arecord`, tweaking volume and recording levels with `alsamixer`. If it is not then you may well get strange errors from `pyaudio`. You might also want a `/home/pi/.asoundrc` file, see the `dot.asoundrc` example in the top-level directory.
+If you're running Dexter on a Raspberry Pi or the StarFive VisionFive2 then make sure that ALSA is working by testing `aplay` and `arecord`, tweaking volume and recording levels with `alsamixer`. If it is not then you may well get strange errors from `pyaudio`. You might also want a `/home/pi/.asoundrc` file, see the `dot.asoundrc.*` examples in the top-level directory.
 
 You can see the different hardware devices in `alsamixer`, via `F6`. You might also need to set the Audio Output in the System settings in `raspi-config` to your preference. On the StarFive board the built-in audio-out doesn't currently seem work (for me) and using a USB audio adapter seems wonky too.
 

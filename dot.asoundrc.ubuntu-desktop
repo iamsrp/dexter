@@ -1,0 +1,27 @@
+# An example ALSA config file which uses a microphone plugged into the USB port
+# (usually the second device) and assumes that the speakers are the first
+# device.
+#
+# This config works for the current Ubuntu 22.10 Desktop distribution.
+#
+# Running:
+#   arecord -l
+#   aplay -l
+# should help you identify the values for the PCM strings, which are of the
+# form:
+#   "hw:<card,device>"
+#
+# Beware that the ordering can change though so, if nothing seems to be working
+# check the card lists again.
+#
+pcm.!default {
+        type asym
+        playback.pcm {
+                type plug
+                slave.pcm "hw:0,0"
+        }
+        capture.pcm {
+                type plug
+                slave.pcm "hw:1,0"
+        } 
+}
