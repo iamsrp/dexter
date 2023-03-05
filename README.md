@@ -262,3 +262,7 @@ Some of the underlying libraries can hit fatal errors, causing the whole thing t
 PyFestival seems to yield a `aplay: main:831: audio open error: Device or resource busy` error on the StarFive VisionFive 2, meaning you get nothing out.
 
 Spotify seems to drop the connection to its clients if they are idle for too long.
+
+The PyDictionary package doesn't seem to install properly right now (20230301).
+
+Ubuntu 22.10 uses Pipewire as the new audio subsystem. However, this seems to break ALSA, and PyAudio uses ALSA under the hood. You can remove it with `sudo dpkg -r pipewire`, which causes Ubuntu to revert back to using PulseAudio.
