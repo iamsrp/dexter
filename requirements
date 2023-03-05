@@ -273,20 +273,6 @@ aplay -l |& grep -q 'no soundcards found' && {
     }
 }
 
-# On Ubuntu 22.10 Pipewire is the default audio engine but it doesn't work with
-# PyAudio, which uses ALSA under the hood and Pipewire breaks ALSA. If we
-# detect this then let the user know.
-dpkg -l pipewire 2> /dev/null | grep -q '^ii' && {
-    echo
-    echo "INFO     *********************************************************"
-    echo "INFO     **        Detected Pipewire audio is installed.        **"
-    echo "INFO     **       This may mean that ALSA audio is broken.      **"
-    echo "INFO     **   If audio doesn't work then remove Pipewire with:  **"
-    echo "INFO     **                sudo dpkg -r pipewire                **"
-    echo "INFO     **      which should revert back to PulseAudio.        **"
-    echo "INFO     *********************************************************"
-}
-
 # ----------------------------------------------------------------------------
 
 # And we're done!
