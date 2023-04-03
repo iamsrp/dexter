@@ -91,15 +91,15 @@ from   .music                   import (MusicService,
 # ------------------------------------------------------------------------------
 
 
-class SpotifyServicePauseHandler(MusicServicePauseHandler):
+class _SpotifyServicePauseHandler(MusicServicePauseHandler):
     pass
 
 
-class SpotifyServiceUnpauseHandler(MusicServiceUnpauseHandler):
+class _SpotifyServiceUnpauseHandler(MusicServiceUnpauseHandler):
     pass
 
 
-class SpotifyServiceTogglePauseHandler(MusicServiceTogglePauseHandler):
+class _SpotifyServiceTogglePauseHandler(MusicServiceTogglePauseHandler):
     pass
 
 
