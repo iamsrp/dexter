@@ -107,7 +107,7 @@ def run(conn, translate):
         logging.info("Decoding %0.2f seconds of audio",
                      len(data) / rate / width / channels)
 
-        # Ony one at a time so do this under a lock
+        # Only one at a time so do this under a lock
         with _LOCK:
             result = model.transcribe(audio,
                                       task='translate' if translate else 'transcribe')
