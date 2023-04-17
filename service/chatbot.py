@@ -105,7 +105,7 @@ class ChatService(Service):
 
         self._host       = str(host)
         self._port       = int(port)
-        self._prefixes   = (prefix.split() for prefix in prefixes)
+        self._prefixes   = tuple(prefix.split() for prefix in prefixes)
         self._max_belief = min(1.0, float(max_belief))
         self._max_chars  = int(max_chars)
 
@@ -117,6 +117,7 @@ class ChatService(Service):
         # Render to lower-case, for matching purposes.
         words = self._words(tokens)
 
+        LOG.debug("Matching %s against %s", words, self._prefixes)
         for prefix in self._prefixes:
             try:
                 # Look for the prefix in the words
