@@ -83,11 +83,14 @@ class WikipediaService(Service):
     >>> result.text.startswith('Wikipedia says.\\nMark')
     True
     """
-    def __init__(self, state):
+    def __init__(self,
+                 state,
+                 max_belief=0.75):
         """
         @see Service.__init__()
         """
         super().__init__("Wikipedia", state)
+        self._max_belief = min(1.0, float(max_belief))
 
 
     def evaluate(self, tokens):
@@ -134,16 +137,16 @@ class WikipediaService(Service):
                     if best is None or best[1] < score:
                         best = (result, score)
             except Exception as e:
-                LOG.error("Failed to query Wikipedia for '%s': %s" %
-                          (thing, e))
+                LOG.error("Failed to query Wikipedia for '%s': %s",
+                          thing, e)
             finally:
                 self._notify(Notifier.IDLE)
 
             # Turn the words into a string for the handler
             if best is not None:
-                # We always have a 0..75% belief so that other services which
+                # We always have a capped belief so that other services which
                 # begin with "What's blah blah" can overrule us.
-                belief = best[1] / 100 * 0.75
+                belief = best[1] / 100 * self._max_belief
                 return _Handler(self, tokens, belief, best[0])
 
         # If we got here then it didn't look like a query for us
