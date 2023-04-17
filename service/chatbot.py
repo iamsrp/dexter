@@ -120,6 +120,7 @@ class ChatService(Service):
         for prefix in self._prefixes:
             try:
                 # Look for the prefix in the words
+                LOG.debug("Matching %s against %s", words, prefix)
                 (start, end, score) = fuzzy_list_range(words, prefix)
                 LOG.debug("%s matches %s with from %d to %d with score %d",
                           prefix, words, start, end, score)
