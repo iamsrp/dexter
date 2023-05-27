@@ -1,3 +1,8 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!! This appears to have stopped working on the Raspberry Pi with the latest !!!
+# !!!   updates. For now, just use the Ubuntu Desktop one, which seems okay.   !!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 # An example ALSA config file which uses a microphone plugged into the USB port
 # (usually the second device) and assumes that the speakers are the first
 # device.
