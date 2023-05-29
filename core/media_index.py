@@ -300,7 +300,7 @@ class _Entry:
 
 
     def __str__(self):
-        if self.url and len(self) > 80:
+        if self.url and len(self.url) > 80:
             url = self.url[:80] + "..."
         else:
             url = self.url
