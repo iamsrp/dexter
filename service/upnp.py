@@ -345,7 +345,7 @@ class UpnpMusicService(_VlcMusicService):
         # (right now just one)
         if self._server is None:
             raise ValueError(
-                "Could not find DLNA server '%s' in: " %
+                "Could not find DLNA server '%s' in: %s" %
                 (self._server_name, ", ".join(names))
             )
         for svc in ('ContentDirectory',):
