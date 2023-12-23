@@ -50,9 +50,6 @@ echo "   This will install A LOT of things on your system"
 echo
 echo "   If you don't want to do this then hit CTRL-C now"
 echo
-echo "     Consider running this script in a virtualenv"
-echo "       when installing on a non-dedicated host"
-echo
 echo "                   *** WARNING ***"
 echo
 echo -n "Installing in "
@@ -79,6 +76,9 @@ else
     X86_64=false
 fi
 
+# Where we are invoked from
+ROOT=`dirname $0`
+
 # ----------------------------------------------------------------------------
 
 # Now install what you will need to make all of this work. Some things are not
@@ -96,14 +96,32 @@ sudo apt install -y \
      git swig portaudio19-dev \
      python3-pip python3-numpy python3-scipy python3-argh python3-pyalsa \
      python3-espeak python3-fuzzywuzzy python3-httplib2 python3-mutagen python3-pygame \
-     python3-kivy libpulse-dev libasound2-dev
+     python3-kivy libpulse-dev libasound2-dev python3-virtualenv
+
+# Activate the virtualenv
+VENV=${ROOT}/venv
+test -d $VENV/. || {
+    echo
+    echo "Creating virtualenv in $VENV"
+    echo
+    virtualenv $VENV || exit 1
+}
+    echo
+echo "Activating virtualenv $VENV"
+. ${VENV}/bin/activate || exit 1
+echo
 
 # Required.
-echo
 echo "Installing common Python requirements"
 pip install pyaudio
 pip install pyjson5
 pip install pyalsaaudio
+pip install argh
+pip install fuzzywuzzy
+pip install httplib2
+pip install mutagen
+pip install pygame
+pip install kivy
 
 # You _probably_ want these so we optimistically install them. And, at the end
 # of the day, they are light so it doesn't hurt.
@@ -111,7 +129,7 @@ echo
 echo "Installing service Python requirements"
 pip install wikipedia
 pip install spotipy
-#pip install pydictionary # Broken...
+pip install PyDictionary
 pip install python-kasa
 pip install blink1
 pip install blinkstick pyusb
@@ -126,6 +144,7 @@ then
     echo
     echo "Installing VLC and UPnP libraries"
     sudo apt install -y python3-vlc
+    pip install python-vlc
     pip install python-didl-lite
     pip install git+https://github.com/iamsrp/upnpy
 fi
@@ -277,5 +296,11 @@ aplay -l |& grep -q 'no soundcards found' && {
 
 # And we're done!
 echo
-echo "Installation complete!"
+echo "Python compoments install into $VENV. Use"
+echo "   . $VENV/bin/activate"
+echo "to enable it before running dexter."
 echo
+echo "      Installation complete!"
+echo
+
+exit 0
