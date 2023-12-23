@@ -3,6 +3,16 @@
 # Run Dexter forever:
 #   CONFIG=pi_config nohup ./run < /dev/null >> dexter.log 2>&1 &
 # changing 'pi_config' to the name of your config file, if need be.
+
+# Where we are invoked from, which is where we exper the venv to live.
+ROOT=`dirname $0`
+VENV=${ROOT}/venv
+if [ -e $VENV/bin/activate ]
+then
+    . $VENV/bin/activate
+fi
+
+# Loop forever...
 while true
 do
     # Unset the DISPLAY else PyGame can crash. Set the terminal to dumb so that
