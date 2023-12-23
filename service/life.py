@@ -401,7 +401,7 @@ class ShoppingListService(Service):
         """
         See `Component._stop()`.
         """
-        self._saveload()
+        self._save()
 
 
     def _listify(self, phrase):
