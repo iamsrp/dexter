@@ -608,7 +608,7 @@ class Dexter(object):
                 component.stop()
 
             except Exception as e:
-                LOG.error("Failed to stop %s: %$s" % (component, e))
+                LOG.error("Failed to stop %s: %s" % (component, e))
 
 
     def _handle(self, tokens):
