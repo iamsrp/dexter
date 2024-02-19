@@ -118,6 +118,7 @@ pip install pyjson5
 pip install pyalsaaudio
 pip install argh
 pip install fuzzywuzzy
+pip install python-Levenshtein
 pip install httplib2
 pip install mutagen
 pip install pygame
