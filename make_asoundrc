@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# Shred the aplay and arecord output to create the .asoundrc file. This is
+# is needed because the devices move around.
+#
+# Usage:
+#    make_asoundrc [rec_name [play_name]]
+#
+
+# The names of the devices to look for 
+REC=${1:-"USB"}
+PLAY=${2:-"USB"}
+
+(aplay -l ; arecord -l) | awk -v REC=$REC -v PLAY=$PLAY '
+    BEGIN {
+        printf("pcm.!default {\n");
+        printf("    type asym\n");
+
+        is_play   = 0;
+        is_rec    = 0;
+        done_play = 0;
+        done_rec  = 0;
+
+        card = 0;
+    }
+    $0 ~ /PLAYBACK/ {
+        is_play = 1;
+        is_rec  = 0;
+    }
+    $0 ~ /CAPTURE/ {
+        is_play = 0;
+        is_rec  = 1;
+    }
+    $1 == "card" {
+        gsub(":", "", $2);
+	card = $2;
+    }
+    $1 == "card" && $0 ~ PLAY && is_play {
+        printf("    playback.pcm {\n");
+        printf("        type plug\n");
+        printf("        slave.pcm \"hw:%d,0\"\n", card);
+        printf("    }\n");
+    }
+    $1 == "card" && $0 ~ REC && is_rec {
+        printf("    capture.pcm {\n");
+        printf("        type plug\n");
+        printf("        slave.pcm \"hw:%d,0\"\n", card);
+        printf("    }\n");
+    }
+    END {
+        printf("}\n");
+    }'

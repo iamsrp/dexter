@@ -12,11 +12,18 @@ then
     . $VENV/bin/activate
 fi
 
+# Make the asoundrc file
+MAKE_ASOUNDRC=$ROOT/make_asoundrc
+if [ -f $MAKE_ASOUNDRC -a -n "$REC_NAME" -a -n "$PLAY_NAME" ]
+then
+    $MAKE_ASOUNDRC "$REC_NAME" "$PLAY_NAME" > /tmp/asoundrc && mv /tmp/asoundrc ${HOME}/.asoundrc
+fi
+
 # Loop forever...
 while true
 do
     # Unset the DISPLAY else PyGame can crash. Set the terminal to dumb so that
     # PyGame doesn't use ncurses to then mess the terminal up. When running from
     # systemd the TERM will not be set and that breaks PyGame too.
-    env -u DISPLAY TERM=dumb ./dexter.py -c ${CONFIG:-pi_config}
+    env -u DISPLAY TERM=dumb ./dexter.py -c ${CONFIG:-pi_config} >> $ROOT/dexter.log 2>&1
 done

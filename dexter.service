@@ -1,6 +1,9 @@
 # A sample systemd config file. To make this work do the following:
 #  - Edit the username (all the 'pi's) and Dexter config in the below to match
 #    what you want
+#  - Add environment variables REC_NAME and PLAY_NAME to the environment
+#    variable names if you want to auto-generate the .asoundrc file. See
+#    the run and make_asoundrc scripts for more info.
 #  - Copy the file to /etc/systemd/system/
 #  - Enable and start it:
 #    - sudo systemctl enable dexter
