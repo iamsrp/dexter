@@ -205,7 +205,7 @@ class _UpnpMusicIndex(MusicIndex):
         """
         Build the index
         """
-        LOG.info("Indexing %s", self._device)
+        LOG.info("Indexing %s", (self._device,))
         start = time.time()
         self._get_songs(self._device, self._globs)
         end = time.time()

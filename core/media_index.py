@@ -151,7 +151,7 @@ class MusicIndex:
         # And update the stats
         self._count += 1
         if (self._count % 1000) == 0:
-            LOG.info("Added a total of %d entries...", self._count)
+            LOG.info("Added a total of %d entries: %s", self._count, entry)
 
 
     def __len__(self):
